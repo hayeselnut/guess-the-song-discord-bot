@@ -1,0 +1,107 @@
+import Discord from 'discord.js';
+import ytdl from 'ytdl-core';
+import config from './config.json';
+import SpotifyWebApi from 'spotify-web-api-node';
+
+const { prefix, token } = config.discord;
+const client = new Discord.Client();
+
+const { clientId, clientSecret } = config.spotify;
+const spotify = new SpotifyWebApi({ clientId, clientSecret });
+
+const servers = new Map();
+
+client.once('ready', () => {
+  console.log('Ready!');
+});
+
+client.once('reconnecting', () => {
+  console.log('Reconnecting!');
+});
+
+client.once('disconnect', () => {
+  console.log('Disconnect!');
+});
+
+client.on('message', async (message) => {
+  if (message.author.bot) return;
+  if (!message.content.startsWith(prefix)) return;
+
+  const serverQueue = servers.get(message.guild.id);
+
+  if (message.content.startsWith(`${prefix}start`)) {
+    start(message, serverQueue);
+  // } else if (message.content.startsWith(`${prefix}stop`)) {
+  //   stop(message);
+  } else {
+    message.channel.send('Invalid command');
+  }
+});
+
+const start = async (message, serverQueue) => {
+  const args = message.content.split(/\s+/);
+  if (args.length === 1) return message.channel.send('Usage: `$start <song_name>`');
+
+  const voiceChannel = message.member.voice.channel;
+  if (!voiceChannel) return message.channel.send('You need to be in a voice channel to play music');
+
+  const permissions = voiceChannel.permissionsFor(message.client.user);
+  if (!permissions.has('CONNECT') || !permissions.has('SPEAK')) {
+    return message.channel.send('I need the permissions to join and speak in your voice channel');
+  }
+
+  const songInfo = await ytdl.getInfo(args[1]);
+
+  const song = {
+    title: songInfo.videoDetails.title,
+    url: songInfo.videoDetails.video_url,
+  };
+
+  if (!serverQueue) {
+    const queueContract = {
+      textChannel: message.channel,
+      voiceChannel: voiceChannel,
+      connection: null,
+      songs: [],
+      volume: 5,
+      playing: true,
+    };
+
+    servers.set(message.guild.id, queueContract);
+    queueContract.songs.push(song);
+
+    try {
+      queueContract.connection = await voiceChannel.join();
+      play(message.guild, queueContract.songs[0]);
+    } catch (err) {
+      console.log(err);
+      message.channel.send(err);
+      return;
+    }
+  } else {
+    serverQueue.songs.push(song);
+    return message.channel.send(`${song.title} has been added to the queue`);
+  }
+};
+
+const play = (guild, song) => {
+  const serverQueue = servers.get(guild.id);
+
+  if (!song) {
+    serverQueue.voiceChannel.leave();
+    servers.delete(guild.id);
+    return;
+  }
+
+  const dispatcher = serverQueue.connection
+    .play(ytdl(song.url))
+    .on('finish', () => {
+      serverQueue.songs.shift();
+      play(guild, serverQueue.songs[0]);
+    })
+    .on('error', (error) => console.error(error));
+  dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
+  serverQueue.textChannel.send(`Start playing: **${song.title}**`);
+};
+
+client.login(token);

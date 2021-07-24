@@ -1,0 +1,22 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "extends": [
+        "google"
+    ],
+    "parserOptions": {
+        "ecmaVersion": 12,
+        "sourceType": "module"
+    },
+    "rules": {
+        "indent": ["error", 2],
+        "linebreak-style": ["error", "windows"],
+        "no-unused-expressions": "warn",
+        "no-unused-vars": "warn",
+        "object-curly-spacing": ["error", "always"],
+        "max-len": "off",
+        "operator-linebreak": ["error", "before"]
+    }
+}
