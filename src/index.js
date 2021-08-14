@@ -1,15 +1,43 @@
 import Discord from 'discord.js';
 import ytdl from 'ytdl-core';
-import config from './config.json';
 import SpotifyWebApi from 'spotify-web-api-node';
+import YouTube from 'discord-youtube-api';
+
+import config from './config.json';
+import { getSong, parseMessage, parsePlaylistLink } from './helpers.js';
+import ServerContract from './server-contract.js';
+import Database from './database.js';
 
 const { prefix, token } = config.discord;
 const client = new Discord.Client();
 
 const { clientId, clientSecret } = config.spotify;
-const spotify = new SpotifyWebApi({ clientId, clientSecret });
+const spotifyApi = new SpotifyWebApi({ clientId, clientSecret });
 
-const servers = new Map();
+// Retrieve an access token.
+spotifyApi.clientCredentialsGrant().then(
+  function(data) {
+    console.log('The access token expires in ' + data.body['expires_in']);
+    console.log('The access token is ' + data.body['access_token']);
+
+    // Save the access token so that it's used in future calls
+    spotifyApi.setAccessToken(data.body['access_token']);
+  },
+  function(err) {
+    console.log('Something went wrong when retrieving an access token', err);
+  },
+);
+
+const { apiKey } = config.youtube;
+const youtube = new YouTube(apiKey);
+
+// const test = async () => {
+//   const arr = await youtube.getPlaylist('https://www.youtube.com/playlist?list=PL39z-AAkkats9VE4V8gdQyIjqp21nao9p');
+//   console.log(arr);
+// };
+// test();
+
+const database = new Database();
 
 client.once('ready', () => {
   console.log('Ready!');
@@ -27,19 +55,37 @@ client.on('message', async (message) => {
   if (message.author.bot) return;
   if (!message.content.startsWith(prefix)) return;
 
-  const serverQueue = servers.get(message.guild.id);
-
   if (message.content.startsWith(`${prefix}start`)) {
     start(message, serverQueue);
   // } else if (message.content.startsWith(`${prefix}stop`)) {
   //   stop(message);
+  } else if (message.content.startsWith(`${prefix}spotify`)) {
+    readSpotifyPlaylist(message);
   } else {
     message.channel.send('Invalid command');
   }
 });
 
-const start = async (message, serverQueue) => {
-  const args = message.content.split(/\s+/);
+const readSpotifyPlaylist = async (message) => {
+  const args = parseMessage(message);
+  if (args.length !== 2) return message.channel.send('Usage: `$spotify <spotify_playlist_link>`');
+
+  const playlistLink = args[1];
+  const playlistId = parsePlaylistLink(playlistLink);
+
+  const playlistData = await spotifyApi.getPlaylist(playlistId);
+
+  message.channel.send(`Found playlist: **${playlistData.body.name}**`);
+  const trackIds = playlistData.body.tracks.items.map((trackData) => ({
+    id: trackData.track.id,
+    name: trackData.track.name,
+    artists: trackData.track.artists.map((artistData) => artistData.name),
+  }));
+  message.channel.send('Songs in this playlist:\n' + trackIds.map((trackData) => `**${trackData.name}** - ${trackData.artists}\n`));
+};
+
+const start = async (message) => {
+  const args = parseMessage(message);
   if (args.length === 1) return message.channel.send('Usage: `$start <song_name>`');
 
   const voiceChannel = message.member.voice.channel;
@@ -50,58 +96,40 @@ const start = async (message, serverQueue) => {
     return message.channel.send('I need the permissions to join and speak in your voice channel');
   }
 
-  const songInfo = await ytdl.getInfo(args[1]);
-
-  const song = {
-    title: songInfo.videoDetails.title,
-    url: songInfo.videoDetails.video_url,
-  };
-
-  if (!serverQueue) {
-    const queueContract = {
-      textChannel: message.channel,
-      voiceChannel: voiceChannel,
-      connection: null,
-      songs: [],
-      volume: 5,
-      playing: true,
-    };
-
-    servers.set(message.guild.id, queueContract);
-    queueContract.songs.push(song);
-
-    try {
-      queueContract.connection = await voiceChannel.join();
-      play(message.guild, queueContract.songs[0]);
-    } catch (err) {
-      console.log(err);
-      message.channel.send(err);
-      return;
-    }
-  } else {
-    serverQueue.songs.push(song);
-    return message.channel.send(`${song.title} has been added to the queue`);
-  }
+  const song = await getSong(args[1]);
 };
 
-const play = (guild, song) => {
-  const serverQueue = servers.get(guild.id);
+//   const contract = database.getContractForGuild(message);
+//   contract.enqueue(song);
+//   message.channel.send(`**${song.title}** has been added to the queue`);
 
-  if (!song) {
-    serverQueue.voiceChannel.leave();
-    servers.delete(guild.id);
-    return;
-  }
+//   try {
+//     serverContract.connect(voiceChannel);
+//     play(message.guild, serverContract.songs[0]);
+//   } catch (err) {
+//     return message.channel.send(err);
+//   }
+// };
 
-  const dispatcher = serverQueue.connection
-    .play(ytdl(song.url))
-    .on('finish', () => {
-      serverQueue.songs.shift();
-      play(guild, serverQueue.songs[0]);
-    })
-    .on('error', (error) => console.error(error));
-  dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
-  serverQueue.textChannel.send(`Start playing: **${song.title}**`);
-};
+// const play = (guild, song) => {
+// // TODO
+//   const contract = database.getContractForGuild(message);
+
+//   if (!song) {
+//     serverContract.voiceChannel.leave();
+//     database.delete(guild.id);
+//     return;
+//   }
+
+//   const dispatcher = serverContract.connection
+//     .play(ytdl(song.url))
+//     .on('finish', () => {
+//       serverContract.songs.shift();
+//       play(guild, serverContract.songs[0]);
+//     })
+//     .on('error', (error) => console.error(error));
+//   dispatcher.setVolumeLogarithmic(serverContract.volume / 5);
+//   serverContract.textChannel.send(`Start playing: **${song.title}**`);
+// };
 
 client.login(token);
