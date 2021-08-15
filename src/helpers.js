@@ -5,19 +5,9 @@ export const parseMessage = (message) => {
   return message.content.split(/\s+/);
 };
 
-export const parsePlaylistLink = (playlistLink) => {
-  if (playlistLink.includes('playlist/')) {
-    playlistLink = playlistLink.split('playlist/')[1];
-  }
-
-  if (playlistLink.includes('?')) {
-    playlistLink = playlistLink.split('?')[0];
-  }
-
-  return playlistLink;
-};
-
 export const getSong = async (url) => {
   const songData = await ytdl.getInfo(url);
   return new Song(songData);
 };
+
+export const noramlize = (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');

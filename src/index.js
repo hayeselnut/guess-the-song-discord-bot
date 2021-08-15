@@ -1,41 +1,22 @@
 import Discord from 'discord.js';
 import ytdl from 'ytdl-core';
-import SpotifyWebApi from 'spotify-web-api-node';
 import YouTube from 'discord-youtube-api';
 
+import { getSong, parseMessage } from './helpers.js';
+import Spotify from './spotify.js';
+
 import config from './config.json';
-import { getSong, parseMessage, parsePlaylistLink } from './helpers.js';
 import ServerContract from './server-contract.js';
 import Database from './database.js';
 
 const { prefix, token } = config.discord;
 const client = new Discord.Client();
 
-const { clientId, clientSecret } = config.spotify;
-const spotifyApi = new SpotifyWebApi({ clientId, clientSecret });
-
-// Retrieve an access token.
-spotifyApi.clientCredentialsGrant().then(
-  function(data) {
-    console.log('The access token expires in ' + data.body['expires_in']);
-    console.log('The access token is ' + data.body['access_token']);
-
-    // Save the access token so that it's used in future calls
-    spotifyApi.setAccessToken(data.body['access_token']);
-  },
-  function(err) {
-    console.log('Something went wrong when retrieving an access token', err);
-  },
-);
-
 const { apiKey } = config.youtube;
 const youtube = new YouTube(apiKey);
 
-// const test = async () => {
-//   const arr = await youtube.getPlaylist('https://www.youtube.com/playlist?list=PL39z-AAkkats9VE4V8gdQyIjqp21nao9p');
-//   console.log(arr);
-// };
-// test();
+const { clientId, clientSecret } = config.spotify;
+const spotify = new Spotify(clientId, clientSecret);
 
 const database = new Database();
 
@@ -60,33 +41,40 @@ client.on('message', async (message) => {
   // } else if (message.content.startsWith(`${prefix}stop`)) {
   //   stop(message);
   } else if (message.content.startsWith(`${prefix}spotify`)) {
-    readSpotifyPlaylist(message);
+    startSpotify(message);
+  } else if (message.content.startsWith(`${prefix}stop`)) {
+    message.channel.send('NOT YET IMPLEMENTED');
+  } else if (message.content.startsWith(`${prefix}pause`)) {
+    message.channel.send('NOT YET IMPLEMENTED');
+  } else if (message.content.startsWith(`${prefix}resume`)) {
+    message.channel.send('NOT YET IMPLEMENTED');
+  } else if (message.content.startsWith(`${prefix}tutorial`)) {
+    message.channel.send('NOT YET IMPLEMENTED');
+  } else if (message.content.startsWith(`${prefix}help`)) {
+    message.channel.send('NOT YET IMPLEMENTED');
+  } else if (message.content.startsWith(`${prefix}leaderboard`)) {
+    message.channel.send('NOT YET IMPLEMENTED');
   } else {
-    message.channel.send('Invalid command');
+    message.channel.send(`Invalid command. Use \`${prefix}help\` for a list of commands.`);
   }
 });
 
-const readSpotifyPlaylist = async (message) => {
+const startSpotify = async (message) => {
   const args = parseMessage(message);
-  if (args.length !== 2) return message.channel.send('Usage: `$spotify <spotify_playlist_link>`');
+
+  // TODO args can also be 3 to specify the max amount of times
+  if (args.length !== 2) return message.channel.send(`Usage: \`${prefix}spotify <spotify_playlist_link>\``);
+
 
   const playlistLink = args[1];
-  const playlistId = parsePlaylistLink(playlistLink);
+  const { name, tracks } = await spotify.getPlaylist(playlistLink);
 
-  const playlistData = await spotifyApi.getPlaylist(playlistId);
-
-  message.channel.send(`Found playlist: **${playlistData.body.name}**`);
-  const trackIds = playlistData.body.tracks.items.map((trackData) => ({
-    id: trackData.track.id,
-    name: trackData.track.name,
-    artists: trackData.track.artists.map((artistData) => artistData.name),
-  }));
-  message.channel.send('Songs in this playlist:\n' + trackIds.map((trackData) => `**${trackData.name}** - ${trackData.artists}\n`));
+  message.channel.send(`Found playlist: **${name}** (${tracks.length} songs)`);
 };
 
 const start = async (message) => {
   const args = parseMessage(message);
-  if (args.length === 1) return message.channel.send('Usage: `$start <song_name>`');
+  if (args.length === 1) return message.channel.send(`Usage: \`${prefix}start <song_name>\``);
 
   const voiceChannel = message.member.voice.channel;
   if (!voiceChannel) return message.channel.send('You need to be in a voice channel to play music');
