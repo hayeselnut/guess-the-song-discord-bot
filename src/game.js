@@ -1,14 +1,24 @@
 /* eslint-disable require-jsdoc */
-import { normalize } from './helpers.js';
-
+import { normalizeName, normalizeArtist } from './helpers.js';
 
 export default class Game {
-  constructor(tracks) {
+  constructor(message, tracks, limit) {
+    this.guildId = message.guild.id;
+    this.textChannel = message.channel;
+    this.voiceChannel = message.member.voice.channnel;
+    this.connection = null;
+
     this.tracks = tracks;
-    this.leaderboard = new Map();
     this.seen = new Set();
     this.currentTrack = '';
     this.alreadyAnswered = new Set();
+    this.limit = limit;
+    this.paused = false;
+    this.leaderboard = new Map();
+  }
+
+  startRound() {
+
   }
 
   addToLeaderboard(player) {
@@ -21,13 +31,20 @@ export default class Game {
     this.leaderboard.set(player, this.leaderboard.get(player) + 1);
   }
 
-  checkAnswer(guess) {
+  checkGuess(guess) {
+    message.channel.send(`You guessed: ${guess}`);
     if (!this.currentTrack.length) return;
 
-    const normalizedGuess = noramlize(guess);
-    const normalizedName = normalize(songs[this.currentTrack].name);
-    const normalizedArtists = songs[this.currentTrack].artists.map((artist) => normalize(artist));
+    const normalizedGuessForName = normalizeName(guess);
+    const normalizedGuessForArtist = normalizeArtist(guess);
 
+    if (normalizedGuessForName == tracks[currentTrack].normalizedName) {
+
+    }
+
+    if (tracks[currentTrack].normalizedArtist.includes(normalizedGuessForArtist)) {
+
+    }
     // if correct, add to alreadyAnswered
 
     // if final, clear already Answered and go to next song

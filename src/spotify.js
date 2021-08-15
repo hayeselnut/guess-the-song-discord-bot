@@ -1,5 +1,6 @@
 /* eslint-disable require-jsdoc */
 import SpotifyWebApi from 'spotify-web-api-node';
+import { normalizeTrack } from './helpers.js';
 
 export default class Spotify {
   constructor(clientId, clientSecret) {
@@ -21,9 +22,12 @@ export default class Spotify {
     const playlistData = await this.api.getPlaylist(playlistId);
     const tracks = await this.getTracksFromPlaylist(playlistId);
 
-    console.log(tracks);
+    // for (const track in tracks) {
+    //   console.log(tracks[track].normalizedName, tracks[track].normalizedArtists);
+    // }
 
     return {
+      id: playlistId,
       name: playlistData.body.name,
       tracks: tracks,
     };
@@ -31,12 +35,17 @@ export default class Spotify {
 
   async getTracksFromPlaylist(playlistId, offset=0) {
     const data = await this.api.getPlaylistTracks(playlistId, { offset });
-    console.log(data);
-    const tracks = data.body.items.map((trackData) => ({
-      id: trackData.track.id,
-      name: trackData.track.name,
-      artists: trackData.track.artists.map((artistData) => artistData.name),
-    })).reduce((acc, track) => {
+    console.log(`seen ${offset} songs...`);
+    const tracks = data.body.items.map((trackData) => {
+      const { normalizedName, normalizedArtists } = normalizeTrack(trackData.track.name, trackData.track.artists.map((artistData) => artistData.name));
+      return {
+        id: trackData.track.id,
+        name: trackData.track.name,
+        artists: trackData.track.artists.map((artistData) => artistData.name),
+        normalizedName,
+        normalizedArtists,
+      };
+    }).reduce((acc, track) => {
       acc[track.id] = track;
       return acc;
     }, {});
