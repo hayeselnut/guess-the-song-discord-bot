@@ -1,4 +1,6 @@
 import ytdl from 'ytdl-core';
+import { MessageEmbed } from 'discord.js';
+
 import Song from './song.js';
 
 export const parseMessage = (message) => {
@@ -19,12 +21,16 @@ export const normalizeName = (str) =>
     .replace(/-.*/g, '')
     .replace(/feat\. .*/g)
     .replace(/ft\. .*/g)
+    .replace(' & ', ' and ')
     .replace(/[^a-z0-9]/g, '');
 
 export const normalizeArtist = (str) =>
   str.normalize('NFD')
-    .replace('$', 's') // A$AP ROCKY
     .toLowerCase()
+    .replace(' & ', ' and ')
+    .replace('a$ap', 'asap') // A$AP Rocky
+    .replace('mø', 'mo') // MØ
+    .replace('p!nk', 'pink') // P!nk
     .replace(/[^a-z0-9]/g, '');
 
 export const normalizeTrack = (name, artists) => {
@@ -36,4 +42,14 @@ export const normalizeTrack = (name, artists) => {
   }
 
   return { normalizedName, normalizedArtists };
+};
+
+export const shuffle = (arr) => arr.sort(() => Math.random() - 0.5);
+
+export const sleep = async (ms) => await new Promise((resolve) => setTimeout(resolve, ms));
+
+export const tag = (author) => `<@${author.id}>`;
+
+export const sendEmbed = (channel, msg) => {
+  channel.send({ embed: new MessageEmbed().setDescription(msg) });
 };

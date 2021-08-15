@@ -35,13 +35,15 @@ export default class Spotify {
 
   async getTracksFromPlaylist(playlistId, offset=0) {
     const data = await this.api.getPlaylistTracks(playlistId, { offset });
-    console.log(`seen ${offset} songs...`);
     const tracks = data.body.items.map((trackData) => {
-      const { normalizedName, normalizedArtists } = normalizeTrack(trackData.track.name, trackData.track.artists.map((artistData) => artistData.name));
+      const { normalizedName, normalizedArtists } = normalizeTrack(
+        trackData.track.name, trackData.track.artists.map((artistData) => artistData.name),
+      );
       return {
         id: trackData.track.id,
         name: trackData.track.name,
         artists: trackData.track.artists.map((artistData) => artistData.name),
+        img: trackData.track.album.images[0]?.url,
         normalizedName,
         normalizedArtists,
       };
@@ -50,7 +52,9 @@ export default class Spotify {
       return acc;
     }, {});
 
-    return data.body.next ? { ...tracks, ...(await this.getTracksFromPlaylist(playlistId, data.body.offset + data.body.limit)) } : tracks;
+    return data.body.next
+      ? { ...tracks, ...(await this.getTracksFromPlaylist(playlistId, data.body.offset + data.body.limit)) }
+      : tracks;
   }
 
   parsePlaylistLink(playlistLink) {

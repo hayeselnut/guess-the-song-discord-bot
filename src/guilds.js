@@ -11,9 +11,6 @@ export default class Guilds {
 
   getGame(message) {
     const game = this.ongoingGames.get(message.guild.id);
-    console.log(this.ongoingGames);
-
-    console.log(game?.textChannel?.id, message.channel.id);
     return game?.textChannel?.id == message.channel.id ? game : undefined;
   }
 
