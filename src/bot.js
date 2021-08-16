@@ -19,7 +19,7 @@ const youtube = new YouTube(apiKey);
 
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-const spotify = new Spotify(clientId, clientSecret);
+const spotify = new Spotify(clientId, clientSecret, youtube);
 
 const guilds = new Guilds();
 
@@ -70,7 +70,6 @@ const readCommand = async (message) => {
     }
     ongoingGame.finishGame();
     guilds.stopGame(message);
-    sendEmbed(message.channel, 'Game has been stopped! Results have NOT been saved //TODO!.');
   } else if (message.content.startsWith(`${prefix}pause`)) {
     if (!ongoingGame) {
       return sendEmbed(message.channel, 'Nothing to pause here!');
