@@ -1,12 +1,21 @@
 {
   "type": "module",
+  "name": "guess-the-song-discord-bot",
+  "version": "1.0.0",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node src/bot.js",
+    "devStart": "nodemon src/bot.js"
+  },
   "dependencies": {
     "@discordjs/opus": "^0.5.3",
     "discord-youtube-api": "^0.1.0",
     "discord.js": "^12.5.3",
+    "dotenv": "^10.0.0",
     "ffmpeg": "^0.0.4",
     "ffmpeg-static": "^4.4.0",
     "fluent-ffmpeg": "^2.1.2",
+    "nodemon": "^2.0.12",
     "spotify-web-api-node": "^5.0.2",
     "ytdl-core": "^4.9.0"
   },

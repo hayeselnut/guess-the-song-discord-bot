@@ -1,21 +1,25 @@
 import Discord from 'discord.js';
 import ytdl from 'ytdl-core';
 import YouTube from 'discord-youtube-api';
+import { config } from 'dotenv';
 
 import { getSong, parseMessage, sendEmbed } from './helpers.js';
 import Spotify from './spotify.js';
 
-import config from './config.json';
 import Guilds from './guilds.js';
 import Game from './game.js';
 
-const { prefix, token } = config.discord;
+config();
+
+const prefix = '$';
+const token = process.env.DISCORD_BOT_TOKEN;
 const client = new Discord.Client();
 
-const { apiKey } = config.youtube;
+const apiKey = process.env.YOUTUBE_API_KEY;
 const youtube = new YouTube(apiKey);
 
-const { clientId, clientSecret } = config.spotify;
+const clientId = process.env.SPOTIFY_CLIENT_ID;
+const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 const spotify = new Spotify(clientId, clientSecret);
 
 const guilds = new Guilds();
