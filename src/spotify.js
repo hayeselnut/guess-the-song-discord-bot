@@ -22,12 +22,6 @@ export default class Spotify {
     const playlistData = await this.api.getPlaylist(playlistId);
     const tracks = await this.getTracksFromPlaylist(playlistId);
 
-    // for (const track in tracks) {
-    //   console.log(tracks[track].normalizedName, tracks[track].normalizedArtists);
-    // }
-
-    console.log(playlistData.body.images);
-
     return {
       id: playlistId,
       name: playlistData.body.name,

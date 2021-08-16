@@ -1,9 +1,8 @@
 import Discord, { MessageEmbed } from 'discord.js';
-import ytdl from 'ytdl-core';
 import YouTube from 'discord-youtube-api';
 import { config } from 'dotenv';
 
-import { getSong, parseMessage, sendEmbed } from './helpers.js';
+import { parseMessage, sendEmbed } from './helpers.js';
 import Spotify from './spotify.js';
 
 import Guilds from './guilds.js';
@@ -50,29 +49,42 @@ client.on('message', async (message) => {
 const readCommand = async (message) => {
   const ongoingGame = guilds.getGame(message);
   if (message.content.startsWith(`${prefix}start`)) {
-    // start(message, serverQueue);
-    sendEmbed(message.channel, 'NOT YET IMPLEMENTED');
+    if (guilds.has(message.guild.id)) {
+      return sendEmbed(message.channel, `There's already a game running!`);
+    }
 
-    // } else if (message.content.startsWith(`${prefix}stop`)) {
-    //   stop(message);
-  } else if (message.content.startsWith(`${prefix}ongoing`)) {
-    sendEmbed(message.channel, `${!!ongoingGame}`);
-  } else if (message.content.startsWith(`${prefix}spotify`)) {
-    if (guilds.has(message.guild.id)) return sendEmbed(message.channel, `There's already a game running!`);
+    const voiceChannel = message.member.voice.channel;
+    if (!voiceChannel) {
+      return sendEmbed(message.channel, 'You need to be in a voice channel to play music');
+    }
+    const permissions = voiceChannel.permissionsFor(message.client.user);
+    if (!permissions.has('CONNECT') || !permissions.has('SPEAK')) {
+      return sendEmbed(message.channel, 'I need the permissions to join and speak in your voice channel');
+    }
+
     const game = await startSpotify(message);
     guilds.startGame(message, game);
   } else if (message.content.startsWith(`${prefix}stop`)) {
-    if (!ongoingGame) return sendEmbed(message.channel, 'Nothing to stop here!');
+    if (!ongoingGame) {
+      return sendEmbed(message.channel, 'Nothing to stop here!');
+    }
+    ongoingGame.finishGame();
     guilds.stopGame(message);
     sendEmbed(message.channel, 'Game has been stopped! Results have NOT been saved //TODO!.');
   } else if (message.content.startsWith(`${prefix}pause`)) {
-    if (!ongoingGame) return sendEmbed(message.channel, 'Nothing to pause here!');
+    if (!ongoingGame) {
+      return sendEmbed(message.channel, 'Nothing to pause here!');
+    }
     ongoingGame.pauseGame();
   } else if (message.content.startsWith(`${prefix}resume`)) {
-    if (!ongoingGame) return sendEmbed(message.channel, 'Nothing to resume here!');
+    if (!ongoingGame) {
+      return sendEmbed(message.channel, 'Nothing to resume here!');
+    }
     ongoingGame.resumeGame();
   } else if (message.content.startsWith(`${prefix}skip`)) {
-    if (!ongoingGame) return sendEmbed(message.channel, 'Nothing to skip here!');
+    if (!ongoingGame) {
+      return sendEmbed(message.channel, 'Nothing to skip here!');
+    }
     ongoingGame.skipRound();
   } else if (message.content.startsWith(`${prefix}tutorial`)) {
     sendEmbed(message.channel, 'NOT YET IMPLEMENTED');
@@ -90,7 +102,7 @@ const startSpotify = async (message) => {
 
   // TODO args can also be 3 to specify the max amount of times
   if (args.length !== 2 && args.length !== 3) {
-    return sendEmbed(message.channel, `Usage: \`${prefix}spotify <spotify_playlist_link>\``);
+    return sendEmbed(message.channel, `Usage: \`${prefix}start <spotify_playlist_link>\``);
   }
 
   const playlistLink = args[1];
@@ -105,20 +117,25 @@ const startSpotify = async (message) => {
     .setImage(img);
   message.channel.send({ embed: playlistEmbed });
 
-  return new Game(message, tracks, Math.min(tracksLength, customLimit));
+  return new Game(message, tracks, Math.min(tracksLength, customLimit), youtube);
 };
 
-// const start = async (message) => {
-//   const args = parseMessage(message);
-//   if (args.length === 1) return sendEmbed(message.channel, `Usage: \`${prefix}start <song_name>\``);
+// const play = async (message) => {
+//   // Join
+//   try {
+//     const connection = await voiceChannel.join();
+//     // Search using query
+//     const youtubeQuery = args.slice(1).join(' ');
+//     const video = await youtube.searchVideos(youtubeQuery);
+//     console.log('playing' + video.title);
 
-//   const voiceChannel = message.member.voice.channel;
-//   if (!voiceChannel) return sendEmbed(message.channel, 'You need to be in a voice channel to play music');
-
-//   const permissions = voiceChannel.permissionsFor(message.client.user);
-//   if (!permissions.has('CONNECT') || !permissions.has('SPEAK')) {
-//     return sendEmbed(message.channel, 'I need the permissions to join and speak in your voice channel');
+//     const dispatcher = connection.play(ytdl(video.url, { filter: 'audioonly' }));
+//     console.log(dispatcher, connection);
+//     // dispatcher.
+//   } catch (err) {
+//     console.log(err);
 //   }
+// };
 
 //   const song = await getSong(args[1]);
 // };

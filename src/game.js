@@ -1,49 +1,76 @@
 /* eslint-disable require-jsdoc */
 import { MessageEmbed } from 'discord.js';
 
+import ytdl from 'ytdl-core';
+
 import { normalizeName, normalizeArtist, shuffle, sleep, tag, sendEmbed } from './helpers.js';
 
+const SONG_INDEX = -1;
+
 export default class Game {
-  constructor(message, tracks, limit) {
+  constructor(message, tracks, limit, youtube) {
     this.guildId = message.guild.id;
     this.textChannel = message.channel;
-    this.voiceChannel = message.member.voice.channnel;
+    this.voiceChannel = message.member.voice.channel;
     this.connection = null;
+
+    this.youtube = youtube;
 
     this.tracks = tracks;
     this.order = shuffle(Object.keys(tracks));
     this.curr = 0;
     this.currTrack = this.tracks[this.order[this.curr]];
     this.answered = new Map();
+    // -1 is song
+    // 0..n-1 is for each of the n artists
     this.availablePoints = this.currTrack.artists.length + 1;
     this.limit = limit;
     this.playing = false;
     this.paused = false;
     this.leaderboard = new Map();
 
-    this.connectToVoiceChannel();
     this.startRound();
   }
 
   async connectToVoiceChannel() {
+    if (this.connection) return;
 
+    try {
+      this.connection = await this.voiceChannel.join();
+    } catch (err) {
+      console.error(err);
+      this.connection = null;
+    }
+  }
+
+  async playTrack() {
+    const youtubeQuery = `${this.currTrack.name} ${this.currTrack.artists.join(' ')}`;
+    const video = await this.youtube.searchVideos(youtubeQuery);
+    this.connection.play(ytdl(video.url, { filter: 'audioonly' }), { seek: Math.floor(Math.random() * 15) });
+    this.playing = true;
   }
 
   async startRound() {
     if (this.curr >= this.limit) return this.finishGame();
 
+    await this.connectToVoiceChannel();
+    if (!this.connection) {
+      sendEmbed('Could not join voice channel');
+      return this.finishGame();
+    }
+
     this.playing = false;
     this.currTrack = this.tracks[this.order[this.curr]];
     this.availablePoints = this.currTrack.artists.length + 1;
     this.answered.clear();
-    this.answered.set('#song', '');
-    this.currTrack.artists.forEach((artist) => this.answered.set(artist, ''));
+    this.answered.set(SONG_INDEX, '');
+    this.currTrack.artists.forEach((artist, index) => this.answered.set(index, ''));
 
+    this.playTrack();
     sendEmbed(this.textChannel, `[${this.curr + 1}/${this.limit}] Starting next song in 2 seconds...`);
     await sleep(2000);
 
-    this.playing = true;
-    this.textChannel.send(`The song is **${this.currTrack.name}**`);
+    console.log(this.currTrack);
   }
 
   addPoint(author) {
@@ -53,14 +80,13 @@ export default class Game {
 
   checkGuess(message) {
     const guess = message.content;
-    console.log(this.answered);
     if (!this.playing) return;
 
     const normalizedGuessForName = normalizeName(guess);
     const normalizedGuessForArtist = normalizeArtist(guess);
 
-    if (!this.answered.get('#song') && normalizedGuessForName == this.currTrack.normalizedName) {
-      this.answered.set('#song', tag(message.author));
+    if (!this.answered.get(SONG_INDEX) && normalizedGuessForName == this.currTrack.normalizedName) {
+      this.answered.set(SONG_INDEX, tag(message.author));
       this.availablePoints--;
       this.addPoint(message.author);
       this.displayProgress();
@@ -70,7 +96,7 @@ export default class Game {
       if (this.answered.get(artist)) return;
       if (artist != normalizedGuessForArtist) return;
 
-      this.answered.set(this.currTrack.artists[index], tag(message.author));
+      this.answered.set(index, tag(message.author));
       this.availablePoints--;
       this.addPoint(message.author);
       this.displayProgress();
@@ -87,14 +113,14 @@ export default class Game {
   }
 
   displayProgress(final=false) {
-    const nameProgress = this.answered.get('#song')
-      ? `✅ Song: **${this.currTrack.name}** guessed correctly by ${this.answered.get('#song')} (+1)`
+    const nameProgress = this.answered.get(SONG_INDEX)
+      ? `✅ Song: **${this.currTrack.name}** guessed correctly by ${this.answered.get(SONG_INDEX)} (+1)`
       : final
         ? `❌ Song: **${this.currTrack.name}**`
         : `⬜ Song: **???**`;
-    const artistsProgress = this.currTrack.artists.map((artist) => (
-      this.answered.get(artist)
-        ? `✅ Artist: **${artist}** guessed correctly by ${this.answered.get(artist)} (+1)`
+    const artistsProgress = this.currTrack.artists.map((artist, index) => (
+      this.answered.get(index)
+        ? `✅ Artist: **${artist}** guessed correctly by ${this.answered.get(index)} (+1)`
         : final
           ? `❌ Artist: **${artist}**`
           : `⬜ Artist: **???**`
@@ -140,6 +166,8 @@ export default class Game {
 
   finishGame() {
     this.curr = this.limit;
+    this.connection = null;
+    this.voiceChannel.leave();
     const sorted = [...this.leaderboard.entries()]
       .sort(([, aPoints], [, bPoints]) => aPoints > bPoints);
 

@@ -22,6 +22,7 @@ export const normalizeName = (str) =>
     .replace(/feat\. .*/g)
     .replace(/ft\. .*/g)
     .replace(' & ', ' and ')
+    .replace('f**k', 'fuck') // F**king Perfect
     .replace(/[^a-z0-9]/g, '');
 
 export const normalizeArtist = (str) =>
