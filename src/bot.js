@@ -1,5 +1,4 @@
 import Discord, { MessageEmbed } from 'discord.js';
-import YouTube from 'discord-youtube-api';
 import { config } from 'dotenv';
 
 import { parseMessage, sendEmbed } from './helpers.js';
@@ -14,12 +13,10 @@ const prefix = '$';
 const token = process.env.DISCORD_BOT_TOKEN;
 const client = new Discord.Client();
 
-const apiKey = process.env.YOUTUBE_API_KEY;
-const youtube = new YouTube(apiKey);
 
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-const spotify = new Spotify(clientId, clientSecret, youtube);
+const spotify = new Spotify(clientId, clientSecret);
 
 const guilds = new Guilds();
 
@@ -116,60 +113,7 @@ const startSpotify = async (message) => {
     .setImage(img);
   message.channel.send({ embed: playlistEmbed });
 
-  return new Game(message, tracks, Math.min(tracksLength, customLimit), youtube);
+  return new Game(message, tracks, Math.min(tracksLength, customLimit));
 };
-
-// const play = async (message) => {
-//   // Join
-//   try {
-//     const connection = await voiceChannel.join();
-//     // Search using query
-//     const youtubeQuery = args.slice(1).join(' ');
-//     const video = await youtube.searchVideos(youtubeQuery);
-//     console.log('playing' + video.title);
-
-//     const dispatcher = connection.play(ytdl(video.url, { filter: 'audioonly' }));
-//     console.log(dispatcher, connection);
-//     // dispatcher.
-//   } catch (err) {
-//     console.log(err);
-//   }
-// };
-
-//   const song = await getSong(args[1]);
-// };
-
-//   const contract = database.getContractForGuild(message);
-//   contract.enqueue(song);
-//   sendEmbed(message.channel, `**${song.title}** has been added to the queue`);
-
-//   try {
-//     serverContract.connect(voiceChannel);
-//     play(message.guild, serverContract.songs[0]);
-//   } catch (err) {
-//     return sendEmbed(message.channel, err);
-//   }
-// };
-
-// const play = (guild, song) => {
-// // TODO
-//   const contract = database.getContractForGuild(message);
-
-//   if (!song) {
-//     serverContract.voiceChannel.leave();
-//     database.delete(guild.id);
-//     return;
-//   }
-
-//   const dispatcher = serverContract.connection
-//     .play(ytdl(song.url))
-//     .on('finish', () => {
-//       serverContract.songs.shift();
-//       play(guild, serverContract.songs[0]);
-//     })
-//     .on('error', (error) => console.error(error));
-//   dispatcher.setVolumeLogarithmic(serverContract.volume / 5);
-//   serverContract.textChannel.send(`Start playing: **${song.title}**`);
-// };
 
 client.login(token);

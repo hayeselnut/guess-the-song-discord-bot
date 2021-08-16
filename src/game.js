@@ -1,5 +1,6 @@
 /* eslint-disable require-jsdoc */
 import { MessageEmbed } from 'discord.js';
+import yts from 'yt-search';
 
 import ytdl from 'ytdl-core';
 
@@ -8,18 +9,20 @@ import { normalizeName, normalizeArtist, shuffle, sleep, tag, sendEmbed } from '
 const SONG_INDEX = -1;
 
 export default class Game {
-  constructor(message, tracks, limit, youtube) {
+  constructor(message, tracks, limit) {
     this.guildId = message.guild.id;
     this.textChannel = message.channel;
     this.voiceChannel = message.member.voice.channel;
     this.connection = null;
 
-    this.youtube = youtube;
+    // this.youtube = youtube;
     this.timeout = null;
 
     this.tracks = tracks;
     this.limit = limit;
     this.order = shuffle(Object.keys(tracks)).slice(0, this.limit);
+    this.streamsBuffer = []; // Buffer of next 3 streams
+    this.streamsBufferLimit = 3;
     this.streams = [];
     this.curr = 0;
     this.currTrack = this.tracks[this.order[this.curr]];
@@ -35,18 +38,19 @@ export default class Game {
   }
 
   async startGame() {
-    try {
-      this.streams = (await Promise.all(this.order.map((trackId) => {
-        const track = this.tracks[trackId];
-        const youtubeQuery = `${track.name} ${track.artists.join(' ')}`;
-        console.log(youtubeQuery);
-        return this.youtube.searchVideos(youtubeQuery);
-      }))).map((video) => ytdl(video.url, { filter: 'audioonly' }));
-    } catch (err) {
-      console.error(err);
+    // Load buffer of next 3 streams
+    for (let i = 0; i < Math.min(this.streamsBufferLimit, this.limit); i++) {
+      await this.loadStream(i);
     }
-
+    await this.connectToVoiceChannel();
     this.startRound();
+  }
+
+  async loadStream(index) {
+    const track = this.tracks[this.order[index]];
+    const youtubeQuery = `${track.name} ${track.artists.join(' ')}`;
+    const video = (await yts(youtubeQuery)).videos[0];
+    this.streamsBuffer.push(ytdl(video.url, { filter: 'audioonly' }));
   }
 
   async connectToVoiceChannel() {
@@ -61,7 +65,12 @@ export default class Game {
   }
 
   async playTrack() {
-    this.connection.play(this.streams[this.curr], { seek: Math.floor(Math.random() * 30) + 30 });
+    // Load next next song (if possible)
+    if (this.curr + this.streamsBufferLimit < this.limit) {
+      this.loadStream(this.curr + this.streamsBufferLimit);
+    }
+    this.connection.play(this.streamsBuffer.shift(), { seek: Math.floor(Math.random() * 30) + 30 });
+
     this.playing = true;
     clearTimeout(this.timeout);
     this.timeout = setTimeout(() => {
@@ -72,9 +81,8 @@ export default class Game {
   async startRound() {
     if (this.curr >= this.limit) return this.finishGame();
 
-    await this.connectToVoiceChannel();
     if (!this.connection) {
-      sendEmbed('Could not join voice channel');
+      sendEmbed(this.textChannel, 'Could not join voice channel');
       return this.finishGame();
     }
 
@@ -86,9 +94,7 @@ export default class Game {
     this.currTrack.artists.forEach((artist, index) => this.answered.set(index, ''));
 
     this.playTrack();
-    sendEmbed(this.textChannel, `[${this.curr + 1}/${this.limit}] Starting next song in 2 seconds...`);
-    await sleep(2000);
-
+    sendEmbed(this.textChannel, `[${this.curr + 1}/${this.limit}] Starting next song...`);
     console.log(this.currTrack);
   }
 
@@ -158,7 +164,7 @@ export default class Game {
       .setDescription(`${nameProgress}\n${artistsProgress}`);
     if (!this.availablePoints || reason) {
       const sortedLeaderboard = [...this.leaderboard.entries()]
-        .sort(([, aPoints], [, bPoints]) => aPoints > bPoints)
+        .sort(([, aPoints], [, bPoints]) => bPoints - aPoints)
         .map(([authorTag, points], index) => `**${index + 1}**. (${points}) ${authorTag}`)
         .join('\n');
 
@@ -199,7 +205,7 @@ export default class Game {
     clearTimeout(this.timeout);
     this.voiceChannel.leave();
     const sorted = [...this.leaderboard.entries()]
-      .sort(([, aPoints], [, bPoints]) => aPoints < bPoints);
+      .sort(([, aPoints], [, bPoints]) => bPoints - aPoints);
 
     if (sorted[0]) {
       const [authorTag]= sorted[0];

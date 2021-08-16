@@ -23,7 +23,7 @@ export const normalizeName = (str) =>
     .replace(/ft\. .*/g)
     .replace(' & ', ' and ')
     .replace('f**k', 'fuck') // F**king Perfect
-    .replace(/[^a-z0-9]/g, '');
+    .replace(/[^a-z0-9]/g, '') || str;
 
 export const normalizeArtist = (str) =>
   str.normalize('NFD')
@@ -32,7 +32,7 @@ export const normalizeArtist = (str) =>
     .replace('a$ap', 'asap') // A$AP Rocky
     .replace('mø', 'mo') // MØ
     .replace('p!nk', 'pink') // P!nk
-    .replace(/[^a-z0-9]/g, '');
+    .replace(/[^a-z0-9]/g, '') || str;
 
 export const normalizeTrack = (name, artists) => {
   const normalizedArtists = artists.map((artist) => normalizeArtist(artist));
