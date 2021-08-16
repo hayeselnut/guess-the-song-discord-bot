@@ -26,9 +26,12 @@ export default class Spotify {
     //   console.log(tracks[track].normalizedName, tracks[track].normalizedArtists);
     // }
 
+    console.log(playlistData.body.images);
+
     return {
       id: playlistId,
       name: playlistData.body.name,
+      img: playlistData.body.images[0]?.url,
       tracks: tracks,
     };
   }

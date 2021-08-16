@@ -1,4 +1,4 @@
-import Discord from 'discord.js';
+import Discord, { MessageEmbed } from 'discord.js';
 import ytdl from 'ytdl-core';
 import YouTube from 'discord-youtube-api';
 import { config } from 'dotenv';
@@ -78,8 +78,8 @@ const readCommand = async (message) => {
     sendEmbed(message.channel, 'NOT YET IMPLEMENTED');
   } else if (message.content.startsWith(`${prefix}help`)) {
     sendEmbed(message.channel, 'NOT YET IMPLEMENTED');
-  } else if (message.content.startsWith(`${prefix}leaderboard`)) {
-    sendEmbed(message.channel, 'NOT YET IMPLEMENTED');
+  // } else if (message.content.startsWith(`${prefix}leaderboard`)) {
+  //   sendEmbed(message.channel, 'NOT YET IMPLEMENTED');
   } else {
     sendEmbed(message.channel, `Invalid command. Use \`${prefix}help\` for a list of commands.`);
   }
@@ -96,9 +96,14 @@ const startSpotify = async (message) => {
   const playlistLink = args[1];
   const customLimit = args[2] || Infinity;
 
-  const { name, tracks } = await spotify.getPlaylist(playlistLink);
+  const { name, img, tracks } = await spotify.getPlaylist(playlistLink);
   const tracksLength = Object.keys(tracks).length;
-  sendEmbed(message.channel, `Found playlist: **${name}** (${tracksLength} songs)`);
+
+  const playlistEmbed = new MessageEmbed()
+    .setTitle(name)
+    .setDescription(`Loading ${tracksLength} songs...`)
+    .setImage(img);
+  message.channel.send({ embed: playlistEmbed });
 
   return new Game(message, tracks, Math.min(tracksLength, customLimit));
 };

@@ -21,7 +21,12 @@ export default class Game {
     this.paused = false;
     this.leaderboard = new Map();
 
+    this.connectToVoiceChannel();
     this.startRound();
+  }
+
+  async connectToVoiceChannel() {
+
   }
 
   async startRound() {
@@ -74,8 +79,6 @@ export default class Game {
     if (this.availablePoints) return;
 
     this.curr++;
-    this.displayLeaderboard();
-    console.log(this.leaderboard);
     if (!this.paused) {
       this.startRound();
     } else {
@@ -99,21 +102,17 @@ export default class Game {
 
     const progressEmbed = new MessageEmbed().setDescription(`${nameProgress}\n${artistsProgress}`);
     if (!this.availablePoints || final) {
-      progressEmbed.setThumbnail(this.currTrack.img);
+      const sortedLeaderboard = [...this.leaderboard.entries()]
+        .sort(([, aPoints], [, bPoints]) => aPoints > bPoints)
+        .map(([authorTag, points], index) => `**${index + 1}**. (${points}) ${authorTag}`)
+        .join('\n');
+
+      progressEmbed
+        .setThumbnail(this.currTrack.img)
+        .addField('\u200B', '\u200B')
+        .addField('🏆 Leaderboard', sortedLeaderboard);
     }
     this.textChannel.send({ embed: progressEmbed });
-  }
-
-  displayLeaderboard() {
-    const sorted = [...this.leaderboard.entries()]
-      .sort(([, aPoints], [, bPoints]) => aPoints > bPoints)
-      .map(([authorTag, points], index) => `${index + 1}. (${points}) ${authorTag}`)
-      .join('\n');
-
-    this.textChannel.send({ embed: new MessageEmbed()
-      .setTitle('🏆 Leaderboard')
-      .setDescription(sorted),
-    });
   }
 
   pauseGame() {
@@ -130,20 +129,17 @@ export default class Game {
 
     this.paused = false;
     sendEmbed(this.textChannel, '▶️ Resuming game...');
-
     this.startRound();
   }
 
   skipRound() {
     this.curr++;
-
     this.displayProgress(true);
-    this.displayLeaderboard();
-
     this.startRound();
   }
 
   finishGame() {
+    this.curr = this.limit;
     const sorted = [...this.leaderboard.entries()]
       .sort(([, aPoints], [, bPoints]) => aPoints > bPoints);
 
