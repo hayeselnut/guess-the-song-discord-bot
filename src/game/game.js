@@ -1,21 +1,22 @@
 /* eslint-disable require-jsdoc */
 import { MessageEmbed } from 'discord.js';
 import yts from 'yt-search';
-
 import ytdl from 'ytdl-core';
 
-import { normalizeName, normalizeArtist, shuffle, sleep, tag, sendEmbed } from './helpers.js';
+import { tag, sendEmbed } from '../helpers/discord-helpers.js';
+import { shuffle } from '../helpers/helpers.js';
+import { removeAdditionalInformation, normalize } from '../helpers/normalize-helpers.js';
 
 const SONG_INDEX = -1;
 
 export default class Game {
   constructor(message, tracks, limit) {
+    // Discord things
     this.guildId = message.guild.id;
     this.textChannel = message.channel;
     this.voiceChannel = message.member.voice.channel;
     this.connection = null;
 
-    // this.youtube = youtube;
     this.timeout = null;
 
     this.tracks = tracks;
@@ -23,7 +24,6 @@ export default class Game {
     this.order = shuffle(Object.keys(tracks)).slice(0, this.limit);
     this.streamsBuffer = []; // Buffer of next 3 streams
     this.streamsBufferLimit = 3;
-    this.streams = [];
     this.curr = 0;
     this.currTrack = this.tracks[this.order[this.curr]];
     this.answered = new Map();
@@ -107,8 +107,8 @@ export default class Game {
     const guess = message.content;
     if (!this.playing) return;
 
-    const normalizedGuessForName = normalizeName(guess);
-    const normalizedGuessForArtist = normalizeArtist(guess);
+    const normalizedGuessForName = normalize(guess, 'name');
+    const normalizedGuessForArtist = normalize(guess, 'artist');
 
     if (!this.answered.get(SONG_INDEX) && normalizedGuessForName == this.currTrack.normalizedName) {
       this.answered.set(SONG_INDEX, tag(message.author));
@@ -138,13 +138,7 @@ export default class Game {
   }
 
   displayProgress(reason='') {
-    const displayName = this.currTrack.name
-      .replace(/\(.*/g, '')
-      .replace(/\[.*/g, '')
-      .replace(/\{.*/g, '')
-      .replace(/-.*/g, '')
-      .replace(/feat\. .*/g)
-      .replace(/ft\. .*/g);
+    const displayName = removeAdditionalInformation(this.currTrack.name);
 
     const nameProgress = this.answered.get(SONG_INDEX)
       ? `✅ Song: **${displayName}** guessed correctly by ${this.answered.get(SONG_INDEX)} (+1)`

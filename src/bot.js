@@ -1,11 +1,11 @@
 import Discord, { MessageEmbed } from 'discord.js';
 import { config } from 'dotenv';
 
-import { parseMessage, sendEmbed } from './helpers.js';
 import Spotify from './spotify.js';
 
 import Guilds from './guilds.js';
 import Game from './game.js';
+import { parseMessage, sendEmbed } from './helpers/discord-helpers.js';
 
 config();
 
