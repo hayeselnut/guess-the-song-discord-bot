@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "main": "bot.js",
   "scripts": {
-    "start": "node src/bot.js"
+    "start": "node --experimental-json-modules src/bot.js"
   },
   "dependencies": {
     "@discordjs/opus": "^0.5.3",
