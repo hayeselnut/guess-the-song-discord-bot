@@ -1,10 +1,9 @@
-import Discord, { MessageEmbed } from 'discord.js';
+import Discord from 'discord.js';
 import { config } from 'dotenv';
 
 import Spotify from './spotify.js';
 
-import Guilds from './guilds.js';
-import Game from './game.js';
+import GameManager from './game-manager.js';
 import { parseMessage, sendEmbed } from './helpers/discord-helpers.js';
 
 config();
@@ -13,12 +12,11 @@ const prefix = '$';
 const token = process.env.DISCORD_BOT_TOKEN;
 const client = new Discord.Client();
 
-
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 const spotify = new Spotify(clientId, clientSecret);
 
-const guilds = new Guilds();
+const gameManager = new GameManager(spotify);
 
 client.once('ready', () => {
   console.log('Ready!');
@@ -32,56 +30,38 @@ client.once('disconnect', () => {
   console.log('Disconnect!');
 });
 
-client.on('message', async (message) => {
+client.on('message', (message) => {
   if (message.author.bot) return;
 
   if (message.content.startsWith(prefix)) {
     readCommand(message);
   } else {
-    const game = guilds.getGame(message);
+    const game = gameManager.getGame(message);
     game?.checkGuess(message);
   }
 });
 
-const readCommand = async (message) => {
-  const ongoingGame = guilds.getGame(message);
+const readCommand = (message) => {
+  const ongoingGame = gameManager.getGame(message);
   if (message.content.startsWith(`${prefix}start`)) {
-    if (guilds.has(message.guild.id)) {
-      return sendEmbed(message.channel, `There's already a game running!`);
-    }
-
-    const voiceChannel = message.member.voice.channel;
-    if (!voiceChannel) {
-      return sendEmbed(message.channel, 'You need to be in a voice channel to play music');
-    }
-    const permissions = voiceChannel.permissionsFor(message.client.user);
-    if (!permissions.has('CONNECT') || !permissions.has('SPEAK')) {
-      return sendEmbed(message.channel, 'I need the permissions to join and speak in your voice channel');
-    }
-
-    const game = await startSpotify(message);
-    guilds.startGame(message, game);
+    start(message);
   } else if (message.content.startsWith(`${prefix}stop`)) {
-    if (!ongoingGame) {
-      return sendEmbed(message.channel, 'Nothing to stop here!');
-    }
-    ongoingGame.finishGame();
-    guilds.stopGame(message);
+    stop(message, ongoingGame);
   } else if (message.content.startsWith(`${prefix}pause`)) {
-    if (!ongoingGame) {
-      return sendEmbed(message.channel, 'Nothing to pause here!');
-    }
-    ongoingGame.pauseGame();
+    // if (!ongoingGame) {
+    //   return sendEmbed(message.channel, 'Nothing to pause here!');
+    // }
+    // ongoingGame.pauseGame();
   } else if (message.content.startsWith(`${prefix}resume`)) {
-    if (!ongoingGame) {
-      return sendEmbed(message.channel, 'Nothing to resume here!');
-    }
-    ongoingGame.resumeGame();
+    // if (!ongoingGame) {
+    //   return sendEmbed(message.channel, 'Nothing to resume here!');
+    // }
+    // ongoingGame.resumeGame();
   } else if (message.content.startsWith(`${prefix}skip`)) {
-    if (!ongoingGame) {
-      return sendEmbed(message.channel, 'Nothing to skip here!');
-    }
-    ongoingGame.skipRound();
+    // if (!ongoingGame) {
+    //   return sendEmbed(message.channel, 'Nothing to skip here!');
+    // }
+    // ongoingGame.skipRound();
   } else if (message.content.startsWith(`${prefix}tutorial`)) {
     sendEmbed(message.channel, 'NOT YET IMPLEMENTED');
   } else if (message.content.startsWith(`${prefix}help`)) {
@@ -93,27 +73,38 @@ const readCommand = async (message) => {
   }
 };
 
-const startSpotify = async (message) => {
+const start = async (message) => {
   const args = parseMessage(message);
-
-  // TODO args can also be 3 to specify the max amount of times
   if (args.length !== 2 && args.length !== 3) {
     return sendEmbed(message.channel, `Usage: \`${prefix}start <spotify_playlist_link>\``);
   }
 
+  if (gameManager.has(message.guild.id)) {
+    return sendEmbed(message.channel, `There's already a game running!`);
+  }
+
+  const voiceChannel = message.member.voice.channel;
+  if (!voiceChannel) {
+    return sendEmbed(message.channel, 'You need to be in a voice channel to play music');
+  }
+
+  const permissions = voiceChannel.permissionsFor(message.client.user);
+  if (!permissions.has('CONNECT') || !permissions.has('SPEAK')) {
+    return sendEmbed(message.channel, 'I need the permissions to join and speak in your voice channel');
+  }
+
   const playlistLink = args[1];
-  const customLimit = args[2] || Infinity;
-
+  const roundLimit = args[2] || Infinity;
   const { name, img, tracks } = await spotify.getPlaylist(playlistLink);
-  const tracksLength = Object.keys(tracks).length;
 
-  const playlistEmbed = new MessageEmbed()
-    .setTitle(name)
-    .setDescription(`Loading ${tracksLength} songs...`)
-    .setImage(img);
-  message.channel.send({ embed: playlistEmbed });
+  gameManager.initializeGame(message, name, img, tracks, roundLimit);
+};
 
-  return new Game(message, tracks, Math.min(tracksLength, customLimit));
+const stop = (message, ongoingGame) => {
+  if (!ongoingGame) {
+    return sendEmbed(message.channel, 'Nothing to stop here!');
+  }
+  gameManager.finishGame(message.guild.id);
 };
 
 client.login(token);
