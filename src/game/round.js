@@ -40,11 +40,11 @@ export default class Round {
     sendEmbed(this.textChannel, this.guesses.toString());
   }
 
-  endRound(useCallback=true) {
+  endRound(useCallback=true, title) {
     clearTimeout(this.timeout);
 
     if (!useCallback) return;
-    this.callback();
+    this.callback(title);
   }
 
   _playTrack() {
@@ -54,7 +54,7 @@ export default class Round {
 
   _startTimeLimit() {
     this.timeout = setTimeout(() => {
-      this.endRound();
+      this.endRound(true, 'Too slow! Skipping song...');
     }, this.timeLimit * 1000);
   }
 }

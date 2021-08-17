@@ -53,10 +53,6 @@ export default class Game {
     this.round.checkGuess(message);
   }
 
-  skipRound() {
-    this.round.endRound();
-  }
-
   async _loadBufferRound(index) {
     const trackId = this.order[index];
     if (!trackId) {
@@ -68,7 +64,9 @@ export default class Game {
     const youtubeResults = await yts(youtubeQuery);
     const video = youtubeResults.videos[0];
     const stream = ytdl(video.url, { filter: 'audioonly' });
-    const round = new Round(track, stream, this.connection, this.textChannel, TIME_LIMIT, () => this._endRound());
+    const round = new Round(track, stream, this.connection, this.textChannel, TIME_LIMIT, (title) => {
+      this._endRound(true, title);
+    });
     this.nextRounds.push(round);
   }
 
@@ -106,9 +104,13 @@ export default class Game {
       this.textChannel.send({ embed: roundSummary });
     }
 
-    // Increment round number;
     this.currRound++;
     this._startRound();
+  }
+
+  skipRound() {
+    this.round?.endRound(false);
+    this._endRound('Skipping round...');
   }
 
   async _connectToVoiceChannel() {
@@ -137,28 +139,4 @@ export default class Game {
 
     this.callback();
   }
-
-
-  // pauseGame() {
-  //   if (this.paused) {
-  //     sendEmbed(this.textChannel, 'Game has already been paused');
-  //   } else {
-  //     this.paused = true;
-  //     sendEmbed(this.textChannel, 'Pausing game after this round...');
-  //   }
-  // }
-
-  // resumeGame() {
-  //   if (!this.paused) return;
-
-  //   this.paused = false;
-  //   sendEmbed(this.textChannel, '▶️ Resuming game...');
-  //   this.startRound();
-  // }
-
-  // skipRound(reason='Skipping song...') {
-  //   this.currRound++;
-  //   this.displayProgress(reason);
-  //   this.startRound();
-  // }
 }

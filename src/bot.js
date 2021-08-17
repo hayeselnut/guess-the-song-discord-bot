@@ -1,10 +1,11 @@
-import Discord from 'discord.js';
+import Discord, { MessageEmbed } from 'discord.js';
 import { config } from 'dotenv';
 
 import Spotify from './spotify.js';
-
 import GameManager from './game-manager.js';
 import { parseMessage, sendEmbed } from './helpers/discord-helpers.js';
+
+import HELP from './assets/help.json';
 
 config();
 
@@ -47,27 +48,10 @@ const readCommand = (message) => {
     start(message);
   } else if (message.content.startsWith(`${prefix}stop`)) {
     stop(message, ongoingGame);
-  } else if (message.content.startsWith(`${prefix}pause`)) {
-    // if (!ongoingGame) {
-    //   return sendEmbed(message.channel, 'Nothing to pause here!');
-    // }
-    // ongoingGame.pauseGame();
-  } else if (message.content.startsWith(`${prefix}resume`)) {
-    // if (!ongoingGame) {
-    //   return sendEmbed(message.channel, 'Nothing to resume here!');
-    // }
-    // ongoingGame.resumeGame();
   } else if (message.content.startsWith(`${prefix}skip`)) {
-    // if (!ongoingGame) {
-    //   return sendEmbed(message.channel, 'Nothing to skip here!');
-    // }
-    // ongoingGame.skipRound();
-  } else if (message.content.startsWith(`${prefix}tutorial`)) {
-    sendEmbed(message.channel, 'NOT YET IMPLEMENTED');
+    skip(message, ongoingGame);
   } else if (message.content.startsWith(`${prefix}help`)) {
-    sendEmbed(message.channel, 'NOT YET IMPLEMENTED');
-  // } else if (message.content.startsWith(`${prefix}leaderboard`)) {
-  //   sendEmbed(message.channel, 'NOT YET IMPLEMENTED');
+    help(message);
   } else {
     sendEmbed(message.channel, `Invalid command. Use \`${prefix}help\` for a list of commands.`);
   }
@@ -105,6 +89,26 @@ const stop = (message, ongoingGame) => {
     return sendEmbed(message.channel, 'Nothing to stop here!');
   }
   gameManager.finishGame(message.guild.id);
+};
+
+const skip = (message, ongoingGame) => {
+  if (!ongoingGame) {
+    return sendEmbed(message.channel, 'Nothing to skip here!');
+  }
+  ongoingGame.skipRound();
+};
+
+const help = (message) => {
+  const helpEmbed = new MessageEmbed()
+    .setTitle('🤖 Hello, I\'m Guess the Song Bot!')
+    .setDescription(HELP.description)
+    .addField('List of commands',
+      `▶️ \`${prefix}start <spotify_playlist_link> [custom_limit]\`: ${HELP.start}\n\n`
+      + `⏹️ \`${prefix}stop\`: ${HELP.stop}\n\n`
+      + `⏭️ \`${prefix}skip\`: ${HELP.skip}\n\n`
+      + `ℹ️ \`${prefix}help\`: ${HELP.help}\n\n`,
+    );
+  message.channel.send({ embed: helpEmbed });
 };
 
 client.login(token);
