@@ -1,0 +1,7 @@
+{
+  "description": "Give me a Spotify playlist and I'll be your host for your song guessing competitions!\n\nOnce the song starts playing, you'll have 30 seconds to type in the song name or any artists into the chat. Each song name or artist is worth 1 point, but make sure to separate your answers into separate messages.",
+  "start": "Starts new guessing competition with the given playlist shuffled. If a custom limit is provided, the competition will have `MIN(playlist_length, custom_limit)` rounds.",
+  "stop": "Stops the guessing competition",
+  "skip": "Skips the current round (points earned in that round are not saved)",
+  "help": "Shows help menu"
+}
