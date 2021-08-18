@@ -1,7 +1,7 @@
 /* eslint-disable require-jsdoc */
 import { sendEmbed } from '../helpers/discord-helpers.js';
 import { randInt } from '../helpers/helpers.js';
-import Guesses from './Guesses.js';
+import Guesses from './guesses.js';
 
 export default class Round {
   constructor(track, stream, connection, textChannel, timeLimit, callback) {
