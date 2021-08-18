@@ -1,6 +1,6 @@
 /* eslint-disable require-jsdoc */
 import { MessageEmbed } from 'discord.js';
-import Game from './game/game.js';
+import Game from './game.js';
 
 export default class GameManager {
   constructor() {

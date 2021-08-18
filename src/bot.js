@@ -1,9 +1,10 @@
 import Discord, { MessageEmbed } from 'discord.js';
 import { config } from 'dotenv';
 
-import Spotify from './spotify.js';
-import GameManager from './game-manager.js';
+import Spotify from './spotify/spotify.js';
+import GameManager from './game/game-manager.js';
 import { parseMessage, sendEmbed } from './helpers/discord-helpers.js';
+import { parseRoundLimit } from './helpers/helpers.js';
 
 import HELP from './assets/help.json';
 
@@ -53,14 +54,19 @@ const readCommand = (message) => {
   } else if (message.content.startsWith(`${prefix}help`)) {
     help(message);
   } else {
-    sendEmbed(message.channel, `Invalid command. Use \`${prefix}help\` for a list of commands.`);
+    sendEmbed(message.channel, `Invalid command. Use \`${prefix}${HELP.help.usage}\` for a list of commands.`);
   }
 };
 
 const start = async (message) => {
   const args = parseMessage(message);
-  if (args.length !== 2 && args.length !== 3) {
-    return sendEmbed(message.channel, `Usage: \`${prefix}start <spotify_playlist_link>\``);
+  if (args.length < 3) {
+    return sendEmbed(message.channel, `Usage: \`${prefix}${HELP.start.usage}\``);
+  }
+
+  const roundLimit = parseRoundLimit(args[1]);
+  if (isNaN(roundLimit)) {
+    return sendEmbed(message.channel, `\`${args[1]}\` is not a valid round limit. Round limit must be an integer.`);
   }
 
   if (gameManager.has(message.guild.id)) {
@@ -77,9 +83,12 @@ const start = async (message) => {
     return sendEmbed(message.channel, 'I need the permissions to join and speak in your voice channel');
   }
 
-  const playlistLink = args[1];
-  const roundLimit = args[2] || Infinity;
-  const { name, img, tracks } = await spotify.getPlaylist(playlistLink);
+  const playlistLinks = args.slice(2);
+  const { name, img, tracks } = await spotify.getPlaylists(playlistLinks);
+
+  if (!name) {
+    return sendEmbed(message.channel, 'No tracks found');
+  }
 
   gameManager.initializeGame(message, name, img, tracks, roundLimit);
 };
@@ -103,10 +112,10 @@ const help = (message) => {
     .setTitle('🤖 Hello, I\'m Guess the Song Bot!')
     .setDescription(HELP.description)
     .addField('List of commands',
-      `▶️ \`${prefix}start <spotify_playlist_link> [custom_limit]\`: ${HELP.start}\n\n`
-      + `⏹️ \`${prefix}stop\`: ${HELP.stop}\n\n`
-      + `⏭️ \`${prefix}skip\`: ${HELP.skip}\n\n`
-      + `ℹ️ \`${prefix}help\`: ${HELP.help}\n\n`,
+      `▶️ \`${prefix}${HELP.start.usage}\`: ${HELP.start.description}\n\n`
+      + `⏹️ \`${prefix}${HELP.stop.usage}\`: ${HELP.stop.description}\n\n`
+      + `⏭️ \`${prefix}${HELP.skip.usage}\`: ${HELP.skip.description}\n\n`
+      + `ℹ️ \`${prefix}${HELP.help.usage}\`: ${HELP.help.description}\n\n`,
     );
   message.channel.send({ embed: helpEmbed });
 };
