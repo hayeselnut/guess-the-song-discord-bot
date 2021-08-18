@@ -63,7 +63,14 @@ export default class Game {
     const youtubeQuery = `${track.name} ${track.artists.join(' ')}`;
     const youtubeResults = await yts(youtubeQuery);
     const video = youtubeResults.videos[0];
-    const stream = ytdl(video.url, { filter: 'audioonly' }).on('error', (err) => {
+    const stream = ytdl(video.url, {
+      filter: 'audioonly',
+      requestOptions: {
+        headers: {
+          cookie: 'GPS=1; PREF=f4=4000000&tz=Australia.Sydney; VISITOR_INFO1_LIVE=IYzX2_l7qfk; YSC=P6w2R8creZw',
+        },
+      },
+    }).on('error', (err) => {
       console.error(err);
 
       // If error, we set the stream to null so that it is invalid in the round and the round is skipped.
