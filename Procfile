@@ -1,1 +1,1 @@
-worker: node --experimental-json-modules src/bot.js
+worker: npm start
