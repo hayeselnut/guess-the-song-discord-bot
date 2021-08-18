@@ -1,25 +1,45 @@
 /* eslint-disable require-jsdoc */
 import SpotifyWebApi from 'spotify-web-api-node';
-import { normalizeTrack } from './helpers/normalize-helpers.js';
+import { normalizeTrack } from '../helpers/normalize-helpers.js';
 
 export default class Spotify {
   constructor(clientId, clientSecret) {
     this.api = new SpotifyWebApi({ clientId, clientSecret });
   }
 
-  async getPlaylist(playlistLink) {
+  async getPlaylists(playlistLinks) {
     await this._retrieveAccessToken();
 
-    const playlistId = this._parsePlaylistLink(playlistLink);
-    const playlistData = await this.api.getPlaylist(playlistId);
-    const tracks = await this._getTracksFromPlaylist(playlistId);
+    const allPlaylists = (await Promise.all(playlistLinks.map((link) => this._getPlaylist(link))))
+      .filter((playlist) => playlist != undefined && playlist.name != null);
 
     return {
-      id: playlistId,
-      name: playlistData.body.name,
-      img: playlistData.body.images[0]?.url,
-      tracks: tracks,
+      name: allPlaylists.map((playlist) => playlist.name).join(' + '), // Show all names joined by ` + `
+      img: allPlaylists.find((playlist) => playlist.img !== null && playlist.img !== undefined)?.img,
+      tracks: allPlaylists.reduce((acc, playlist) => {
+        return { ...acc, ...playlist.tracks };
+      }, {}),
     };
+  }
+
+  async _getPlaylist(playlistLink) {
+    try {
+      const playlistId = this._parsePlaylistLink(playlistLink);
+      const playlistData = await this.api.getPlaylist(playlistId);
+      const tracks = await this._getTracksFromPlaylist(playlistId);
+
+      return {
+        name: playlistData.body.name,
+        img: playlistData.body.images[0]?.url,
+        tracks: tracks,
+      };
+    } catch (err) {
+      return {
+        name: null,
+        img: null,
+        tracks: null,
+      };
+    }
   }
 
   async _retrieveAccessToken() {
