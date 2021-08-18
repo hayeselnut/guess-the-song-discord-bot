@@ -63,9 +63,18 @@ export default class Game {
     const youtubeQuery = `${track.name} ${track.artists.join(' ')}`;
     const youtubeResults = await yts(youtubeQuery);
     const video = youtubeResults.videos[0];
-    const stream = ytdl(video.url, { filter: 'audioonly' });
+    const stream = ytdl(video.url, { filter: 'audioonly' }).on('error', (err) => {
+      console.error(err);
+
+      // If error, we set the stream to null so that it is invalid in the round and the round is skipped.
+      for (let i = 0; i < this.nextRounds.length; i++) {
+        if (trackId != this.nextRounds[i].track.id) continue;
+        this.nextRounds[i].stream = null;
+      }
+    });
+
     const round = new Round(track, stream, this.connection, this.textChannel, TIME_LIMIT, (title) => {
-      this._endRound(true, title);
+      this._endRound(title);
     });
     this.nextRounds.push(round);
   }

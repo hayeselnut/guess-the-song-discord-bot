@@ -49,7 +49,16 @@ export default class Round {
 
   _playTrack() {
     // Start the music video at a random point between 0 and 90 seconds
-    this.connection.play(this.stream, { seek: randInt(0, 90) });
+    if (!this.stream) {
+      this.endRound(true, 'Could not load song. Skipping song...');
+    }
+
+    this.connection
+      .play(this.stream, { seek: randInt(0, 90) })
+      .on('error', (err) => {
+        console.error(err);
+        this.endRound(true, 'Could not load song. Skipping song...');
+      });
   }
 
   _startTimeLimit() {
