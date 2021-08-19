@@ -8,6 +8,21 @@ import { parseRoundLimit } from './helpers/helpers.js';
 
 import HELP from './assets/help.json';
 
+import admin from 'firebase-admin';
+import ServiceAccount from './assets/service-account.json';
+
+admin.initializeApp({
+  credential: admin.credential.cert(ServiceAccount),
+});
+
+const DB = admin.firestore();
+
+DB.collection('guilds').get().then((data) => {
+  // console.log(data);
+  data.forEach((doc) => {
+    console.log(doc.data());
+  });
+});
 
 config();
 
