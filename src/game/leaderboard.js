@@ -1,12 +1,11 @@
 /* eslint-disable require-jsdoc */
 export default class Leaderboard {
   constructor() {
-    this.positions = new Map();
-    // TODO handle tie
+    this.points = new Map(); // <PLAYER, POINTS>
   }
 
   addPoints(player, points=1) {
-    this.positions.set(player, (this.positions.get(player) || 0) + points);
+    this.points.set(player, (this.points.get(player) || 0) + points);
   }
 
   update(guesses) {
@@ -18,15 +17,32 @@ export default class Leaderboard {
     });
   }
 
-  getWinner() {
-    return [...this.positions.entries()]
-      .sort(([, aPoints], [, bPoints]) => bPoints - aPoints)[0];
+  toString() {
+    const sorted = [...this.points.entries()]
+      .sort(([, aPoints], [, bPoints]) => bPoints - aPoints);
+
+    console.log(sorted);
+
+    return sorted.length ? this._rankString(sorted, 0) : 'No points earned yet!';
   }
 
-  toString() {
-    return [...this.positions.entries()]
-      .sort(([, aPoints], [, bPoints]) => bPoints - aPoints)
-      .map(([authorTag, points], index) => `**${index + 1}**. (${points}) ${authorTag}`)
-      .join('\n') || 'No points earned yet!';
+  _rankString(sorted, index) {
+    if (sorted.length <= index) {
+      return '';
+    }
+
+    const [authorTag, points] = sorted[index];
+
+    if (index === 0) {
+      return `**${index + 1}**. (${points}) ${authorTag}` + this._rankString(sorted, index + 1);
+    }
+
+    console.log(sorted, index);
+    const [, prevPoints] = sorted[index - 1];
+    if (points === prevPoints) {
+      return `, ${authorTag}` + this._rankString(sorted, index + 1);
+    }
+
+    return `\n**${index + 1}**. (${points}) ${authorTag}` + this._rankString(sorted, index + 1);
   }
 }

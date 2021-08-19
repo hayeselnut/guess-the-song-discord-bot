@@ -113,6 +113,7 @@ export default class Game {
       this.leaderboard.update(this.round.guesses);
       const roundSummary = new MessageEmbed()
         .setTitle(title)
+        .setColor(title === 'Round summary' ? '#2ECC71' : '#E91E63')
         .setDescription(this.round.guesses.toString(true))
         .setThumbnail(this.round.track?.img)
         .addField('\u200B', '\u200B')
@@ -136,6 +137,7 @@ export default class Game {
       console.error(err);
       sendEmbed(this.textChannel, 'Could not join voice channel 😞');
       this.connection = null;
+      this.endGame();
     }
   }
 
@@ -148,6 +150,7 @@ export default class Game {
 
     const gameSummary = new MessageEmbed()
       .setTitle('🏁 Final Leaderboard')
+      .setColor('#3498DB')
       .setDescription(this.leaderboard.toString());
     this.textChannel.send({ embed: gameSummary });
 

@@ -1,5 +1,5 @@
 /* eslint-disable require-jsdoc */
-import { sendEmbed } from '../helpers/discord-helpers.js';
+import { MessageEmbed } from 'discord.js';
 import { randInt } from '../helpers/helpers.js';
 import Guesses from './guesses.js';
 
@@ -37,7 +37,11 @@ export default class Round {
   }
 
   _showProgress() {
-    sendEmbed(this.textChannel, this.guesses.toString());
+    const progressEmbed = new MessageEmbed()
+      .setDescription(this.guesses.toString())
+      .setColor('#F1C40F');
+
+    this.textChannel.send({ embed: progressEmbed });
   }
 
   endRound(useCallback=true, title) {
