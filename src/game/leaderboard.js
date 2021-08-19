@@ -18,11 +18,6 @@ export default class Leaderboard {
     });
   }
 
-  getWinner() {
-    return [...this.positions.entries()]
-      .sort(([, aPoints], [, bPoints]) => bPoints - aPoints)[0];
-  }
-
   toString() {
     return [...this.positions.entries()]
       .sort(([, aPoints], [, bPoints]) => bPoints - aPoints)
