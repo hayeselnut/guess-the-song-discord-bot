@@ -2,7 +2,7 @@ import Discord, { MessageEmbed } from 'discord.js';
 import { config } from 'dotenv';
 
 import Spotify from './spotify/spotify.js';
-import GameManager from './game/game-manager.js';
+import GuildManager from './guilds/guild-manager.js';
 import { parseMessage, sendEmbed } from './helpers/discord-helpers.js';
 import { parseRoundLimit } from './helpers/helpers.js';
 
@@ -11,22 +11,14 @@ import HELP from './assets/help.json';
 import admin from 'firebase-admin';
 import ServiceAccount from './assets/service-account.json';
 
+config();
+
 admin.initializeApp({
   credential: admin.credential.cert(ServiceAccount),
 });
+const db = admin.firestore();
+const guildManager = new GuildManager(db);
 
-const DB = admin.firestore();
-
-DB.collection('guilds').get().then((data) => {
-  // console.log(data);
-  data.forEach((doc) => {
-    console.log(doc.data());
-  });
-});
-
-config();
-
-const prefix = '$';
 const token = process.env.DISCORD_BOT_TOKEN;
 const client = new Discord.Client();
 
@@ -34,9 +26,9 @@ const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 const spotify = new Spotify(clientId, clientSecret);
 
-const gameManager = new GameManager(spotify);
 
 client.once('ready', () => {
+  // TODO set status to current prefix
   console.log('Ready!');
 });
 
@@ -51,30 +43,31 @@ client.once('disconnect', () => {
 client.on('message', (message) => {
   if (message.author.bot) return;
 
+  console.log(guildManager.guilds);
+
+  const { prefix } = guildManager.getConfig(message.guild.id);
   if (message.content.startsWith(prefix)) {
-    readCommand(message);
+    readCommand(message, prefix);
   } else {
-    const game = gameManager.getGame(message);
-    game?.checkGuess(message);
+    guildManager.checkGuess(message);
   }
 });
 
-const readCommand = (message) => {
-  const ongoingGame = gameManager.getGame(message);
+const readCommand = (message, prefix) => {
   if (message.content.startsWith(`${prefix}start`)) {
-    start(message);
+    start(message, prefix);
   } else if (message.content.startsWith(`${prefix}stop`)) {
-    stop(message, ongoingGame);
+    stop(message);
   } else if (message.content.startsWith(`${prefix}skip`)) {
-    skip(message, ongoingGame);
+    skip(message);
   } else if (message.content.startsWith(`${prefix}help`)) {
-    help(message);
+    help(message, prefix);
   } else {
     sendEmbed(message.channel, `Invalid command. Use \`${prefix}${HELP.help.usage}\` for a list of commands.`);
   }
 };
 
-const start = async (message) => {
+const start = async (message, prefix) => {
   const args = parseMessage(message);
   if (args.length < 3) {
     return sendEmbed(message.channel, `Usage: \`${prefix}${HELP.start.usage}\``);
@@ -85,7 +78,7 @@ const start = async (message) => {
     return sendEmbed(message.channel, `\`${args[1]}\` is not a valid round limit. Round limit must be an integer.`);
   }
 
-  if (gameManager.has(message.guild.id)) {
+  if (guildManager.hasActiveGameInGuild(message.guild.id)) {
     return sendEmbed(message.channel, `There's already a game running!`);
   }
 
@@ -106,24 +99,24 @@ const start = async (message) => {
     return sendEmbed(message.channel, 'No tracks found');
   }
 
-  gameManager.initializeGame(message, name, img, tracks, roundLimit);
+  guildManager.initializeGame(message, name, img, tracks, roundLimit);
 };
 
-const stop = (message, ongoingGame) => {
-  if (!ongoingGame) {
+const stop = (message) => {
+  if (!guildManager.hasActiveGame(message.guild.id, message.channel.id)) {
     return sendEmbed(message.channel, 'Nothing to stop here!');
   }
-  gameManager.finishGame(message.guild.id);
+  guildManager.finishGame(message.guild.id);
 };
 
-const skip = (message, ongoingGame) => {
-  if (!ongoingGame) {
+const skip = (message) => {
+  if (!guildManager.hasActiveGame(message.guild.id, message.channel.id)) {
     return sendEmbed(message.channel, 'Nothing to skip here!');
   }
-  ongoingGame.skipRound();
+  guildManager.skipRound(message.guild.id, message.channel.id);
 };
 
-const help = (message) => {
+const help = (message, prefix) => {
   const helpEmbed = new MessageEmbed()
     .setTitle('🤖 Hello, I\'m Guess the Song Bot!')
     .setDescription(HELP.description)

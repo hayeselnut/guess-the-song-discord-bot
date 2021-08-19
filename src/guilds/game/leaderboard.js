@@ -21,8 +21,6 @@ export default class Leaderboard {
     const sorted = [...this.points.entries()]
       .sort(([, aPoints], [, bPoints]) => bPoints - aPoints);
 
-    console.log(sorted);
-
     return sorted.length ? this._rankString(sorted, 0) : 'No points earned yet!';
   }
 
@@ -37,7 +35,6 @@ export default class Leaderboard {
       return `**${index + 1}**. (${points}) ${authorTag}` + this._rankString(sorted, index + 1);
     }
 
-    console.log(sorted, index);
     const [, prevPoints] = sorted[index - 1];
     if (points === prevPoints) {
       return `, ${authorTag}` + this._rankString(sorted, index + 1);
