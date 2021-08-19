@@ -120,11 +120,9 @@ const help = (message, prefix) => {
   const helpEmbed = new MessageEmbed()
     .setTitle('🤖 Hello, I\'m Guess the Song Bot!')
     .setDescription(HELP.description)
-    .addField('List of commands',
-      `▶️ \`${prefix}${HELP.start.usage}\`: ${HELP.start.description}\n\n`
-      + `⏹️ \`${prefix}${HELP.stop.usage}\`: ${HELP.stop.description}\n\n`
-      + `⏭️ \`${prefix}${HELP.skip.usage}\`: ${HELP.skip.description}\n\n`
-      + `ℹ️ \`${prefix}${HELP.help.usage}\`: ${HELP.help.description}\n\n`,
+    .addField(
+      'List of commands',
+      HELP.commands.map((cmd) => `${cmd.emoji} \`${prefix}${cmd.usage}\`: ${cmd.description}`).join('\n\n'),
     );
   message.channel.send({ embed: helpEmbed });
 };
