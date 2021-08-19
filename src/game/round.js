@@ -1,6 +1,5 @@
 /* eslint-disable require-jsdoc */
 import { MessageEmbed } from 'discord.js';
-import { sendEmbed } from '../helpers/discord-helpers.js';
 import { randInt } from '../helpers/helpers.js';
 import Guesses from './guesses.js';
 

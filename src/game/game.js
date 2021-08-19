@@ -113,6 +113,7 @@ export default class Game {
       this.leaderboard.update(this.round.guesses);
       const roundSummary = new MessageEmbed()
         .setTitle(title)
+        .setColor(title === 'Round summary' ? '#2ECC71' : '#E91E63')
         .setDescription(this.round.guesses.toString(true))
         .setThumbnail(this.round.track?.img)
         .addField('\u200B', '\u200B')
