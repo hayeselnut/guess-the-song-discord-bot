@@ -149,6 +149,7 @@ export default class Game {
 
     const gameSummary = new MessageEmbed()
       .setTitle('🏁 Final Leaderboard')
+      .setColor('#3498DB')
       .setDescription(this.leaderboard.toString());
     this.textChannel.send({ embed: gameSummary });
 
