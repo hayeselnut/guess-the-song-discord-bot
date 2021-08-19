@@ -4,7 +4,7 @@ export const sleep = async (ms) => await new Promise((resolve) => setTimeout(res
 
 export const randInt = (start, end) => Math.floor(Math.random() * (end - start) + start);
 
-export const parseRoundLimit = (limit) => {
+export const parseRoundDuration = (limit) => {
   const base = 10;
   return parseInt(limit, base);
 };

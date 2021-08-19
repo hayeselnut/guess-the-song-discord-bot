@@ -1,31 +1,39 @@
 /* eslint-disable require-jsdoc */
 import { MessageEmbed } from 'discord.js';
+import { sendEmbed } from '../helpers/discord-helpers.js';
+import { parseRoundDuration } from '../helpers/helpers.js';
 import Game from './game/game.js';
 
 export default class GameManager {
-  constructor(game, config) {
+  constructor(game, guildId, config) {
     this.game = game;
-
+    this.guildId = guildId;
     this.prefix = config.prefix;
-    this.round_duration = config.round_duration;
-    this.emote_nearly_correct_guesses = config.emote_nearly_correct_guesses;
-    this.leaderboard = new Map(Object.entries(config.leaderboard));
+    this.roundDuration = config.round_duration;
+    this.emoteNearlyCorrectGuesses = config.emote_nearly_correct_guesses;
+    this.leaderboard = config.leaderboard;
   }
 
-  updatePrefix(prefix) {
-    this.prefix = prefix;
-    // TODO UPDATE FIREBASE:
+  updatePrefix(prefix, message, db) {
+    const newPrefix = String(prefix);
+    sendEmbed(message.channel, `Prefix has been set to \`${newPrefix}\``);
+    this.prefix = newPrefix;
+    this._updateDatabase(db);
   }
 
-  updateRoundDuration(duration) {
-    this.round_duration = duration;
-    // TODO UPDATE FIREBASE
+  updateRoundDuration(duration, message, db) {
+    const newRoundDuration = parseRoundDuration(duration);
+    if (isNaN(newRoundDuration)) {
+      return sendEmbed(message.channel, 'Round duration limit must be a number');
+    }
+    sendEmbed(message.channel, `Round duration limit has been set to ${newRoundDuration} seconds`);
+    this.roundDuration = newRoundDuration;
+    this._updateDatabase(db);
   }
 
-  updateEmote(emote) {
-    this.emote_nearly_correct_guesses = emote;
-    // TODO update fireabse
-  }
+  // updateEmote(emote) {
+  //   this.emoteNearlyCorrectGuesses = emote;
+  // }
 
   updateLeaderboard(winner, players) {
     this.leaderboard.set(winner, (this.leaderboard.get(winner) || 0) + 1);
@@ -62,9 +70,21 @@ export default class GameManager {
   getConfig() {
     return {
       prefix: this.prefix,
-      round_duration: this.round_duration,
-      emote_nearly_correct_guesses: this.emote_nearly_correct_guesses,
-      leaderboard: this.leaderboard,
+      round_duration: this.roundDuration,
+      emote_nearly_correct_guesses: this.emoteNearlyCorrectGuesses,
     };
+  }
+
+  loadConfig() {
+    this.prefix = prefix;
+  }
+
+  _updateDatabase(db) {
+    db.collection('guilds').doc(this.guildId).set({
+      prefix: this.prefix,
+      round_duration: this.roundDuration,
+      emote_nearly_correct_guesses: this.emoteNearlyCorrectGuesses,
+      leaderboard: this.leaderboard,
+    });
   }
 }

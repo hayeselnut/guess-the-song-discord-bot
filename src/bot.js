@@ -1,17 +1,17 @@
 import Discord, { MessageEmbed } from 'discord.js';
-import { config } from 'dotenv';
+import { config as configDotEnv } from 'dotenv';
 
 import Spotify from './spotify/spotify.js';
 import GuildManager from './guilds/guild-manager.js';
 import { parseMessage, sendEmbed } from './helpers/discord-helpers.js';
-import { parseRoundLimit } from './helpers/helpers.js';
+import { parseRoundDuration } from './helpers/helpers.js';
 
 import HELP from './assets/help.json';
 
 import admin from 'firebase-admin';
 import ServiceAccount from './assets/service-account.json';
 
-config();
+configDotEnv();
 
 admin.initializeApp({
   credential: admin.credential.cert(ServiceAccount),
@@ -60,6 +60,8 @@ const readCommand = (message, prefix) => {
     stop(message);
   } else if (message.content.startsWith(`${prefix}skip`)) {
     skip(message);
+  } else if (message.content.startsWith(`${prefix}config`)) {
+    config(message, prefix);
   } else if (message.content.startsWith(`${prefix}help`)) {
     help(message, prefix);
   } else {
@@ -73,7 +75,7 @@ const start = async (message, prefix) => {
     return sendEmbed(message.channel, `Usage: \`${prefix}${HELP.start.usage}\``);
   }
 
-  const roundLimit = parseRoundLimit(args[1]);
+  const roundLimit = parseRoundDuration(args[1]);
   if (isNaN(roundLimit)) {
     return sendEmbed(message.channel, `\`${args[1]}\` is not a valid round limit. Round limit must be an integer.`);
   }
@@ -116,13 +118,49 @@ const skip = (message) => {
   guildManager.skipRound(message.guild.id, message.channel.id);
 };
 
+const config = (message) => {
+  const args = parseMessage(message);
+  if (args.length === 1) {
+    const config = guildManager.getConfig(message.guild.id);
+    const configEmbed = new MessageEmbed()
+      .setTitle('Current configurations')
+      .setDescription(`\`\`\`${Object.entries(config).map(([key, value]) => `${key}: ${value}`).join('\n')}\`\`\``);
+    message.channel.send({ embed: configEmbed });
+  } else {
+    const key = args[1];
+    if (key === 'reset') {
+      return guildManager.resetConfig(message);
+    }
+
+    const value = args[2];
+    if (!key || !value) {
+      return sendEmbed(message.channel, 'Unknown config arguments');
+    }
+
+    switch (key) {
+    case 'prefix':
+      guildManager.updatePrefix(value, message);
+      break;
+    case 'round_duration':
+      guildManager.updateRoundDuration(value, message);
+      break;
+    default:
+      return sendEmbed(message.channel, 'Unknown config arguments');
+    }
+  }
+};
+
 const help = (message, prefix) => {
   const helpEmbed = new MessageEmbed()
     .setTitle('🤖 Hello, I\'m Guess the Song Bot!')
     .setDescription(HELP.description)
     .addField(
-      'List of commands',
-      HELP.commands.map((cmd) => `${cmd.emoji} \`${prefix}${cmd.usage}\`: ${cmd.description}`).join('\n\n'),
+      'Game commands',
+      HELP.game_commands.map((cmd) => `${cmd.emoji} \`${prefix}${cmd.usage}\`: ${cmd.description}`).join('\n\n'),
+    )
+    .addField(
+      'Help commands',
+      HELP.help_commands.map((cmd) => `${cmd.emoji} \`${prefix}${cmd.usage}\`: ${cmd.description}`).join('\n\n'),
     );
   message.channel.send({ embed: helpEmbed });
 };

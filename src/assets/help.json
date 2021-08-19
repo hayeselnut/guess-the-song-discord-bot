@@ -1,6 +1,6 @@
 {
   "description": "Give me a Spotify playlist and I'll be your host for your song guessing competitions!\n\nOnce the song starts playing, you'll have 30 seconds to type in the song name or any artists into the chat. Each song name or artist is worth 1 point, but make sure to separate your answers into separate messages.",
-  "commands": [
+  "game_commands": [
     {
       "emoji": "▶️",
       "usage": "start round_limit spotify_playlist_link [spotify_playlist_link ...]",
@@ -15,7 +15,9 @@
       "emoji": "⏭️",
       "usage": "skip",
       "description": "Skips the current round (points earned in that round are not saved)."
-    },
+    }
+  ],
+  "help_commands": [
     {
       "emoji": "⚙",
       "usage": "config",
@@ -33,8 +35,8 @@
     },
     {
       "emoji": "⚙",
-      "usage": "config round_limit <seconds>",
-      "description": "Sets the duration for each round to be `seconds` seconds in a guessing competition. The default round duration is `30`."
+      "usage": "config round_duration_limit <seconds>",
+      "description": "Sets the round duration limit to `seconds` seconds in a guessing competition. The round will automatically skip if all the answers are not answered within this time. The default round duration limit is `30`."
     },
     {
       "emoji": "ℹ️",
