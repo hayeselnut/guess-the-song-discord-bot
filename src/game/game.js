@@ -137,6 +137,7 @@ export default class Game {
       console.error(err);
       sendEmbed(this.textChannel, 'Could not join voice channel 😞');
       this.connection = null;
+      this.endGame();
     }
   }
 
