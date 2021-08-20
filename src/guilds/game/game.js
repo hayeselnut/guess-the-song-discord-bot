@@ -3,16 +3,15 @@ import { MessageEmbed } from 'discord.js';
 import yts from 'yt-search';
 import ytdl from 'ytdl-core';
 
-import { sendEmbed } from '../helpers/discord-helpers.js';
-import { shuffle } from '../helpers/helpers.js';
+import { sendEmbed } from '../../helpers/discord-helpers.js';
+import { shuffle } from '../../helpers/helpers.js';
 import Leaderboard from './leaderboard.js';
 import Round from './round.js';
 
-const TIME_LIMIT = 30;
 const BUFFER_LIMIT = 3;
 
 export default class Game {
-  constructor(message, tracks, roundLimit, callback) {
+  constructor(message, tracks, roundLimit, roundDuration, callback) {
     // Discord things
     this.guildId = message.guild.id;
     this.textChannel = message.channel;
@@ -21,6 +20,7 @@ export default class Game {
 
     // Game
     this.tracks = tracks;
+    this.roundDuration = roundDuration;
     this.roundLimit = roundLimit;
     this.order = shuffle(Object.keys(tracks)).slice(0, this.roundLimit);
     this.paused = false;
@@ -37,6 +37,7 @@ export default class Game {
   }
 
   async startGame() {
+    console.log(`Starting game in #${this.textChannel.name}`);
     await this._connectToVoiceChannel();
 
     // Load buffer of next 3 streams
@@ -80,7 +81,7 @@ export default class Game {
       }
     });
 
-    const round = new Round(track, stream, this.connection, this.textChannel, TIME_LIMIT, (title) => {
+    const round = new Round(track, stream, this.connection, this.textChannel, this.roundDuration, (title) => {
       this._endRound(title);
     });
     this.nextRounds.push(round);
@@ -142,6 +143,8 @@ export default class Game {
   }
 
   endGame(useCallback=true) {
+    console.log(`#${this.textChannel.name}: Game ended ${useCallback ? 'naturally' : 'manually'}`);
+
     this.currRound = this.roundLimit;
     this.voiceChannel.leave();
     this.round?.endRound(false);

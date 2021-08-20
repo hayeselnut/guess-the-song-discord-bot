@@ -1,7 +1,7 @@
 /* eslint-disable require-jsdoc */
 
-import { tag } from '../helpers/discord-helpers.js';
-import { normalize, removeAdditionalInformation } from '../helpers/normalize-helpers.js';
+import { tag } from '../../helpers/discord-helpers.js';
+import { normalize, removeAdditionalInformation } from '../../helpers/normalize-helpers.js';
 
 const SONG_INDEX = -1;
 

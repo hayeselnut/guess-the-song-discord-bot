@@ -1,6 +1,6 @@
 /* eslint-disable require-jsdoc */
 import { MessageEmbed } from 'discord.js';
-import { randInt } from '../helpers/helpers.js';
+import { randInt } from '../../helpers/helpers.js';
 import Guesses from './guesses.js';
 
 export default class Round {
@@ -24,7 +24,7 @@ export default class Round {
   startRound() {
     this._startTimeLimit();
     this._playTrack();
-    console.log(this.track);
+    console.log(`#${this.textChannel.name}:`, this.track.name, this.track.artists);
   }
 
   checkGuess(message) {
@@ -56,13 +56,17 @@ export default class Round {
     if (!this.stream) {
       this.endRound(true, 'Could not load song. Skipping song...');
     }
-
-    this.connection
-      .play(this.stream, { seek: randInt(0, 90) })
-      .on('error', (err) => {
-        console.error(err);
-        this.endRound(true, 'Could not load song. Skipping song...');
-      });
+    try {
+      this.connection
+        .play(this.stream, { seek: randInt(0, 90) })
+        .on('error', (err) => {
+          console.error(err);
+          this.endRound(true, 'Could not load song. Skipping song...');
+        });
+    } catch (err) {
+      console.error(err);
+      this.endRound(true, 'Could not load song. Skipping song...');
+    }
   }
 
   _startTimeLimit() {

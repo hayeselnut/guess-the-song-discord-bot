@@ -1,16 +1,25 @@
 import Discord, { MessageEmbed } from 'discord.js';
-import { config } from 'dotenv';
+import { config as configDotEnv } from 'dotenv';
+
+import admin from 'firebase-admin';
+import ServiceAccount from './assets/service-account.json';
 
 import Spotify from './spotify/spotify.js';
-import GameManager from './game/game-manager.js';
+import GuildManager from './guilds/guild-manager.js';
 import { parseMessage, sendEmbed } from './helpers/discord-helpers.js';
-import { parseRoundLimit } from './helpers/helpers.js';
+import { parseRoundDuration } from './helpers/helpers.js';
+import Leaderboard from './guilds/game/leaderboard.js';
 
 import HELP from './assets/help.json';
 
-config();
+configDotEnv();
 
-const prefix = '$';
+admin.initializeApp({
+  credential: admin.credential.cert(ServiceAccount),
+});
+const db = admin.firestore();
+const guildManager = new GuildManager(db);
+
 const token = process.env.DISCORD_BOT_TOKEN;
 const client = new Discord.Client();
 
@@ -18,7 +27,6 @@ const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 const spotify = new Spotify(clientId, clientSecret);
 
-const gameManager = new GameManager(spotify);
 
 client.once('ready', () => {
   console.log('Ready!');
@@ -35,41 +43,50 @@ client.once('disconnect', () => {
 client.on('message', (message) => {
   if (message.author.bot) return;
 
+  if (message.content.includes('@here') || message.content.includes('@everyone')) return;
+
+  const { prefix } = guildManager.getConfig(message.guild.id);
+  if (message.mentions.has(client.user.id)) {
+    help(message, prefix);
+  }
+
   if (message.content.startsWith(prefix)) {
-    readCommand(message);
+    readCommand(message, prefix);
   } else {
-    const game = gameManager.getGame(message);
-    game?.checkGuess(message);
+    guildManager.checkGuess(message);
   }
 });
 
-const readCommand = (message) => {
-  const ongoingGame = gameManager.getGame(message);
+const readCommand = (message, prefix) => {
   if (message.content.startsWith(`${prefix}start`)) {
-    start(message);
+    start(message, prefix);
   } else if (message.content.startsWith(`${prefix}stop`)) {
-    stop(message, ongoingGame);
+    stop(message);
   } else if (message.content.startsWith(`${prefix}skip`)) {
-    skip(message, ongoingGame);
+    skip(message);
+  } else if (message.content.startsWith(`${prefix}leaderboard`)) {
+    leaderboard(message);
+  } else if (message.content.startsWith(`${prefix}config`)) {
+    config(message, prefix);
   } else if (message.content.startsWith(`${prefix}help`)) {
-    help(message);
+    help(message, prefix);
   } else {
-    sendEmbed(message.channel, `Invalid command. Use \`${prefix}${HELP.help.usage}\` for a list of commands.`);
+    sendEmbed(message.channel, `Invalid command. Use \`${prefix}help\` for a list of commands.`);
   }
 };
 
-const start = async (message) => {
+const start = async (message, prefix) => {
   const args = parseMessage(message);
   if (args.length < 3) {
     return sendEmbed(message.channel, `Usage: \`${prefix}${HELP.start.usage}\``);
   }
 
-  const roundLimit = parseRoundLimit(args[1]);
+  const roundLimit = parseRoundDuration(args[1]);
   if (isNaN(roundLimit)) {
     return sendEmbed(message.channel, `\`${args[1]}\` is not a valid round limit. Round limit must be an integer.`);
   }
 
-  if (gameManager.has(message.guild.id)) {
+  if (guildManager.hasActiveGameInGuild(message.guild.id)) {
     return sendEmbed(message.channel, `There's already a game running!`);
   }
 
@@ -90,32 +107,76 @@ const start = async (message) => {
     return sendEmbed(message.channel, 'No tracks found');
   }
 
-  gameManager.initializeGame(message, name, img, tracks, roundLimit);
+  guildManager.initializeGame(message, name, img, tracks, roundLimit);
 };
 
-const stop = (message, ongoingGame) => {
-  if (!ongoingGame) {
+const stop = (message) => {
+  if (!guildManager.hasActiveGame(message.guild.id, message.channel.id)) {
     return sendEmbed(message.channel, 'Nothing to stop here!');
   }
-  gameManager.finishGame(message.guild.id);
+  guildManager.finishGame(message.guild.id);
 };
 
-const skip = (message, ongoingGame) => {
-  if (!ongoingGame) {
+const skip = (message) => {
+  if (!guildManager.hasActiveGame(message.guild.id, message.channel.id)) {
     return sendEmbed(message.channel, 'Nothing to skip here!');
   }
-  ongoingGame.skipRound();
+  guildManager.skipRound(message.guild.id, message.channel.id);
 };
 
-const help = (message) => {
+const leaderboard = (message) => {
+  const leaderboard = new Leaderboard(Object.entries(guildManager.getLeaderboard(message.guild.id)));
+
+  const leaderboardEmbed = new MessageEmbed()
+    .setTitle('📊 All Time Leaderboard')
+    .setDescription(leaderboard.toString());
+
+  message.channel.send({ embed: leaderboardEmbed });
+};
+
+const config = (message) => {
+  const args = parseMessage(message);
+  if (args.length === 1) {
+    const config = guildManager.getConfig(message.guild.id);
+    const configEmbed = new MessageEmbed()
+      .setTitle('Current configurations')
+      .setDescription(`\`\`\`${Object.entries(config).map(([key, value]) => `${key}: ${value}`).join('\n')}\`\`\``);
+    message.channel.send({ embed: configEmbed });
+  } else {
+    const key = args[1];
+    if (key === 'reset') {
+      return guildManager.resetConfig(message);
+    }
+
+    const value = args[2];
+    if (!key || !value) {
+      return sendEmbed(message.channel, 'Unknown config arguments');
+    }
+
+    switch (key) {
+    case 'prefix':
+      guildManager.updatePrefix(value, message);
+      break;
+    case 'round_duration':
+      guildManager.updateRoundDuration(value, message);
+      break;
+    default:
+      return sendEmbed(message.channel, 'Unknown config arguments');
+    }
+  }
+};
+
+const help = (message, prefix) => {
   const helpEmbed = new MessageEmbed()
     .setTitle('🤖 Hello, I\'m Guess the Song Bot!')
     .setDescription(HELP.description)
-    .addField('List of commands',
-      `▶️ \`${prefix}${HELP.start.usage}\`: ${HELP.start.description}\n\n`
-      + `⏹️ \`${prefix}${HELP.stop.usage}\`: ${HELP.stop.description}\n\n`
-      + `⏭️ \`${prefix}${HELP.skip.usage}\`: ${HELP.skip.description}\n\n`
-      + `ℹ️ \`${prefix}${HELP.help.usage}\`: ${HELP.help.description}\n\n`,
+    .addField(
+      'Game commands',
+      HELP.game_commands.map((cmd) => `${cmd.emoji} \`${prefix}${cmd.usage}\`: ${cmd.description}`).join('\n\n'),
+    )
+    .addField(
+      'Help commands',
+      HELP.help_commands.map((cmd) => `${cmd.emoji} \`${prefix}${cmd.usage}\`: ${cmd.description}`).join('\n\n'),
     );
   message.channel.send({ embed: helpEmbed });
 };
