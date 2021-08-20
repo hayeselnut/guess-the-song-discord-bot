@@ -14,7 +14,7 @@ export default class GuildManager {
   async _loadGuilds() {
     const snapshot = await this.db.collection('guilds').get();
     snapshot.forEach((doc) => {
-      this.guilds.set(doc.id, new GameManager(null, doc.id, doc.data()));
+      this.guilds.set(doc.id, new GameManager(this.db, null, doc.id, doc.data()));
     });
   };
 
@@ -53,6 +53,11 @@ export default class GuildManager {
     return gameManager.getConfig();
   }
 
+  getLeaderboard(guildId) {
+    const gameManager = this._getGameManager(guildId);
+    return gameManager?.getLeaderboard();
+  }
+
   skipRound(guildId, channelId) {
     const game = this._getGame(guildId, channelId);
     game?.skipRound();
@@ -60,12 +65,12 @@ export default class GuildManager {
 
   updatePrefix(prefix, message) {
     const gameManager = this._getGameManager(message.guild.id);
-    gameManager.updatePrefix(prefix, message, this.db);
+    gameManager.updatePrefix(prefix, message);
   }
 
   updateRoundDuration(duration, message) {
     const gameManager = this._getGameManager(message.guild.id);
-    gameManager.updateRoundDuration(duration, message, this.db);
+    gameManager.updateRoundDuration(duration, message);
   }
 
   // updateEmote(emote) {
@@ -99,7 +104,7 @@ export default class GuildManager {
   _initializeNewGuild(guildId) {
     if (this.guilds.has(guildId)) return;
 
-    const gameManager = new GameManager(null, guildId, DefaultConfig);
+    const gameManager = new GameManager(this.db, null, guildId, DefaultConfig);
     this.guilds.set(guildId, gameManager);
 
     // Upload to database

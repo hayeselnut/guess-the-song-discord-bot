@@ -1,15 +1,16 @@
 import Discord, { MessageEmbed } from 'discord.js';
 import { config as configDotEnv } from 'dotenv';
 
+import admin from 'firebase-admin';
+import ServiceAccount from './assets/service-account.json';
+
 import Spotify from './spotify/spotify.js';
 import GuildManager from './guilds/guild-manager.js';
 import { parseMessage, sendEmbed } from './helpers/discord-helpers.js';
 import { parseRoundDuration } from './helpers/helpers.js';
+import Leaderboard from './guilds/game/leaderboard.js';
 
 import HELP from './assets/help.json';
-
-import admin from 'firebase-admin';
-import ServiceAccount from './assets/service-account.json';
 
 configDotEnv();
 
@@ -28,7 +29,6 @@ const spotify = new Spotify(clientId, clientSecret);
 
 
 client.once('ready', () => {
-  // TODO set status to current prefix
   console.log('Ready!');
 });
 
@@ -43,9 +43,13 @@ client.once('disconnect', () => {
 client.on('message', (message) => {
   if (message.author.bot) return;
 
-  console.log(guildManager.guilds);
+  if (message.content.includes('@here') || message.content.includes('@everyone')) return;
 
   const { prefix } = guildManager.getConfig(message.guild.id);
+  if (message.mentions.has(client.user.id)) {
+    help(message, prefix);
+  }
+
   if (message.content.startsWith(prefix)) {
     readCommand(message, prefix);
   } else {
@@ -60,12 +64,14 @@ const readCommand = (message, prefix) => {
     stop(message);
   } else if (message.content.startsWith(`${prefix}skip`)) {
     skip(message);
+  } else if (message.content.startsWith(`${prefix}leaderboard`)) {
+    leaderboard(message);
   } else if (message.content.startsWith(`${prefix}config`)) {
     config(message, prefix);
   } else if (message.content.startsWith(`${prefix}help`)) {
     help(message, prefix);
   } else {
-    sendEmbed(message.channel, `Invalid command. Use \`${prefix}${HELP.help.usage}\` for a list of commands.`);
+    sendEmbed(message.channel, `Invalid command. Use \`${prefix}help\` for a list of commands.`);
   }
 };
 
@@ -116,6 +122,16 @@ const skip = (message) => {
     return sendEmbed(message.channel, 'Nothing to skip here!');
   }
   guildManager.skipRound(message.guild.id, message.channel.id);
+};
+
+const leaderboard = (message) => {
+  const leaderboard = new Leaderboard(Object.entries(guildManager.getLeaderboard(message.guild.id)));
+
+  const leaderboardEmbed = new MessageEmbed()
+    .setTitle('📊 All Time Leaderboard')
+    .setDescription(leaderboard.toString());
+
+  message.channel.send({ embed: leaderboardEmbed });
 };
 
 const config = (message) => {

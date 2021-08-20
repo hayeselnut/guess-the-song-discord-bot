@@ -1,7 +1,7 @@
 /* eslint-disable require-jsdoc */
 export default class Leaderboard {
-  constructor() {
-    this.points = new Map(); // <PLAYER, POINTS>
+  constructor(initialState) {
+    this.points = new Map(initialState); // <PLAYER, POINTS>
   }
 
   addPoints(player, points=1) {
@@ -22,6 +22,17 @@ export default class Leaderboard {
       .sort(([, aPoints], [, bPoints]) => bPoints - aPoints);
 
     return sorted.length ? this._rankString(sorted, 0) : 'No points earned yet!';
+  }
+
+  getPlayers() {
+    return [...this.points.keys()];
+  }
+
+  getWinners() {
+    const highestPoints = Math.max(...this.points.values());
+    return [...this.points.entries()]
+      .filter(([, points]) => points === highestPoints)
+      .map(([player]) => player);
   }
 
   _rankString(sorted, index) {

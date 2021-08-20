@@ -5,50 +5,63 @@ import { parseRoundDuration } from '../helpers/helpers.js';
 import Game from './game/game.js';
 
 export default class GameManager {
-  constructor(game, guildId, config) {
+  constructor(db, game, guildId, config) {
+    this.db = db;
     this.game = game;
     this.guildId = guildId;
+
+    // These states will always be synced with database
     this.prefix = config.prefix;
     this.roundDuration = config.round_duration;
     this.emoteNearlyCorrectGuesses = config.emote_nearly_correct_guesses;
     this.leaderboard = config.leaderboard;
   }
 
-  updatePrefix(prefix, message, db) {
+  updatePrefix(prefix, message) {
     const newPrefix = String(prefix);
     sendEmbed(message.channel, `Prefix has been set to \`${newPrefix}\``);
     this.prefix = newPrefix;
-    this._updateDatabase(db);
+    this._updateDatabase();
   }
 
-  updateRoundDuration(duration, message, db) {
+  updateRoundDuration(duration, message) {
     const newRoundDuration = parseRoundDuration(duration);
     if (isNaN(newRoundDuration)) {
       return sendEmbed(message.channel, 'Round duration limit must be a number');
     }
     sendEmbed(message.channel, `Round duration limit has been set to ${newRoundDuration} seconds`);
     this.roundDuration = newRoundDuration;
-    this._updateDatabase(db);
+    this._updateDatabase();
   }
 
   // updateEmote(emote) {
   //   this.emoteNearlyCorrectGuesses = emote;
   // }
 
-  updateLeaderboard(winner, players) {
-    this.leaderboard.set(winner, (this.leaderboard.get(winner) || 0) + 1);
+  updateLeaderboard(game) {
+    const players = game.leaderboard.getPlayers();
+    if (!players.length) return;
 
     players.forEach((player) => {
-      if (!this.leaderboard.has(player)) {
-        this.leaderboard.set(player, 0);
+      if (!(player in this.leaderboard)) {
+        this.leaderboard[player] = 0;
       }
     });
 
-    // TODO UPDATE FIREBASE
+    const winners = game.leaderboard.getWinners();
+    winners.forEach((winner) => {
+      this.leaderboard[winner]++;
+    });
+
+    // Update database
+    this.db.collection('guilds').doc(this.guildId).set({
+      leaderboard: this.leaderboard,
+    }, { merge: true });
   }
 
   clearGame() {
     this.game.endGame(false);
+    this.updateLeaderboard(this.game);
     this.game = null;
   }
 
@@ -60,11 +73,18 @@ export default class GameManager {
       .setImage(img);
     message.channel.send({ embed: playlistEmbed });
 
-    const game = new Game(message, tracks, Math.min(tracksLength, roundLimit), () => {
+    console.log(`Initializing game in GUILD ${message.guild.name}`);
+    const game = new Game(message, tracks, Math.min(tracksLength, roundLimit), this.roundDuration, () => {
+      this.updateLeaderboard(this.game);
+
       this.game = null;
     });
     this.game = game;
     game.startGame();
+  }
+
+  getLeaderboard() {
+    return this.leaderboard;
   }
 
   getConfig() {
@@ -79,8 +99,8 @@ export default class GameManager {
     this.prefix = prefix;
   }
 
-  _updateDatabase(db) {
-    db.collection('guilds').doc(this.guildId).set({
+  _updateDatabase() {
+    this.db.collection('guilds').doc(this.guildId).set({
       prefix: this.prefix,
       round_duration: this.roundDuration,
       emote_nearly_correct_guesses: this.emoteNearlyCorrectGuesses,

@@ -24,7 +24,7 @@ export default class Round {
   startRound() {
     this._startTimeLimit();
     this._playTrack();
-    console.log(this.track.name, this.track.artists);
+    console.log(`#${this.textChannel.name}:`, this.track.name, this.track.artists);
   }
 
   checkGuess(message) {

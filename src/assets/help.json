@@ -15,6 +15,11 @@
       "emoji": "⏭️",
       "usage": "skip",
       "description": "Skips the current round (points earned in that round are not saved)."
+    },
+    {
+      "emoji": "📊",
+      "usage": "leaderboard",
+      "description": "Shows the all time leaderboard of games within the server."
     }
   ],
   "help_commands": [
