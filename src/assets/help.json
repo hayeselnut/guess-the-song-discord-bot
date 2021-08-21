@@ -40,7 +40,7 @@
     },
     {
       "emoji": "⚙",
-      "usage": "config round_duration_limit <seconds>",
+      "usage": "config round_duration <seconds>",
       "description": "Sets the round duration limit to `seconds` seconds in a guessing competition. The round will automatically skip if all the answers are not answered within this time. The default round duration limit is `30`."
     },
     {
