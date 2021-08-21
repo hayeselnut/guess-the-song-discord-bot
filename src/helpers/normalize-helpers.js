@@ -32,7 +32,7 @@ export const normalize = (str, type) => {
     .replace('8', 'eight')
     .replace('9', 'nine')
     .replace(' & ', ' and ')
-    .replace('/^the /g', '')
+    .replace(/^the /g, '')
     .replace(/[^a-z0-9]/g, '') || str;
 };
 
