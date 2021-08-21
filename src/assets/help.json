@@ -3,7 +3,7 @@
   "game_commands": [
     {
       "emoji": "▶️",
-      "usage": "start round_limit spotify_playlist_link [spotify_playlist_link ...]",
+      "usage": "start <round_limit> <spotify_playlist_link> [<spotify_playlist_link> ...]",
       "description": "Starts new guessing competition with `round_limit` rounds using the given playlist. The order of songs will be randomized. If multiple playlists are given, they will all be shuffled into one competition, removing any duplicate songs. The `round_limit` will default to the number of unique songs provided if the given value is larger than the number of unique songs."
     },
     {

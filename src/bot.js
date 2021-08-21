@@ -78,7 +78,8 @@ const readCommand = (message, prefix) => {
 const start = async (message, prefix) => {
   const args = parseMessage(message);
   if (args.length < 3) {
-    return sendEmbed(message.channel, `Usage: \`${prefix}${HELP.start.usage}\``);
+    const [startHelp] = HELP.game_commands.filter((help) => help.usage.startsWith('start'));
+    return sendEmbed(message.channel, `Usage: \`${prefix}${startHelp.usage}\``);
   }
 
   const roundLimit = parseRoundDuration(args[1]);
