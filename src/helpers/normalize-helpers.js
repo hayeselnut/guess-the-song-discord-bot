@@ -21,7 +21,18 @@ export const normalize = (str, type) => {
   }
 
   return normalized
+    .replace('0', 'zero')
+    .replace('1', 'one')
+    .replace('2', 'two')
+    .replace('3', 'three')
+    .replace('4', 'four')
+    .replace('5', 'five')
+    .replace('6', 'six')
+    .replace('7', 'seven')
+    .replace('8', 'eight')
+    .replace('9', 'nine')
     .replace(' & ', ' and ')
+    .replace('/^the /g', '')
     .replace(/[^a-z0-9]/g, '') || str;
 };
 
