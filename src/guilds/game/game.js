@@ -8,7 +8,7 @@ import { shuffle } from '../../helpers/helpers.js';
 import Leaderboard from './leaderboard.js';
 import Round from './round.js';
 
-const BUFFER_LIMIT = 3;
+const BUFFER_LIMIT = 10;
 
 export default class Game {
   constructor(message, tracks, roundLimit, roundDuration, callback) {
