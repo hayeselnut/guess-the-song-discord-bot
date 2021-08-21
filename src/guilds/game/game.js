@@ -8,6 +8,8 @@ import { shuffle } from '../../helpers/helpers.js';
 import Leaderboard from './leaderboard.js';
 import Round from './round.js';
 
+import Cookie from '../../assets/cookie.json';
+
 const BUFFER_LIMIT = 10;
 
 export default class Game {
@@ -67,9 +69,7 @@ export default class Game {
     const stream = ytdl(video.url, {
       filter: 'audioonly',
       requestOptions: {
-        headers: {
-          cookie: 'GPS=1; PREF=f4=4000000&tz=Australia.Sydney; VISITOR_INFO1_LIVE=IYzX2_l7qfk; YSC=P6w2R8creZw',
-        },
+        headers: Cookie,
       },
     }).on('error', (err) => {
       console.error(err);
