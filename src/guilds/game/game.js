@@ -39,7 +39,7 @@ export default class Game {
   }
 
   async startGame() {
-    console.log(`Starting game in #${this.textChannel.name}`);
+    console.log(`#${this.textChannel.name}: Starting game`);
     await this._connectToVoiceChannel();
 
     // Load buffer of next 3 streams
