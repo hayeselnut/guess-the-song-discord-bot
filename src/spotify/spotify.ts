@@ -1,13 +1,10 @@
-/* eslint-disable require-jsdoc */
 import SpotifyWebApi from 'spotify-web-api-node';
 import { normalizeTrack } from '../helpers/normalize-helpers';
-import { track } from '../types';
-
-type tracks {
-  [id: string]: track
-}
+import { track, tracks } from '../types';
 
 export default class Spotify {
+  api: SpotifyWebApi;
+
   constructor(clientId: string, clientSecret: string) {
     this.api = new SpotifyWebApi({ clientId, clientSecret });
   }
@@ -56,7 +53,7 @@ export default class Spotify {
     this.api.setAccessToken(data.body.access_token);
   }
 
-  async _getTracksFromPlaylist(playlistId: string, offset: number = 0) {
+  async _getTracksFromPlaylist(playlistId: string, offset: number = 0): Promise<tracks> {
     const data = await this.api.getPlaylistTracks(playlistId, { offset });
     const tracks = data.body.items.map((trackData) => {
       const { normalizedName, normalizedArtists } = normalizeTrack(

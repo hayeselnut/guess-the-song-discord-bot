@@ -1,4 +1,4 @@
-export type track {
+export type track = {
     id: string,
     name: string,
     artists: string[],
@@ -6,3 +6,7 @@ export type track {
     normalizedName: string,
     normalizedArtists: string[],
   };
+
+  export type tracks = {
+    [id: string]: track
+  }

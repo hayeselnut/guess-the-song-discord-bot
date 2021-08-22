@@ -18,12 +18,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 // import Discord, { MessageEmbed } from 'discord.js';
 const Discord = __importStar(require("discord.js"));
 const dotenv = __importStar(require("dotenv"));
 const firestore_helpers_1 = require("./helpers/firestore-helpers");
-// import Spotify from './spotify/spotify.js';
+const spotify_1 = __importDefault(require("./spotify/spotify"));
 // import GuildManager from './guilds/guild-manager.js';
 // import { parseMessage, sendEmbed } from './helpers/discord-helpers.js';
 // import { parseRoundDuration } from './helpers/helpers.js';
@@ -34,9 +37,7 @@ const db = firestore_helpers_1.getFirestoreDatabase(process.env.FIREBASE_PROJECT
 // const guildManager = new GuildManager(db);
 const token = process.env.DISCORD_BOT_TOKEN;
 const client = new Discord.Client();
-// const clientId = process.env.SPOTIFY_CLIENT_ID;
-// const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-// const spotify = new Spotify(clientId, clientSecret);
+const spotify = new spotify_1.default(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
 console.log('made it here!');
 client.once('ready', () => {
     console.log('Ready!');
