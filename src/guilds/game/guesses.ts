@@ -1,16 +1,16 @@
 import { Message } from 'discord.js';
 import { tag } from '../../helpers/discord-helpers.js';
 import { normalize, removeAdditionalInformation } from '../../helpers/normalize-helpers.js';
-import { track } from '../../types.js';
+import { Track } from '../../types.js';
 
 const SONG_INDEX = -1;
 
 export default class Guesses {
-  track: track;
+  track: Track;
   answeredBy: Map<number, string>;
   remainingPoints: number;
 
-  constructor(track: track) {
+  constructor(track: Track) {
     this.track = track;
 
     // -1 is song, 0..n-1 is for each of the n artists

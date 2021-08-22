@@ -1,17 +1,21 @@
 import { Message, MessageEmbed, TextChannel } from 'discord.js';
+import { firestore } from 'firebase-admin';
 import { sendEmbed } from '../helpers/discord-helpers.js';
 import { parseRoundDuration } from '../helpers/helpers.js';
+import { Tracks } from '../types.js';
 import Game from './game/game.js';
+import Leaderboard from './game/leaderboard.js';
 
 export default class GameManager {
-  db: any;
-  game: any;
-  guildId: any;
-  prefix: any;
-  roundDuration: any;
-  emoteNearlyCorrectGuesses: any;
-  leaderboard: any;
-  constructor(db, game, guildId, config) {
+  db: firestore.Firestore;
+  game: Game | null;
+  guildId: string;
+  prefix: string;
+  roundDuration: number;
+  emoteNearlyCorrectGuesses: boolean;
+  leaderboard: { [id: string]: number};
+
+  constructor(db: firestore.Firestore, game: Game | null, guildId: string, config: { prefix: string, round_duration: number, emote_nearly_correct_guesses: boolean, leaderboard: {[id: string]: number}}) {
     this.db = db;
     this.game = game;
     this.guildId = guildId;
@@ -24,6 +28,8 @@ export default class GameManager {
   }
 
   updatePrefix(prefix: string, message: Message) {
+    if (!(message.channel instanceof TextChannel)) return;
+
     const newPrefix = String(prefix);
     sendEmbed(message.channel, `Prefix has been set to \`${newPrefix}\``);
     this.prefix = newPrefix;
@@ -31,6 +37,8 @@ export default class GameManager {
   }
 
   updateRoundDuration(duration: string, message: Message) {
+    if (!(message.channel instanceof TextChannel)) return;
+
     const newRoundDuration = parseRoundDuration(duration);
     if (isNaN(newRoundDuration)) {
       return sendEmbed(message.channel, 'Round duration limit must be a number');
@@ -44,7 +52,7 @@ export default class GameManager {
   //   this.emoteNearlyCorrectGuesses = emote;
   // }
 
-  updateLeaderboard(game) {
+  updateLeaderboard(game: Game) {
     const players = game.leaderboard.getPlayers();
     if (!players.length) return;
 
@@ -66,22 +74,28 @@ export default class GameManager {
   }
 
   clearGame() {
+    if (!this.game) return;
+
     this.game.endGame(false);
     this.updateLeaderboard(this.game);
     this.game = null;
   }
 
-  initializeGame(message, name, img, tracks, roundLimit) {
+  initializeGame(message: Message, name: string, img: string | undefined, tracks: Tracks, roundLimit: number) {
+    if (!message.guild) return;
+
     const tracksLength = Object.keys(tracks).length;
     const playlistEmbed = new MessageEmbed()
       .setTitle(name)
       .setDescription(`Loading ${tracksLength} songs...`)
-      .setImage(img);
+      .setImage(img ?? '');
     message.channel.send({ embed: playlistEmbed });
 
     console.log(`Initializing game in GUILD ${message.guild.name}`);
     const game = new Game(message, tracks, Math.min(tracksLength, roundLimit), this.roundDuration, () => {
-      this.updateLeaderboard(this.game);
+      if (this.game) {
+        this.updateLeaderboard(this.game);
+      }
 
       this.game = null;
     });
@@ -99,10 +113,6 @@ export default class GameManager {
       round_duration: this.roundDuration,
       emote_nearly_correct_guesses: this.emoteNearlyCorrectGuesses,
     };
-  }
-
-  loadConfig() {
-    this.prefix = prefix;
   }
 
   _updateDatabase() {

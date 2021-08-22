@@ -1,15 +1,16 @@
 // import Discord, { MessageEmbed } from 'discord.js';
-import { Client, Message } from 'discord.js';
+import { Client, Message, MessageEmbed, TextChannel } from 'discord.js';
 import * as dotenv from 'dotenv';
 import { getFirestoreDatabase } from './helpers/firestore-helpers';
 
 import Spotify from './spotify/spotify';
-// import GuildManager from './guilds/guild-manager.js';
-// import { parseMessage, sendEmbed } from './helpers/discord-helpers.js';
-// import { parseRoundDuration } from './helpers/helpers.js';
-// import Leaderboard from './guilds/game/leaderboard.js';
+import GuildManager from './guilds/guild-manager';
 
-// import HELP from './assets/help.json';
+import HELP from './assets/help.json';
+import { parseMessage, sendEmbed } from './helpers/discord-helpers';
+import { HelpCommand } from './types';
+import Leaderboard from './guilds/game/leaderboard';
+import { parseRoundDuration } from './helpers/helpers';
 
 dotenv.config();
 
@@ -43,14 +44,15 @@ client.once('disconnect', () => {
 });
 
 
-client.on('message', (message) => {
+client.on('message', (message: Message) => {
   if (message.author.bot) return;
-  if (message.channel.type !== 'text') return;
+  if (!message.guild) return;
+  if (!(message.channel instanceof TextChannel)) return;
 
   if (message.content.includes('@here') || message.content.includes('@everyone')) return;
 
-  const { prefix } = guildManager.getConfig(message.guild!.id);
-  if (message.mentions.has(client.user.id)) {
+  const { prefix } = guildManager.getConfig(message.guild.id);
+  if (message.mentions.has(client.user!.id)) {
     help(message, prefix);
   }
 
@@ -61,7 +63,9 @@ client.on('message', (message) => {
   }
 });
 
-const readCommand = (message, prefix) => {
+const readCommand = (message: Message, prefix: string) => {
+  if (!(message.channel instanceof TextChannel)) return;
+
   if (message.content.startsWith(`${prefix}start`)) {
     start(message, prefix);
   } else if (message.content.startsWith(`${prefix}stop`)) {
@@ -71,7 +75,7 @@ const readCommand = (message, prefix) => {
   } else if (message.content.startsWith(`${prefix}leaderboard`)) {
     leaderboard(message);
   } else if (message.content.startsWith(`${prefix}config`)) {
-    config(message, prefix);
+    config(message);
   } else if (message.content.startsWith(`${prefix}help`)) {
     help(message, prefix);
   } else {
@@ -79,7 +83,11 @@ const readCommand = (message, prefix) => {
   }
 };
 
-const start = async (message, prefix) => {
+const start = async (message: Message, prefix: string) => {
+  if (!(message.channel instanceof TextChannel)) return;
+  if (!message.guild) return;
+  if (!message.member) return;
+
   const args = parseMessage(message);
   if (args.length < 3) {
     const [startHelp] = HELP.game_commands.filter((help) => help.usage.startsWith('start'));
@@ -100,37 +108,48 @@ const start = async (message, prefix) => {
     return sendEmbed(message.channel, 'You need to be in a voice channel to play music');
   }
 
-  const permissions = voiceChannel.permissionsFor(message.client.user);
-  if (!permissions.has('CONNECT') || !permissions.has('SPEAK')) {
-    return sendEmbed(message.channel, 'I need the permissions to join and speak in your voice channel');
-  }
+  // TODO: maybe just do client.user
+  // const permissions = voiceChannel.permissionsFor(message.client.user);
+  // if (permissions && (!permissions.has('CONNECT') || !permissions.has('SPEAK'))) {
+  //   return sendEmbed(message.channel, 'I need the permissions to join and speak in your voice channel');
+  // }
 
   const playlistLinks = args.slice(2);
-  const { name, img, tracks } = await spotify.getPlaylists(playlistLinks);
+  const playlists = await spotify.getPlaylists(playlistLinks);
 
-  if (!name) {
+  if (!playlists) {
     return sendEmbed(message.channel, 'No tracks found');
   }
 
+  const { name, img, tracks } = playlists;
   guildManager.initializeGame(message, name, img, tracks, roundLimit);
 };
 
-const stop = (message) => {
+const stop = (message: Message) => {
+  if (!(message.channel instanceof TextChannel)) return;
+  if (!message.guild) return;
+
   if (!guildManager.hasActiveGame(message.guild.id, message.channel.id)) {
     return sendEmbed(message.channel, 'Nothing to stop here!');
   }
   guildManager.finishGame(message.guild.id);
 };
 
-const skip = (message) => {
+const skip = (message: Message) => {
+  if (!(message.channel instanceof TextChannel)) return;
+  if (!message.guild) return;
+
   if (!guildManager.hasActiveGame(message.guild.id, message.channel.id)) {
     return sendEmbed(message.channel, 'Nothing to skip here!');
   }
   guildManager.skipRound(message.guild.id, message.channel.id);
 };
 
-const leaderboard = (message) => {
-  const leaderboard = new Leaderboard(Object.entries(guildManager.getLeaderboard(message.guild.id)));
+const leaderboard = (message: Message) => {
+  if (!(message.channel instanceof TextChannel)) return;
+  if (!message.guild) return;
+
+  const leaderboard = new Leaderboard(guildManager.getLeaderboard(message.guild.id));
 
   const leaderboardEmbed = new MessageEmbed()
     .setTitle('📊 All Time Leaderboard')
@@ -139,7 +158,10 @@ const leaderboard = (message) => {
   message.channel.send({ embed: leaderboardEmbed });
 };
 
-const config = (message) => {
+const config = (message: Message) => {
+  if (!(message.channel instanceof TextChannel)) return;
+  if (!message.guild) return;
+
   const args = parseMessage(message);
   if (args.length === 1) {
     const config = guildManager.getConfig(message.guild.id);
@@ -171,17 +193,17 @@ const config = (message) => {
   }
 };
 
-const help = (message, prefix) => {
+const help = (message: Message, prefix: string) => {
   const helpEmbed = new MessageEmbed()
     .setTitle('🤖 Hello, I\'m Guess the Song Bot!')
     .setDescription(HELP.description)
     .addField(
       'Game commands',
-      HELP.game_commands.map((cmd) => `${cmd.emoji} \`${prefix}${cmd.usage}\`: ${cmd.description}`).join('\n\n'),
+      HELP.game_commands.map((cmd: HelpCommand) => `${cmd.emoji} \`${prefix}${cmd.usage}\`: ${cmd.description}`).join('\n\n'),
     )
     .addField(
       'Help commands',
-      HELP.help_commands.map((cmd) => `${cmd.emoji} \`${prefix}${cmd.usage}\`: ${cmd.description}`).join('\n\n'),
+      HELP.help_commands.map((cmd: HelpCommand) => `${cmd.emoji} \`${prefix}${cmd.usage}\`: ${cmd.description}`).join('\n\n'),
     );
   message.channel.send({ embed: helpEmbed });
 };

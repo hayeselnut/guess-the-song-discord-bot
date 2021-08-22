@@ -1,9 +1,15 @@
+import { Client, Message, TextChannel } from 'discord.js';
+import { firestore } from 'firebase-admin';
 import DefaultConfig from '../assets/default-config.json';
 import { sendEmbed } from '../helpers/discord-helpers.js';
+import { Tracks } from '../types';
 import GameManager from './game-manager.js';
 
 export default class GuildManager {
-  constructor(db) {
+  guilds: Map<string, GameManager>;
+  db: firestore.Firestore;
+
+  constructor(db: firestore.Firestore) {
     this.guilds = new Map(); // <GUILD_ID, GAME_MANAGER>
     this.db = db;
 
@@ -17,12 +23,12 @@ export default class GuildManager {
     });
   };
 
-  hasActiveGameInGuild(guildId) {
+  hasActiveGameInGuild(guildId: string) {
     return this.guilds.get(guildId)?.game !== null;
   }
 
-  hasActiveGame(guildId, channelId) {
-    const game = this.guilds.get(guildId).game;
+  hasActiveGame(guildId: string, channelId: string) {
+    const game = this.guilds.get(guildId)?.game;
     return game
       ? game.textChannel.id === channelId
       : false;
@@ -30,54 +36,65 @@ export default class GuildManager {
 
   // Will only check guess if the game is running and the message was sent
   // into the same channel the game is in.
-  checkGuess(message) {
+  checkGuess(message: Message) {
+    if (!message.guild) return;
+
     const game = this._getGame(message.guild.id, message.channel.id);
     game?.checkGuess(message);
   }
 
-  finishGame(guildId) {
+  finishGame(guildId: string) {
     const gameManager = this.guilds.get(guildId);
     if (!gameManager || !gameManager?.game) return;
 
     gameManager.clearGame();
   }
 
-  initializeGame(message, name, img, tracks, roundLimit) {
+  initializeGame(message: Message, name: string, img: string | undefined, tracks: Tracks, roundLimit: number) {
+    if (!message.guild) return;
+
     const gameManager = this._getGameManager(message.guild.id);
-    gameManager.initializeGame(message, name, img, tracks, roundLimit);
+    gameManager?.initializeGame(message, name, img, tracks, roundLimit);
   }
 
-  getConfig(guildId) {
+  getConfig(guildId: string) {
     const gameManager = this._getGameManager(guildId);
-    return gameManager.getConfig();
+    return gameManager?.getConfig();
   }
 
-  getLeaderboard(guildId) {
+  getLeaderboard(guildId: string) {
     const gameManager = this._getGameManager(guildId);
     return gameManager?.getLeaderboard();
   }
 
-  skipRound(guildId, channelId) {
+  skipRound(guildId: string, channelId: string) {
     const game = this._getGame(guildId, channelId);
     game?.skipRound();
   }
 
-  updatePrefix(prefix, message) {
+  updatePrefix(prefix: string, message: Message) {
+    if (!message.guild) return;
     const gameManager = this._getGameManager(message.guild.id);
-    gameManager.updatePrefix(prefix, message);
+    gameManager?.updatePrefix(prefix, message);
   }
 
-  updateRoundDuration(duration, message) {
+  updateRoundDuration(duration: string, message: Message) {
+    if (!message.guild) return;
     const gameManager = this._getGameManager(message.guild.id);
-    gameManager.updateRoundDuration(duration, message);
+    gameManager?.updateRoundDuration(duration, message);
   }
 
   // updateEmote(emote) {
 
   // }
 
-  resetConfig(message) {
+  resetConfig(message: Message) {
+    if (!message.guild) return;
+    if (!(message.channel instanceof TextChannel)) return;
+
     const gameManager = this._getGameManager(message.guild.id);
+    if (!gameManager) return;
+
     gameManager.prefix = DefaultConfig.prefix;
     gameManager.roundDuration = DefaultConfig.round_duration;
     gameManager.emoteNearlyCorrectGuesses = DefaultConfig.emote_nearly_correct_guesses;
@@ -90,17 +107,17 @@ export default class GuildManager {
     sendEmbed(message.channel, 'Configs have been reset');
   }
 
-  _getGame(guildId, channelId) {
+  _getGame(guildId: string, channelId: string) {
     const game = this.guilds.get(guildId)?.game;
     return game?.textChannel?.id === channelId ? game : undefined;
   }
 
-  _getGameManager(guildId) {
+  _getGameManager(guildId: string) {
     this._initializeNewGuild(guildId);
     return this.guilds.get(guildId);
   }
 
-  _initializeNewGuild(guildId) {
+  _initializeNewGuild(guildId: string) {
     if (this.guilds.has(guildId)) return;
 
     const gameManager = new GameManager(this.db, null, guildId, DefaultConfig);

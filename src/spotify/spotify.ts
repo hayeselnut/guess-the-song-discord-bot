@@ -1,6 +1,6 @@
 import SpotifyWebApi from 'spotify-web-api-node';
 import { normalizeTrack } from '../helpers/normalize-helpers';
-import { track, tracks } from '../types';
+import { Playlist, Track, Tracks } from '../types';
 
 export default class Spotify {
   api: SpotifyWebApi;
@@ -9,22 +9,24 @@ export default class Spotify {
     this.api = new SpotifyWebApi({ clientId, clientSecret });
   }
 
-  async getPlaylists(playlistLinks: string[]) {
+  async getPlaylists(playlistLinks: string[]): Promise<Playlist | undefined> {
     await this._retrieveAccessToken();
 
-    const allPlaylists = (await Promise.all(playlistLinks.map((link) => this._getPlaylist(link))))
-      .filter((playlist) => playlist != undefined && playlist.name != null);
+    const playlists = (await Promise.all(playlistLinks.map((link) => this._getPlaylist(link))))
+      .filter((playlist): playlist is Playlist => playlist !== undefined);
+
+    if (playlists.length === 0) return undefined;
 
     return {
-      name: allPlaylists.map((playlist) => playlist.name).join(' + '), // Show all names joined by ` + `
-      img: allPlaylists.find((playlist) => playlist.img !== null && playlist.img !== undefined)?.img,
-      tracks: allPlaylists.reduce((acc, playlist) => {
+      name: playlists.map((playlist) => playlist.name).join(' + '), // Show all names joined by ` + `
+      img: playlists.find((playlist) => playlist.img !== null && playlist.img !== undefined)?.img,
+      tracks: playlists.reduce((acc, playlist) => {
         return { ...acc, ...playlist.tracks };
       }, {}),
     };
   }
 
-  async _getPlaylist(playlistLink: string) {
+  async _getPlaylist(playlistLink: string): Promise<Playlist | undefined> {
     try {
       const playlistId = this._parsePlaylistLink(playlistLink);
       const playlistData = await this.api.getPlaylist(playlistId);
@@ -36,24 +38,20 @@ export default class Spotify {
         tracks: tracks,
       };
     } catch (err) {
-      return {
-        name: null,
-        img: null,
-        tracks: null,
-      };
+      return undefined;
     }
   }
 
   async _retrieveAccessToken() {
     const data = await this.api.clientCredentialsGrant();
-    console.log('The Spotify access token expires in ' + data.body['expires_in']);
-    console.log('The Spotify access token is ' + data.body['access_token']);
+    console.log('The Spotify access token expires in ' + data.body.expires_in);
+    console.log('The Spotify access token is ' + data.body.access_token);
 
     // Save the access token so that it's used in future calls
     this.api.setAccessToken(data.body.access_token);
   }
 
-  async _getTracksFromPlaylist(playlistId: string, offset: number = 0): Promise<tracks> {
+  async _getTracksFromPlaylist(playlistId: string, offset: number = 0): Promise<Tracks> {
     const data = await this.api.getPlaylistTracks(playlistId, { offset });
     const tracks = data.body.items.map((trackData) => {
       const { normalizedName, normalizedArtists } = normalizeTrack(
@@ -68,7 +66,7 @@ export default class Spotify {
         normalizedName,
         normalizedArtists,
       };
-    }).reduce((acc: tracks, track: track) => {
+    }).reduce((acc: Tracks, track: Track) => {
       acc[track.id] = track;
       return acc;
     }, {});

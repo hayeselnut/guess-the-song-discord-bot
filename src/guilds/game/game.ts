@@ -8,7 +8,7 @@ import Leaderboard from './leaderboard.js';
 import Round from './round.js';
 
 import Cookie from '../../assets/cookie.json';
-import { tracks } from '../../types.js';
+import { Tracks } from '../../types.js';
 
 const BUFFER_LIMIT = 10;
 
@@ -17,7 +17,7 @@ export default class Game {
   textChannel: TextChannel;
   voiceChannel: VoiceChannel;
   connection: VoiceConnection | null;
-  tracks: tracks;
+  tracks: Tracks;
   roundDuration: number;
   roundLimit: number;
   order: string[];
@@ -28,11 +28,11 @@ export default class Game {
   currRound: number;
   callback: any;
 
-  constructor(message: Message, tracks: tracks, roundLimit: number, roundDuration: number, callback: any) {
+  constructor(message: Message, tracks: Tracks, roundLimit: number, roundDuration: number, callback: any) {
     // Discord things
-    this.guildId = message.guild!.id;
+    this.guildId = message.guild.id;
     this.textChannel = message.channel as TextChannel;
-    this.voiceChannel = message.member!.voice.channel!;
+    this.voiceChannel = message.member.voice.channel;
     this.connection = null;
 
     // Game

@@ -1,10 +1,10 @@
 import Guesses from "./guesses";
 
 export default class Leaderboard {
-  points: Map<string, number>;
+  private points: Map<string, number>; // <PLAYER, POINTS>
 
-  constructor(initialState?: [string, number][]) {
-    this.points = new Map(initialState); // <PLAYER, POINTS>
+  constructor(initialState?: Leaderboard) {
+    this.points = initialState ? new Map(Object.entries(initialState)) : new Map();
   }
 
   addPoints(player: string, points: number = 1) {

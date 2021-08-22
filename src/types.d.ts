@@ -1,4 +1,4 @@
-export type track = {
+export type Track = {
     id: string,
     name: string,
     artists: string[],
@@ -7,6 +7,14 @@ export type track = {
     normalizedArtists: string[],
   };
 
-  export type tracks = {
-    [id: string]: track
-  }
+export type Tracks = {
+  [id: string]: Track
+};
+
+export type Playlist = {
+  name: string,
+  img: string | undefined,
+  tracks: Tracks,
+}
+
+export type HelpCommand = {emoji: string, usage: string, description: string}
