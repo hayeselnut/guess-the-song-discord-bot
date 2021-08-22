@@ -2,7 +2,6 @@ import Discord, { MessageEmbed } from 'discord.js';
 import { config as configDotEnv } from 'dotenv';
 
 import admin from 'firebase-admin';
-import ServiceAccount from './assets/service-account.json';
 
 import Spotify from './spotify/spotify.js';
 import GuildManager from './guilds/guild-manager.js';
@@ -15,7 +14,11 @@ import HELP from './assets/help.json';
 configDotEnv();
 
 admin.initializeApp({
-  credential: admin.credential.cert(ServiceAccount),
+  credential: admin.credential.cert({
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  }),
 });
 const db = admin.firestore();
 const guildManager = new GuildManager(db);
