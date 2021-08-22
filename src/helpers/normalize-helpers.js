@@ -5,6 +5,7 @@ export const removeAdditionalInformation = (str) =>
     .replace(/ - .*/g, '')
     .replace(/feat\. .*/g)
     .replace(/ft\. .*/g);
+// TODO ni**as in paris
 
 export const normalize = (str, type) => {
   let normalized = str.normalize('NFD').toLowerCase();
@@ -12,6 +13,7 @@ export const normalize = (str, type) => {
   if (type == 'name') {
     normalized = removeAdditionalInformation(normalized);
     normalized = normalized
+      .replace('ni**as', 'niggas') // Ni**as in Paris
       .replace('f**k', 'fuck'); // F**king Perfect
   } else if (type == 'artist') {
     normalized = normalized
@@ -33,6 +35,7 @@ export const normalize = (str, type) => {
     .replace('9', 'nine')
     .replace(' & ', ' and ')
     .replace(/^the /g, '')
+    // .replace('**' )
     .replace(/[^a-z0-9]/g, '') || str;
 };
 
