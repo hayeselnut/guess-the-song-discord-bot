@@ -8,7 +8,7 @@ import GuildManager from './guilds/guild-manager';
 
 import HELP from './assets/help.json';
 import { parseMessage, sendEmbed } from './helpers/discord-helpers';
-import { HelpCommand } from './types';
+import { HelpCommand, MessageWithTextChanel } from './types';
 import Leaderboard from './guilds/game/leaderboard';
 import { parseRoundDuration } from './helpers/helpers';
 
@@ -43,11 +43,17 @@ client.once('disconnect', () => {
   console.log('Disconnect!');
 });
 
+const canUseMesssage = (message: Message): message is MessageWithTextChanel => {
+  if (!(message.channel instanceof TextChannel)) return false;
+  if (!message.guild) return false;
+  if (!message.member) return false;
+  return true;
+}
 
 client.on('message', (message: Message) => {
+  if (!canUseMesssage(message)) return;
+
   if (message.author.bot) return;
-  if (!message.guild) return;
-  if (!(message.channel instanceof TextChannel)) return;
 
   if (message.content.includes('@here') || message.content.includes('@everyone')) return;
 
@@ -63,8 +69,7 @@ client.on('message', (message: Message) => {
   }
 });
 
-const readCommand = (message: Message, prefix: string) => {
-  if (!(message.channel instanceof TextChannel)) return;
+const readCommand = (message: MessageWithTextChanel, prefix: string) => {
 
   if (message.content.startsWith(`${prefix}start`)) {
     start(message, prefix);
@@ -83,11 +88,7 @@ const readCommand = (message: Message, prefix: string) => {
   }
 };
 
-const start = async (message: Message, prefix: string) => {
-  if (!(message.channel instanceof TextChannel)) return;
-  if (!message.guild) return;
-  if (!message.member) return;
-
+const start = async (message: MessageWithTextChanel, prefix: string) => {
   const args = parseMessage(message);
   if (args.length < 3) {
     const [startHelp] = HELP.game_commands.filter((help) => help.usage.startsWith('start'));

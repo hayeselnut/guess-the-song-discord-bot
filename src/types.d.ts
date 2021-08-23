@@ -1,3 +1,5 @@
+import { Guild, GuildMember, Message, TextChannel, User } from "discord.js";
+
 export type Track = {
     id: string,
     name: string,
@@ -18,3 +20,9 @@ export type Playlist = {
 }
 
 export type HelpCommand = {emoji: string, usage: string, description: string}
+
+export interface MessageWithTextChanel extends Message {
+  channel: TextChannel,
+  guild: Guild,
+  member: GuildMember,
+}
