@@ -21,7 +21,7 @@ export type Playlist = {
 
 export type HelpCommand = {emoji: string, usage: string, description: string}
 
-export interface ReadableMessage extends Message {
+export interface ValidMessage extends Message {
   channel: TextChannel,
   guild: Guild,
   member: GuildMember,
