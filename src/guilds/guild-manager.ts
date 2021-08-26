@@ -2,7 +2,7 @@ import { Client, Message, TextChannel } from 'discord.js';
 import { firestore } from 'firebase-admin';
 import DefaultConfig from '../assets/default-config.json';
 import { sendEmbed } from '../helpers/discord-helpers.js';
-import { Tracks } from '../types';
+import { Tracks, ValidMessage } from '../types';
 import GameManager from './game-manager.js';
 
 export default class GuildManager {
@@ -36,7 +36,7 @@ export default class GuildManager {
 
   // Will only check guess if the game is running and the message was sent
   // into the same channel the game is in.
-  checkGuess(message: Message) {
+  checkGuess(message: ValidMessage) {
     if (!message.guild) return;
 
     const game = this._getGame(message.guild.id, message.channel.id);
@@ -50,7 +50,7 @@ export default class GuildManager {
     gameManager.clearGame();
   }
 
-  initializeGame(message: Message, name: string, img: string | undefined, tracks: Tracks, roundLimit: number) {
+  initializeGame(message: ValidMessage, name: string, img: string | undefined, tracks: Tracks, roundLimit: number) {
     if (!message.guild) return;
 
     const gameManager = this._getGameManager(message.guild.id);
@@ -72,13 +72,13 @@ export default class GuildManager {
     game?.skipRound();
   }
 
-  updatePrefix(prefix: string, message: Message) {
+  updatePrefix(prefix: string, message: ValidMessage) {
     if (!message.guild) return;
     const gameManager = this._getGameManager(message.guild.id);
     gameManager?.updatePrefix(prefix, message);
   }
 
-  updateRoundDuration(duration: string, message: Message) {
+  updateRoundDuration(duration: string, message: ValidMessage) {
     if (!message.guild) return;
     const gameManager = this._getGameManager(message.guild.id);
     gameManager?.updateRoundDuration(duration, message);
@@ -88,7 +88,7 @@ export default class GuildManager {
 
   // }
 
-  resetConfig(message: Message) {
+  resetConfig(message: ValidMessage) {
     if (!message.guild) return;
     if (!(message.channel instanceof TextChannel)) return;
 

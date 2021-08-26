@@ -2,7 +2,7 @@ import { Message, MessageEmbed, TextChannel } from 'discord.js';
 import { firestore } from 'firebase-admin';
 import { sendEmbed } from '../helpers/discord-helpers.js';
 import { parseRoundDuration } from '../helpers/helpers.js';
-import { Tracks } from '../types.js';
+import { Tracks, ValidMessage } from '../types.js';
 import Game from './game/game.js';
 import Leaderboard from './game/leaderboard.js';
 
@@ -27,7 +27,7 @@ export default class GameManager {
     this.leaderboard = config.leaderboard;
   }
 
-  updatePrefix(prefix: string, message: Message) {
+  updatePrefix(prefix: string, message: ValidMessage) {
     if (!(message.channel instanceof TextChannel)) return;
 
     const newPrefix = String(prefix);
@@ -36,7 +36,7 @@ export default class GameManager {
     this._updateDatabase();
   }
 
-  updateRoundDuration(duration: string, message: Message) {
+  updateRoundDuration(duration: string, message: ValidMessage) {
     if (!(message.channel instanceof TextChannel)) return;
 
     const newRoundDuration = parseRoundDuration(duration);
@@ -81,7 +81,7 @@ export default class GameManager {
     this.game = null;
   }
 
-  initializeGame(message: Message, name: string, img: string | undefined, tracks: Tracks, roundLimit: number) {
+  initializeGame(message: ValidMessage, name: string, img: string | undefined, tracks: Tracks, roundLimit: number) {
     if (!message.guild) return;
 
     const tracksLength = Object.keys(tracks).length;

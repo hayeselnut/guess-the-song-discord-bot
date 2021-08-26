@@ -8,9 +8,9 @@ import GuildManager from './guilds/guild-manager';
 
 import HELP from './assets/help.json';
 import { parseMessage, sendEmbed } from './helpers/discord-helpers';
-import { HelpCommand, MessageWithTextChanel } from './types';
+import { HelpCommand, ValidMessage } from './types';
 import Leaderboard from './guilds/game/leaderboard';
-import { parseRoundDuration } from './helpers/helpers';
+import { isValidMessage, parseRoundDuration } from './helpers/helpers';
 
 dotenv.config();
 
@@ -22,7 +22,13 @@ const db = getFirestoreDatabase(
 const guildManager = new GuildManager(db);
 
 const token = process.env.DISCORD_BOT_TOKEN;
-const client = new Client();
+const client = new Client({
+  ws: { intents: ["GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS"] },
+  messageEditHistoryMaxSize: 0,
+  messageCacheMaxSize: 25,
+  messageCacheLifetime: 21600,
+  messageSweepInterval: 43200,
+});
 
 const spotify = new Spotify(
   process.env.SPOTIFY_CLIENT_ID!,
@@ -43,15 +49,8 @@ client.once('disconnect', () => {
   console.log('Disconnect!');
 });
 
-const canUseMesssage = (message: Message): message is MessageWithTextChanel => {
-  if (!(message.channel instanceof TextChannel)) return false;
-  if (!message.guild) return false;
-  if (!message.member) return false;
-  return true;
-}
-
 client.on('message', (message: Message) => {
-  if (!canUseMesssage(message)) return;
+  if (!isValidMessage(message)) return;
 
   if (message.author.bot) return;
 
@@ -69,7 +68,7 @@ client.on('message', (message: Message) => {
   }
 });
 
-const readCommand = (message: MessageWithTextChanel, prefix: string) => {
+const readCommand = (message: ValidMessage, prefix: string) => {
 
   if (message.content.startsWith(`${prefix}start`)) {
     start(message, prefix);
@@ -88,7 +87,7 @@ const readCommand = (message: MessageWithTextChanel, prefix: string) => {
   }
 };
 
-const start = async (message: MessageWithTextChanel, prefix: string) => {
+const start = async (message: ValidMessage, prefix: string) => {
   const args = parseMessage(message);
   if (args.length < 3) {
     const [startHelp] = HELP.game_commands.filter((help) => help.usage.startsWith('start'));
@@ -126,7 +125,7 @@ const start = async (message: MessageWithTextChanel, prefix: string) => {
   guildManager.initializeGame(message, name, img, tracks, roundLimit);
 };
 
-const stop = (message: Message) => {
+const stop = (message: ValidMessage) => {
   if (!(message.channel instanceof TextChannel)) return;
   if (!message.guild) return;
 
@@ -136,7 +135,7 @@ const stop = (message: Message) => {
   guildManager.finishGame(message.guild.id);
 };
 
-const skip = (message: Message) => {
+const skip = (message: ValidMessage) => {
   if (!(message.channel instanceof TextChannel)) return;
   if (!message.guild) return;
 
@@ -146,7 +145,7 @@ const skip = (message: Message) => {
   guildManager.skipRound(message.guild.id, message.channel.id);
 };
 
-const leaderboard = (message: Message) => {
+const leaderboard = (message: ValidMessage) => {
   if (!(message.channel instanceof TextChannel)) return;
   if (!message.guild) return;
 
@@ -159,7 +158,7 @@ const leaderboard = (message: Message) => {
   message.channel.send({ embed: leaderboardEmbed });
 };
 
-const config = (message: Message) => {
+const config = (message: ValidMessage) => {
   if (!(message.channel instanceof TextChannel)) return;
   if (!message.guild) return;
 
@@ -194,7 +193,7 @@ const config = (message: Message) => {
   }
 };
 
-const help = (message: Message, prefix: string) => {
+const help = (message: ValidMessage, prefix: string) => {
   const helpEmbed = new MessageEmbed()
     .setTitle('🤖 Hello, I\'m Guess the Song Bot!')
     .setDescription(HELP.description)

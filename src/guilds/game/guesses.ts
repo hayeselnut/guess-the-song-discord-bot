@@ -25,14 +25,14 @@ export default class Guesses {
     return this.remainingPoints <= 0;
   }
 
-  checkGuess(message: Message) {
+  checkGuess(message: ValidMessage) {
     const guessedName = this._checkGuessForName(message);
     const guessedArtists = this._checkGuessForArtists(message);
 
     return guessedName || guessedArtists;
   }
 
-  _checkGuessForName(message: Message) {
+  _checkGuessForName(message: ValidMessage) {
     if (this.answeredBy.get(SONG_INDEX)) return false;
 
     const guess = normalize(message.content, 'name');
@@ -43,7 +43,7 @@ export default class Guesses {
     return true;
   }
 
-  _checkGuessForArtists(message: Message) {
+  _checkGuessForArtists(message: ValidMessage) {
     return this.track.normalizedArtists.map((artist, index) => {
       if (this.answeredBy.get(index)) return false;
 

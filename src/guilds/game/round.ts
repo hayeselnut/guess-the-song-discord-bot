@@ -1,6 +1,6 @@
 import { Message, MessageEmbed, TextChannel, VoiceConnection } from 'discord.js';
 import { randInt } from '../../helpers/helpers';
-import { Track } from '../../types.js';
+import { Track, ValidMessage } from '../../types.js';
 import Guesses from './guesses.js';
 
 export default class Round {
@@ -37,7 +37,7 @@ export default class Round {
     this._playTrack();
   }
 
-  checkGuess(message: Message) {
+  checkGuess(message: ValidMessage) {
     const guessCorrect = this.guesses.checkGuess(message);
     if (this.guesses.guessedAll()) {
       this.endRound();

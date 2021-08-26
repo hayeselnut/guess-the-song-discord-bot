@@ -8,14 +8,14 @@ import Leaderboard from './leaderboard.js';
 import Round from './round.js';
 
 import Cookie from '../../assets/cookie.json';
-import { Tracks } from '../../types.js';
+import { Tracks, ValidMessage } from '../../types.js';
 
 const BUFFER_LIMIT = 10;
 
 export default class Game {
   guildId: string;
   textChannel: TextChannel;
-  voiceChannel: VoiceChannel;
+  voiceChannel: VoiceChannel | null;
   connection: VoiceConnection | null;
   tracks: Tracks;
   roundDuration: number;
@@ -28,7 +28,7 @@ export default class Game {
   currRound: number;
   callback: any;
 
-  constructor(message: Message, tracks: Tracks, roundLimit: number, roundDuration: number, callback: any) {
+  constructor(message: ValidMessage, tracks: Tracks, roundLimit: number, roundDuration: number, callback: any) {
     // Discord things
     this.guildId = message.guild.id;
     this.textChannel = message.channel as TextChannel;
@@ -64,7 +64,7 @@ export default class Game {
     this._startRound();
   }
 
-  checkGuess(message: Message) {
+  checkGuess(message: ValidMessage) {
     if (this.round == null) {
       return console.error('Could not check guess with empty round');
     };
