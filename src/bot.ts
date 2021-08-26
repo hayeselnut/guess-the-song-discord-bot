@@ -10,7 +10,7 @@ import HELP from './assets/help.json';
 import { parseMessage, sendEmbed } from './helpers/discord-helpers';
 import { HelpCommand, ValidMessage } from './types';
 import Leaderboard from './guilds/game/leaderboard';
-import { isValidMessage, parseRoundDuration } from './helpers/helpers';
+import { isValidMessage, isValidMessageWithVoiceChannel, parseRoundDuration } from './helpers/helpers';
 
 dotenv.config();
 
@@ -56,7 +56,8 @@ client.on('message', (message: Message) => {
 
   if (message.content.includes('@here') || message.content.includes('@everyone')) return;
 
-  const { prefix } = guildManager.getConfig(message.guild.id);
+  // TODO: refactor so guild manager processes the command
+  const prefix = guildManager.getConfig(message.guild.id)?.prefix || "$";
   if (message.mentions.has(client.user!.id)) {
     help(message, prefix);
   }
@@ -69,7 +70,6 @@ client.on('message', (message: Message) => {
 });
 
 const readCommand = (message: ValidMessage, prefix: string) => {
-
   if (message.content.startsWith(`${prefix}start`)) {
     start(message, prefix);
   } else if (message.content.startsWith(`${prefix}stop`)) {
@@ -103,8 +103,7 @@ const start = async (message: ValidMessage, prefix: string) => {
     return sendEmbed(message.channel, `There's already a game running!`);
   }
 
-  const voiceChannel = message.member.voice.channel;
-  if (!voiceChannel) {
+  if (!isValidMessageWithVoiceChannel(message)) {
     return sendEmbed(message.channel, 'You need to be in a voice channel to play music');
   }
 
@@ -126,9 +125,6 @@ const start = async (message: ValidMessage, prefix: string) => {
 };
 
 const stop = (message: ValidMessage) => {
-  if (!(message.channel instanceof TextChannel)) return;
-  if (!message.guild) return;
-
   if (!guildManager.hasActiveGame(message.guild.id, message.channel.id)) {
     return sendEmbed(message.channel, 'Nothing to stop here!');
   }
@@ -136,9 +132,6 @@ const stop = (message: ValidMessage) => {
 };
 
 const skip = (message: ValidMessage) => {
-  if (!(message.channel instanceof TextChannel)) return;
-  if (!message.guild) return;
-
   if (!guildManager.hasActiveGame(message.guild.id, message.channel.id)) {
     return sendEmbed(message.channel, 'Nothing to skip here!');
   }
@@ -146,9 +139,6 @@ const skip = (message: ValidMessage) => {
 };
 
 const leaderboard = (message: ValidMessage) => {
-  if (!(message.channel instanceof TextChannel)) return;
-  if (!message.guild) return;
-
   const leaderboard = new Leaderboard(guildManager.getLeaderboard(message.guild.id));
 
   const leaderboardEmbed = new MessageEmbed()
@@ -159,9 +149,6 @@ const leaderboard = (message: ValidMessage) => {
 };
 
 const config = (message: ValidMessage) => {
-  if (!(message.channel instanceof TextChannel)) return;
-  if (!message.guild) return;
-
   const args = parseMessage(message);
   if (args.length === 1) {
     const config = guildManager.getConfig(message.guild.id);

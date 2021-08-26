@@ -1,8 +1,8 @@
 import { Message, MessageEmbed, TextChannel } from 'discord.js';
 import { firestore } from 'firebase-admin';
 import { sendEmbed } from '../helpers/discord-helpers.js';
-import { parseRoundDuration } from '../helpers/helpers.js';
-import { Tracks, ValidMessage } from '../types.js';
+import { isValidMessageWithVoiceChannel, parseRoundDuration } from '../helpers/helpers.js';
+import { Config, Tracks, ValidMessage, ValidMessageWithVoiceChannel } from '../types.js';
 import Game from './game/game.js';
 import Leaderboard from './game/leaderboard.js';
 
@@ -15,7 +15,7 @@ export default class GameManager {
   emoteNearlyCorrectGuesses: boolean;
   leaderboard: { [id: string]: number};
 
-  constructor(db: firestore.Firestore, game: Game | null, guildId: string, config: { prefix: string, round_duration: number, emote_nearly_correct_guesses: boolean, leaderboard: {[id: string]: number}}) {
+  constructor(db: firestore.Firestore, game: Game | null, guildId: string, config: Config) {
     this.db = db;
     this.game = game;
     this.guildId = guildId;
@@ -28,8 +28,6 @@ export default class GameManager {
   }
 
   updatePrefix(prefix: string, message: ValidMessage) {
-    if (!(message.channel instanceof TextChannel)) return;
-
     const newPrefix = String(prefix);
     sendEmbed(message.channel, `Prefix has been set to \`${newPrefix}\``);
     this.prefix = newPrefix;
@@ -37,8 +35,6 @@ export default class GameManager {
   }
 
   updateRoundDuration(duration: string, message: ValidMessage) {
-    if (!(message.channel instanceof TextChannel)) return;
-
     const newRoundDuration = parseRoundDuration(duration);
     if (isNaN(newRoundDuration)) {
       return sendEmbed(message.channel, 'Round duration limit must be a number');
@@ -81,9 +77,7 @@ export default class GameManager {
     this.game = null;
   }
 
-  initializeGame(message: ValidMessage, name: string, img: string | undefined, tracks: Tracks, roundLimit: number) {
-    if (!message.guild) return;
-
+  initializeGame(message: ValidMessageWithVoiceChannel, name: string, img: string | undefined, tracks: Tracks, roundLimit: number) {
     const tracksLength = Object.keys(tracks).length;
     const playlistEmbed = new MessageEmbed()
       .setTitle(name)

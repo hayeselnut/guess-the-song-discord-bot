@@ -2,7 +2,7 @@ import { Client, Message, TextChannel } from 'discord.js';
 import { firestore } from 'firebase-admin';
 import DefaultConfig from '../assets/default-config.json';
 import { sendEmbed } from '../helpers/discord-helpers.js';
-import { Tracks, ValidMessage } from '../types';
+import { Config, Tracks, ValidMessage, ValidMessageWithVoiceChannel } from '../types';
 import GameManager from './game-manager.js';
 
 export default class GuildManager {
@@ -19,7 +19,7 @@ export default class GuildManager {
   async _loadGuilds() {
     const snapshot = await this.db.collection('guilds').get();
     snapshot.forEach((doc) => {
-      this.guilds.set(doc.id, new GameManager(this.db, null, doc.id, doc.data()));
+      this.guilds.set(doc.id, new GameManager(this.db, null, doc.id, doc.data() as Config));
     });
   };
 
@@ -37,8 +37,6 @@ export default class GuildManager {
   // Will only check guess if the game is running and the message was sent
   // into the same channel the game is in.
   checkGuess(message: ValidMessage) {
-    if (!message.guild) return;
-
     const game = this._getGame(message.guild.id, message.channel.id);
     game?.checkGuess(message);
   }
@@ -50,8 +48,7 @@ export default class GuildManager {
     gameManager.clearGame();
   }
 
-  initializeGame(message: ValidMessage, name: string, img: string | undefined, tracks: Tracks, roundLimit: number) {
-    if (!message.guild) return;
+  initializeGame(message: ValidMessageWithVoiceChannel, name: string, img: string | undefined, tracks: Tracks, roundLimit: number) {
 
     const gameManager = this._getGameManager(message.guild.id);
     gameManager?.initializeGame(message, name, img, tracks, roundLimit);
@@ -59,7 +56,7 @@ export default class GuildManager {
 
   getConfig(guildId: string) {
     const gameManager = this._getGameManager(guildId);
-    return gameManager?.getConfig();
+    return gameManager?.getConfig() || DefaultConfig;
   }
 
   getLeaderboard(guildId: string) {
@@ -73,13 +70,11 @@ export default class GuildManager {
   }
 
   updatePrefix(prefix: string, message: ValidMessage) {
-    if (!message.guild) return;
     const gameManager = this._getGameManager(message.guild.id);
     gameManager?.updatePrefix(prefix, message);
   }
 
   updateRoundDuration(duration: string, message: ValidMessage) {
-    if (!message.guild) return;
     const gameManager = this._getGameManager(message.guild.id);
     gameManager?.updateRoundDuration(duration, message);
   }
@@ -89,9 +84,6 @@ export default class GuildManager {
   // }
 
   resetConfig(message: ValidMessage) {
-    if (!message.guild) return;
-    if (!(message.channel instanceof TextChannel)) return;
-
     const gameManager = this._getGameManager(message.guild.id);
     if (!gameManager) return;
 
@@ -120,10 +112,10 @@ export default class GuildManager {
   _initializeNewGuild(guildId: string) {
     if (this.guilds.has(guildId)) return;
 
-    const gameManager = new GameManager(this.db, null, guildId, DefaultConfig);
+    const gameManager = new GameManager(this.db, null, guildId, {...DefaultConfig, leaderboard: {}});
     this.guilds.set(guildId, gameManager);
 
     // Upload to database
-    this.db.collection('guilds').doc(guildId).set(DefaultConfig);
+    this.db.collection('guilds').doc(guildId).set({...DefaultConfig, leaderboard: {}});
   }
 }

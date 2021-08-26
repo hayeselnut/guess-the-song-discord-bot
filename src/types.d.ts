@@ -1,4 +1,4 @@
-import { Guild, GuildMember, Message, TextChannel, User } from "discord.js";
+import { Guild, GuildMember, Message, TextChannel, User, VoiceChannel, VoiceState } from "discord.js";
 
 export type Track = {
     id: string,
@@ -21,8 +21,27 @@ export type Playlist = {
 
 export type HelpCommand = {emoji: string, usage: string, description: string}
 
+export type Config = {
+  prefix: string,
+  round_duration: number,
+  emote_nearly_correct_guesses: boolean,
+  leaderboard: { [id: string]: number },
+}
+
 export interface ValidMessage extends Message {
   channel: TextChannel,
   guild: Guild,
   member: GuildMember,
+}
+
+export interface VoiceStateWithVoiceChannel extends VoiceState {
+  channel: VoiceChannel
+}
+
+export interface GuildMemberWithVoiceChannel extends GuildMember {
+  voice: VoiceStateWithVoiceChannel
+}
+
+export interface ValidMessageWithVoiceChannel extends ValidMessage {
+  member: GuildMemberWithVoiceChannel
 }

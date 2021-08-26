@@ -1,7 +1,7 @@
 import { Message } from 'discord.js';
 import { tag } from '../../helpers/discord-helpers.js';
 import { normalize, removeAdditionalInformation } from '../../helpers/normalize-helpers.js';
-import { Track } from '../../types.js';
+import { Track, ValidMessage } from '../../types.js';
 
 const SONG_INDEX = -1;
 
