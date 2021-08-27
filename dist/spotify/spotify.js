@@ -3,7 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/* eslint-disable require-jsdoc */
 const spotify_web_api_node_1 = __importDefault(require("spotify-web-api-node"));
 const normalize_helpers_1 = require("../helpers/normalize-helpers");
 class Spotify {
@@ -12,12 +11,14 @@ class Spotify {
     }
     async getPlaylists(playlistLinks) {
         await this._retrieveAccessToken();
-        const allPlaylists = (await Promise.all(playlistLinks.map((link) => this._getPlaylist(link))))
-            .filter((playlist) => playlist != undefined && playlist.name != null);
+        const playlists = (await Promise.all(playlistLinks.map((link) => this._getPlaylist(link))))
+            .filter((playlist) => playlist !== undefined);
+        if (playlists.length === 0)
+            return undefined;
         return {
-            name: allPlaylists.map((playlist) => playlist.name).join(' + '),
-            img: allPlaylists.find((playlist) => playlist.img !== null && playlist.img !== undefined)?.img,
-            tracks: allPlaylists.reduce((acc, playlist) => {
+            name: playlists.map((playlist) => playlist.name).join(' + '),
+            img: playlists.find((playlist) => playlist.img !== null && playlist.img !== undefined)?.img,
+            tracks: playlists.reduce((acc, playlist) => {
                 return { ...acc, ...playlist.tracks };
             }, {}),
         };
@@ -34,17 +35,13 @@ class Spotify {
             };
         }
         catch (err) {
-            return {
-                name: null,
-                img: null,
-                tracks: null,
-            };
+            return undefined;
         }
     }
     async _retrieveAccessToken() {
         const data = await this.api.clientCredentialsGrant();
-        console.log('The Spotify access token expires in ' + data.body['expires_in']);
-        console.log('The Spotify access token is ' + data.body['access_token']);
+        console.log('The Spotify access token expires in ' + data.body.expires_in);
+        console.log('The Spotify access token is ' + data.body.access_token);
         // Save the access token so that it's used in future calls
         this.api.setAccessToken(data.body.access_token);
     }

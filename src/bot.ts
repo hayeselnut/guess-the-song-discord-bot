@@ -23,7 +23,7 @@ const guildManager = new GuildManager(db);
 
 const token = process.env.DISCORD_BOT_TOKEN;
 const client = new Client({
-  ws: { intents: ["GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS"] },
+  // ws: { intents: ["GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS"] }, // TODO
   messageEditHistoryMaxSize: 0,
   messageCacheMaxSize: 25,
   messageCacheLifetime: 21600,
@@ -34,8 +34,6 @@ const spotify = new Spotify(
   process.env.SPOTIFY_CLIENT_ID!,
   process.env.SPOTIFY_CLIENT_SECRET!
 );
-
-console.log('made it here!');
 
 client.once('ready', () => {
   console.log('Ready!');

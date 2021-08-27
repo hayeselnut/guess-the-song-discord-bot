@@ -96,6 +96,11 @@ export default class Game {
       }
     });
 
+    if (!this.connection) {
+      this._failJoinVoiceChannel();
+      return;
+    }
+
     const round = new Round(track, stream, this.connection, this.textChannel, this.roundDuration, (title: string) => {
       this._endRound(title);
     });
@@ -151,10 +156,14 @@ export default class Game {
       this.connection = await this.voiceChannel.join();
     } catch (err) {
       console.error(err);
-      sendEmbed(this.textChannel, 'Could not join voice channel 😞');
+      this._failJoinVoiceChannel();
+    }
+  }
+
+  _failJoinVoiceChannel() {
+    sendEmbed(this.textChannel, 'Could not join voice channel 😞');
       this.connection = null;
       this.endGame();
-    }
   }
 
   endGame(useCallback=true) {

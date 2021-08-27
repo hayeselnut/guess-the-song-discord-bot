@@ -1,0 +1,78 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const discord_js_1 = require("discord.js");
+const helpers_1 = require("../../helpers/helpers");
+const guesses_js_1 = __importDefault(require("./guesses.js"));
+class Round {
+    constructor(track, stream, connection, textChannel, timeLimit, callback) {
+        // Discord things
+        this.connection = connection;
+        this.textChannel = textChannel;
+        // Current song
+        this.track = track;
+        this.stream = stream;
+        this.guesses = new guesses_js_1.default(this.track);
+        // Ending things
+        this.timeout = null;
+        this.timeLimit = timeLimit;
+        this.callback = callback;
+    }
+    startRound() {
+        this._startTimeLimit();
+        console.log(`#${this.textChannel.name}:`, this.track.name, this.track.artists);
+        this._playTrack();
+    }
+    checkGuess(message) {
+        const guessCorrect = this.guesses.checkGuess(message);
+        if (this.guesses.guessedAll()) {
+            this.endRound();
+        }
+        else if (guessCorrect) {
+            this._showProgress();
+        }
+    }
+    _showProgress() {
+        const progressEmbed = new discord_js_1.MessageEmbed()
+            .setDescription(this.guesses.toString())
+            .setColor('#F1C40F');
+        this.textChannel.send({ embed: progressEmbed });
+    }
+    endRound(useCallback = true, title) {
+        if (this.timeout) {
+            clearTimeout(this.timeout);
+        }
+        if (!useCallback)
+            return;
+        this.callback(title);
+    }
+    _playTrack() {
+        // Start the music video at a random point between 0 and 90 seconds
+        if (!this.stream) {
+            console.error(`#${this.textChannel.name}:`, 'ERROR - Cannot play', this.track.name, this.track.artists);
+            return this.endRound(true, 'Could not load song. Skipping song...');
+        }
+        try {
+            this.connection
+                .play(this.stream, { seek: helpers_1.randInt(0, 90) })
+                .on('error', (err) => {
+                console.error(err);
+                console.error(`#${this.textChannel.name}:`, 'ERR - Cannot play', this.track.name, this.track.artists);
+                return this.endRound(true, 'Could not load song. Skipping song...');
+            });
+        }
+        catch (err) {
+            console.error(err);
+            console.error(`#${this.textChannel.name}:`, 'ERR - Cannot play', this.track.name, this.track.artists);
+            return this.endRound(true, 'Could not load song. Skipping song...');
+        }
+    }
+    _startTimeLimit() {
+        this.timeout = setTimeout(() => {
+            this.endRound(true, 'Too slow! Skipping song...');
+        }, this.timeLimit * 1000);
+    }
+}
+exports.default = Round;

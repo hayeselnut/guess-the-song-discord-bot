@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "bot.js",
   "scripts": {
-    "start": "node --experimental-json-modules src/bot.js"
+    "build": "rimraf dist && tsc",
+    "start": "node --experimental-json-modules dist/bot.js"
   },
   "dependencies": {
     "@discordjs/opus": "^0.5.3",
