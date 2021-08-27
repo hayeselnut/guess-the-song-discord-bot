@@ -1,4 +1,5 @@
 import { Message, MessageEmbed, TextChannel, VoiceConnection } from 'discord.js';
+import internal from 'stream';
 import { randInt } from '../../helpers/helpers';
 import { Track, ValidMessage } from '../../types.js';
 import Guesses from './guesses.js';
@@ -7,13 +8,13 @@ export default class Round {
   connection: VoiceConnection;
   textChannel: TextChannel;
   track: Track;
-  stream: ReadableStream | null;
+  stream: internal.Readable | null;
   guesses: Guesses;
   timeout: NodeJS.Timeout | null;
   timeLimit: number;
   callback: any;
 
-  constructor(track: Track, stream: ReadableStream, connection: VoiceConnection, textChannel: TextChannel, timeLimit: number, callback: any) {
+  constructor(track: Track, stream: internal.Readable, connection: VoiceConnection, textChannel: TextChannel, timeLimit: number, callback: any) {
     // Discord things
     this.connection = connection;
     this.textChannel = textChannel;
@@ -55,7 +56,9 @@ export default class Round {
   }
 
   endRound(useCallback: boolean = true, title?: string) {
-    clearTimeout(this.timeout);
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+    }
 
     if (!useCallback) return;
     this.callback(title);

@@ -10,7 +10,7 @@ import Round from './round.js';
 import Cookie from '../../assets/cookie.json';
 import { Tracks, ValidMessage, ValidMessageWithVoiceChannel } from '../../types.js';
 
-const BUFFER_LIMIT = 10;
+const BUFFER_LIMIT = 5;
 
 export default class Game {
   guildId: string;
@@ -31,7 +31,7 @@ export default class Game {
   constructor(message: ValidMessageWithVoiceChannel, tracks: Tracks, roundLimit: number, roundDuration: number, callback: any) {
     // Discord things
     this.guildId = message.guild.id;
-    this.textChannel = message.channel as TextChannel;
+    this.textChannel = message.channel;
     this.voiceChannel = message.member.voice.channel;
     this.connection = null;
 
