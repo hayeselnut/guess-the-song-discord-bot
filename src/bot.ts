@@ -10,9 +10,10 @@ import HELP from './assets/help.json';
 import { parseMessage, sendEmbed } from './helpers/discord-helpers';
 import { HelpCommand, ValidMessage } from './types';
 import Leaderboard from './guilds/game/leaderboard';
-import { isValidMessage, isValidMessageWithVoiceChannel, parseRoundDuration } from './helpers/helpers';
+import { isValidMessage, isValidMessageWithVoiceChannel, parseRoundDuration, verifyEnv } from './helpers/helpers';
 
 dotenv.config();
+verifyEnv();
 
 const db = getFirestoreDatabase(
   process.env.FIREBASE_PROJECT_ID!,

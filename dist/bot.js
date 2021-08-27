@@ -33,7 +33,7 @@ const discord_helpers_1 = require("./helpers/discord-helpers");
 const leaderboard_1 = __importDefault(require("./guilds/game/leaderboard"));
 const helpers_1 = require("./helpers/helpers");
 dotenv.config();
-console.log("discord bot token id", process.env.DISCORD_BOT_TOKEN);
+helpers_1.verifyEnv();
 const db = firestore_helpers_1.getFirestoreDatabase(process.env.FIREBASE_PROJECT_ID, process.env.FIREBASE_PRIVATE_KEY, process.env.FIREBASE_CLIENT_EMAIL);
 const guildManager = new guild_manager_1.default(db);
 const token = process.env.DISCORD_BOT_TOKEN;
