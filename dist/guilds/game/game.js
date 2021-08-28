@@ -35,6 +35,8 @@ class Game {
             }
             catch (error) {
                 console.log('SHOULD END GAME HERE! //TODO');
+                // Manually disconnecting the bot will continue running the game (even shows it in the discord channel)
+                // BUG: where if you then $stop it will throw error because cannot destroy a voice connection already destroyed
                 // Seems to be a real disconnect which SHOULDN'T be recovered from
                 this.connection.destroy();
             }
@@ -129,8 +131,8 @@ class Game {
             // Display round results and current leaderboard
             this.leaderboard.update(this.round.guesses);
             const roundSummary = new discord_js_1.MessageEmbed()
-                .setTitle(title)
-                .setColor(title === 'Round summary' ? '#2ECC71' : '#E91E63')
+                .setTitle(`[${this.currRound + 1}/${this.roundLimit}] ${title}`)
+                .setColor(title === 'Round summary' ? 'GREEN' : 'RED')
                 .setDescription(this.round.guesses.toString(true))
                 .setThumbnail(this.round.track?.img)
                 .addField('\u200B', '\u200B')
@@ -165,7 +167,7 @@ class Game {
         this.connection.destroy();
         const gameSummary = new discord_js_1.MessageEmbed()
             .setTitle('🏁 Final Leaderboard')
-            .setColor('#3498DB')
+            .setColor('BLUE')
             .setDescription(this.leaderboard.toString());
         this.textChannel.send({ embeds: [gameSummary] });
         if (!useCallback)

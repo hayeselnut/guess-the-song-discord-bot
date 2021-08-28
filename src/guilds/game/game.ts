@@ -147,7 +147,7 @@ export default class Game {
       return;
     }
     sendEmbed(this.textChannel, `[${this.currRound + 1}/${this.roundLimit}] Starting next song...`);
-    console.log(`#${this.textChannel.name} (${this.currRound + 1}/${this.roundLimit}):`, this.round.track.name, this.round.track.artists);
+    console.log(`#${this.textChannel.name} [${this.currRound + 1}/${this.roundLimit}]:`, this.round.track.name, this.round.track.artists);
     this.connection.subscribe(this.audioPlayer);
     this.round.startRound();
   }
@@ -163,8 +163,8 @@ export default class Game {
       // Display round results and current leaderboard
       this.leaderboard.update(this.round.guesses);
       const roundSummary = new MessageEmbed()
-        .setTitle(title)
-        .setColor(title === 'Round summary' ? '#2ECC71' : '#E91E63')
+        .setTitle(`[${this.currRound + 1}/${this.roundLimit}] ${title}`)
+        .setColor(title === 'Round summary' ? 'GREEN' : 'RED')
         .setDescription(this.round.guesses.toString(true))
         .setThumbnail(this.round.track?.img)
         .addField('\u200B', '\u200B')
@@ -206,7 +206,7 @@ export default class Game {
 
     const gameSummary = new MessageEmbed()
       .setTitle('🏁 Final Leaderboard')
-      .setColor('#3498DB')
+      .setColor('BLUE')
       .setDescription(this.leaderboard.toString());
     this.textChannel.send({ embeds: [gameSummary] });
 

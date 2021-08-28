@@ -6,9 +6,9 @@ type NormalizedTrack = {
 }
 
 export const removeAdditionalInformation = (str: string): string =>
-  str.replace(/\(.*/g, '')
-    .replace(/\[.*/g, '')
-    .replace(/\{.*/g, '')
+  str.replace(/\(.*\)/g, '')
+    .replace(/\[.*\]/g, '')
+    .replace(/\{.*\}/g, '')
     .replace(/ - .*/g, '')
     .replace(/feat\. .*/g, '')
     .replace(/ft\. .*/g, '');

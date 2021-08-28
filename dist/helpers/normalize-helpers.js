@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.normalizeTrack = exports.normalize = exports.removeAdditionalInformation = void 0;
-const removeAdditionalInformation = (str) => str.replace(/\(.*/g, '')
-    .replace(/\[.*/g, '')
-    .replace(/\{.*/g, '')
+const removeAdditionalInformation = (str) => str.replace(/\(.*\)/g, '')
+    .replace(/\[.*\]/g, '')
+    .replace(/\{.*\}/g, '')
     .replace(/ - .*/g, '')
     .replace(/feat\. .*/g, '')
     .replace(/ft\. .*/g, '');

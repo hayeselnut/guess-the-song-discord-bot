@@ -49,7 +49,7 @@ export default class Round {
   _showProgress() {
     const progressEmbed = new MessageEmbed()
       .setDescription(this.guesses.toString())
-      .setColor('#F1C40F');
+      .setColor('GOLD');
 
     this.textChannel.send({ embeds: [progressEmbed] });
   }
@@ -73,7 +73,7 @@ export default class Round {
     try {
       const audioResource = createAudioResource(this.stream, { inputType: StreamType.Arbitrary }); // TODO no seek option
       this.audioPlayer.play(audioResource);
-      
+
       this.audioPlayer.on('error', (err: Error) => {
         console.error(err);
         console.error(`#${this.textChannel.name}:`, 'ERR - Cannot play', this.track.name, this.track.artists);

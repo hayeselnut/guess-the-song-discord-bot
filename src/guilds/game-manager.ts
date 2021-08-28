@@ -79,14 +79,16 @@ export default class GameManager {
 
   initializeGame(message: ValidMessageWithVoiceChannel, name: string, img: string | undefined, tracks: Tracks, roundLimit: number) {
     const tracksLength = Object.keys(tracks).length;
+    const newRoundLimit = Math.min(tracksLength, roundLimit);
+
     const playlistEmbed = new MessageEmbed()
       .setTitle(name)
-      .setDescription(`Loading ${tracksLength} songs...`)
+      .setDescription(`Loading ${newRoundLimit} songs...`)
       .setImage(img ?? '');
     message.channel.send({ embeds: [playlistEmbed] });
 
-    console.log(`Initializing game in GUILD ${message.guild.name}`);
-    const game = new Game(message, tracks, Math.min(tracksLength, roundLimit), this.roundDuration, () => {
+    console.log(`Initializing game of ${newRoundLimit} rounds in GUILD ${message.guild.name}`);
+    const game = new Game(message, tracks, newRoundLimit, this.roundDuration, () => {
       if (this.game) {
         this.updateLeaderboard(this.game);
       }

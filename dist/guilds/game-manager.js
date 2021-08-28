@@ -63,13 +63,14 @@ class GameManager {
     }
     initializeGame(message, name, img, tracks, roundLimit) {
         const tracksLength = Object.keys(tracks).length;
+        const newRoundLimit = Math.min(tracksLength, roundLimit);
         const playlistEmbed = new discord_js_1.MessageEmbed()
             .setTitle(name)
-            .setDescription(`Loading ${tracksLength} songs...`)
+            .setDescription(`Loading ${newRoundLimit} songs...`)
             .setImage(img ?? '');
         message.channel.send({ embeds: [playlistEmbed] });
         console.log(`Initializing game in GUILD ${message.guild.name}`);
-        const game = new game_js_1.default(message, tracks, Math.min(tracksLength, roundLimit), this.roundDuration, () => {
+        const game = new game_js_1.default(message, tracks, newRoundLimit, this.roundDuration, () => {
             if (this.game) {
                 this.updateLeaderboard(this.game);
             }

@@ -36,7 +36,7 @@ class Round {
     _showProgress() {
         const progressEmbed = new discord_js_1.MessageEmbed()
             .setDescription(this.guesses.toString())
-            .setColor('#F1C40F');
+            .setColor('GOLD');
         this.textChannel.send({ embeds: [progressEmbed] });
     }
     endRound(useCallback = true, title) {
