@@ -9,6 +9,6 @@ exports.parseMessage = parseMessage;
 const tag = (author) => `<@${author.id}>`;
 exports.tag = tag;
 const sendEmbed = (channel, msg) => {
-    channel.send({ embed: new discord_js_1.MessageEmbed().setDescription(msg) });
+    channel.send({ embeds: [new discord_js_1.MessageEmbed().setDescription(msg)] });
 };
 exports.sendEmbed = sendEmbed;

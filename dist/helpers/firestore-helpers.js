@@ -23,11 +23,11 @@ exports.getFirestoreDatabase = void 0;
 const admin = __importStar(require("firebase-admin"));
 const getFirestoreDatabase = (projectId, privateKey, clientEmail) => {
     const serviceAccount = {
-        project_id: projectId,
-        private_key: privateKey.replace(/\\n/g, '\n'),
-        client_email: clientEmail,
+        projectId,
+        privateKey: privateKey.replace(/\\n/g, '\n'),
+        clientEmail,
     };
-    admin.initializeApp(serviceAccount);
+    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
     return admin.firestore();
 };
 exports.getFirestoreDatabase = getFirestoreDatabase;

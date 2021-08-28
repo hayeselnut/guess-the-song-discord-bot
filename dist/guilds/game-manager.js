@@ -67,7 +67,7 @@ class GameManager {
             .setTitle(name)
             .setDescription(`Loading ${tracksLength} songs...`)
             .setImage(img ?? '');
-        message.channel.send({ embed: playlistEmbed });
+        message.channel.send({ embeds: [playlistEmbed] });
         console.log(`Initializing game in GUILD ${message.guild.name}`);
         const game = new game_js_1.default(message, tracks, Math.min(tracksLength, roundLimit), this.roundDuration, () => {
             if (this.game) {

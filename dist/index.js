@@ -22,7 +22,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// import Discord, { MessageEmbed } from 'discord.js';
 const discord_js_1 = require("discord.js");
 const dotenv = __importStar(require("dotenv"));
 const firestore_helpers_1 = require("./helpers/firestore-helpers");
@@ -38,11 +37,11 @@ const db = firestore_helpers_1.getFirestoreDatabase(process.env.FIREBASE_PROJECT
 const guildManager = new guild_manager_1.default(db);
 const token = process.env.DISCORD_BOT_TOKEN;
 const client = new discord_js_1.Client({
-    // ws: { intents: ["GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS"] }, // TODO
-    messageEditHistoryMaxSize: 0,
-    messageCacheMaxSize: 25,
-    messageCacheLifetime: 21600,
-    messageSweepInterval: 43200,
+    intents: [discord_js_1.Intents.FLAGS.GUILDS, discord_js_1.Intents.FLAGS.GUILD_MESSAGES, discord_js_1.Intents.FLAGS.GUILD_MESSAGE_REACTIONS],
+    makeCache: discord_js_1.Options.cacheWithLimits({ MessageManager: {
+            maxSize: 100,
+            sweepInterval: 43200,
+        } }),
 });
 const spotify = new spotify_1.default(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
 client.once('ready', () => {
@@ -54,7 +53,7 @@ client.once('reconnecting', () => {
 client.once('disconnect', () => {
     console.log('Disconnect!');
 });
-client.on('message', (message) => {
+client.on('messageCreate', (message) => {
     if (!helpers_1.isValidMessage(message))
         return;
     if (message.author.bot)
@@ -142,7 +141,7 @@ const leaderboard = (message) => {
     const leaderboardEmbed = new discord_js_1.MessageEmbed()
         .setTitle('📊 All Time Leaderboard')
         .setDescription(leaderboard.toString());
-    message.channel.send({ embed: leaderboardEmbed });
+    message.channel.send({ embeds: [leaderboardEmbed] });
 };
 const config = (message) => {
     const args = discord_helpers_1.parseMessage(message);
@@ -151,7 +150,7 @@ const config = (message) => {
         const configEmbed = new discord_js_1.MessageEmbed()
             .setTitle('Current configurations')
             .setDescription(`\`\`\`${Object.entries(config).map(([key, value]) => `${key}: ${value}`).join('\n')}\`\`\``);
-        message.channel.send({ embed: configEmbed });
+        message.channel.send({ embeds: [configEmbed] });
     }
     else {
         const key = args[1];
@@ -180,6 +179,6 @@ const help = (message, prefix) => {
         .setDescription(help_json_1.default.description)
         .addField('Game commands', help_json_1.default.game_commands.map((cmd) => `${cmd.emoji} \`${prefix}${cmd.usage}\`: ${cmd.description}`).join('\n\n'))
         .addField('Help commands', help_json_1.default.help_commands.map((cmd) => `${cmd.emoji} \`${prefix}${cmd.usage}\`: ${cmd.description}`).join('\n\n'));
-    message.channel.send({ embed: helpEmbed });
+    message.channel.send({ embeds: [helpEmbed] });
 };
 client.login(token);

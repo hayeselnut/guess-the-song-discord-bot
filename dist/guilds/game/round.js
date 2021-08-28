@@ -3,13 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const voice_1 = require("@discordjs/voice");
 const discord_js_1 = require("discord.js");
-const helpers_1 = require("../../helpers/helpers");
 const guesses_js_1 = __importDefault(require("./guesses.js"));
 class Round {
-    constructor(track, stream, connection, textChannel, timeLimit, callback) {
+    constructor(track, stream, audioPlayer, textChannel, timeLimit, callback) {
         // Discord things
-        this.connection = connection;
+        this.audioPlayer = audioPlayer;
         this.textChannel = textChannel;
         // Current song
         this.track = track;
@@ -38,7 +38,7 @@ class Round {
         const progressEmbed = new discord_js_1.MessageEmbed()
             .setDescription(this.guesses.toString())
             .setColor('#F1C40F');
-        this.textChannel.send({ embed: progressEmbed });
+        this.textChannel.send({ embeds: [progressEmbed] });
     }
     endRound(useCallback = true, title) {
         if (this.timeout) {
@@ -55,9 +55,9 @@ class Round {
             return this.endRound(true, 'Could not load song. Skipping song...');
         }
         try {
-            this.connection
-                .play(this.stream, { seek: helpers_1.randInt(0, 90) })
-                .on('error', (err) => {
+            const audioResource = voice_1.createAudioResource(this.stream); // TODO no seek option
+            this.audioPlayer.play(audioResource);
+            this.audioPlayer.on('error', (err) => {
                 console.error(err);
                 console.error(`#${this.textChannel.name}:`, 'ERR - Cannot play', this.track.name, this.track.artists);
                 return this.endRound(true, 'Could not load song. Skipping song...');

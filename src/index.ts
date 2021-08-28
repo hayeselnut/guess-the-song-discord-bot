@@ -1,5 +1,4 @@
-// import Discord, { MessageEmbed } from 'discord.js';
-import { Client, Message, MessageEmbed, TextChannel } from 'discord.js';
+import { Client, Intents, Message, MessageEmbed, Options } from 'discord.js';
 import * as dotenv from 'dotenv';
 import { getFirestoreDatabase } from './helpers/firestore-helpers';
 
@@ -22,13 +21,13 @@ const db = getFirestoreDatabase(
 );
 const guildManager = new GuildManager(db);
 
-const token = process.env.DISCORD_BOT_TOKEN;
+const token = process.env.DISCORD_BOT_TOKEN!;
 const client = new Client({
-  // ws: { intents: ["GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS"] }, // TODO
-  messageEditHistoryMaxSize: 0,
-  messageCacheMaxSize: 25,
-  messageCacheLifetime: 21600,
-  messageSweepInterval: 43200,
+  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS],
+  makeCache: Options.cacheWithLimits({ MessageManager: {
+    maxSize: 100,
+    sweepInterval: 43200,
+  } }),
 });
 
 const spotify = new Spotify(
@@ -48,7 +47,7 @@ client.once('disconnect', () => {
   console.log('Disconnect!');
 });
 
-client.on('message', (message: Message) => {
+client.on('messageCreate', (message: Message) => {
   if (!isValidMessage(message)) return;
 
   if (message.author.bot) return;
@@ -144,7 +143,7 @@ const leaderboard = (message: ValidMessage) => {
     .setTitle('📊 All Time Leaderboard')
     .setDescription(leaderboard.toString());
 
-  message.channel.send({ embed: leaderboardEmbed });
+  message.channel.send({ embeds: [leaderboardEmbed] });
 };
 
 const config = (message: ValidMessage) => {
@@ -154,7 +153,7 @@ const config = (message: ValidMessage) => {
     const configEmbed = new MessageEmbed()
       .setTitle('Current configurations')
       .setDescription(`\`\`\`${Object.entries(config).map(([key, value]) => `${key}: ${value}`).join('\n')}\`\`\``);
-    message.channel.send({ embed: configEmbed });
+    message.channel.send({ embeds: [configEmbed] });
   } else {
     const key = args[1];
     if (key === 'reset') {
@@ -191,7 +190,7 @@ const help = (message: ValidMessage, prefix: string) => {
       'Help commands',
       HELP.help_commands.map((cmd: HelpCommand) => `${cmd.emoji} \`${prefix}${cmd.usage}\`: ${cmd.description}`).join('\n\n'),
     );
-  message.channel.send({ embed: helpEmbed });
+  message.channel.send({ embeds: [helpEmbed] });
 };
 
 client.login(token);

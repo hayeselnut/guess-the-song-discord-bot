@@ -1,11 +1,12 @@
-import { Message, MessageEmbed, TextChannel, VoiceConnection } from 'discord.js';
+import { AudioPlayer, createAudioResource, VoiceConnection } from '@discordjs/voice';
+import { Message, MessageEmbed, TextChannel } from 'discord.js';
 import internal from 'stream';
 import { randInt } from '../../helpers/helpers';
 import { Track, ValidMessage } from '../../types.js';
 import Guesses from './guesses.js';
 
 export default class Round {
-  connection: VoiceConnection;
+  audioPlayer: AudioPlayer;
   textChannel: TextChannel;
   track: Track;
   stream: internal.Readable | null;
@@ -14,9 +15,9 @@ export default class Round {
   timeLimit: number;
   callback: any;
 
-  constructor(track: Track, stream: internal.Readable, connection: VoiceConnection, textChannel: TextChannel, timeLimit: number, callback: any) {
+  constructor(track: Track, stream: internal.Readable, audioPlayer: AudioPlayer, textChannel: TextChannel, timeLimit: number, callback: any) {
     // Discord things
-    this.connection = connection;
+    this.audioPlayer = audioPlayer;
     this.textChannel = textChannel;
 
     // Current song
@@ -52,7 +53,7 @@ export default class Round {
       .setDescription(this.guesses.toString())
       .setColor('#F1C40F');
 
-    this.textChannel.send({ embed: progressEmbed });
+    this.textChannel.send({ embeds: [progressEmbed] });
   }
 
   endRound(useCallback: boolean = true, title?: string) {
@@ -70,14 +71,15 @@ export default class Round {
       console.error(`#${this.textChannel.name}:`, 'ERROR - Cannot play', this.track.name, this.track.artists);
       return this.endRound(true, 'Could not load song. Skipping song...');
     }
+
     try {
-      this.connection
-        .play(this.stream, { seek: randInt(0, 90) })
-        .on('error', (err) => {
-          console.error(err);
-          console.error(`#${this.textChannel.name}:`, 'ERR - Cannot play', this.track.name, this.track.artists);
-          return this.endRound(true, 'Could not load song. Skipping song...');
-        });
+      const audioResource = createAudioResource(this.stream); // TODO no seek option
+      this.audioPlayer.play(audioResource);
+      this.audioPlayer.on('error', (err: Error) => {
+        console.error(err);
+        console.error(`#${this.textChannel.name}:`, 'ERR - Cannot play', this.track.name, this.track.artists);
+        return this.endRound(true, 'Could not load song. Skipping song...');
+      });
     } catch (err) {
       console.error(err);
       console.error(`#${this.textChannel.name}:`, 'ERR - Cannot play', this.track.name, this.track.artists);

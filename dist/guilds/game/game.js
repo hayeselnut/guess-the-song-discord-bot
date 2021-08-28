@@ -11,6 +11,7 @@ const helpers_js_1 = require("../../helpers/helpers.js");
 const leaderboard_js_1 = __importDefault(require("./leaderboard.js"));
 const round_js_1 = __importDefault(require("./round.js"));
 const cookie_json_1 = __importDefault(require("../../assets/cookie.json"));
+const voice_1 = require("@discordjs/voice");
 const BUFFER_LIMIT = 5;
 class Game {
     constructor(message, tracks, roundLimit, roundDuration, callback) {
@@ -18,7 +19,30 @@ class Game {
         this.guildId = message.guild.id;
         this.textChannel = message.channel;
         this.voiceChannel = message.member.voice.channel;
-        this.connection = null;
+        this.connection = voice_1.joinVoiceChannel({
+            channelId: this.voiceChannel.id,
+            guildId: this.guildId,
+            adapterCreator: this.voiceChannel.guild.voiceAdapterCreator,
+        });
+        this.audioPlayer = voice_1.createAudioPlayer();
+        this.connection.on(voice_1.VoiceConnectionStatus.Ready, () => {
+            console.log(`The connection to ${this.voiceChannel.name} is ready.`);
+        });
+        this.connection.on(voice_1.VoiceConnectionStatus.Disconnected, async () => {
+            try {
+                await Promise.race([
+                    voice_1.entersState(this.connection, voice_1.VoiceConnectionStatus.Signalling, 5000),
+                    voice_1.entersState(this.connection, voice_1.VoiceConnectionStatus.Connecting, 5000),
+                ]);
+                // Seems to be reconnecting to a new channel - ignore disconnect
+            }
+            catch (error) {
+                console.log('SHOULD END GAME HERE! //TODO');
+                // Seems to be a real disconnect which SHOULDN'T be recovered from
+                this.connection.destroy();
+            }
+        });
+        this.connection.subscribe(this.audioPlayer);
         // Game
         this.tracks = tracks;
         this.roundDuration = roundDuration;
@@ -35,7 +59,7 @@ class Game {
     }
     async startGame() {
         console.log(`#${this.textChannel.name}: Starting game`);
-        await this._connectToVoiceChannel();
+        // await this._connectToVoiceChannel(); // TODO delete
         // Load buffer of next 3 streams
         for (let i = 0; i < Math.min(BUFFER_LIMIT, this.roundLimit); i++) {
             await this._loadBufferRound(i);
@@ -77,7 +101,7 @@ class Game {
             this._failJoinVoiceChannel();
             return;
         }
-        const round = new round_js_1.default(track, stream, this.connection, this.textChannel, this.roundDuration, (title) => {
+        const round = new round_js_1.default(track, stream, this.audioPlayer, this.textChannel, this.roundDuration, (title) => {
             this._endRound(title);
         });
         this.nextRounds.push(round);
@@ -111,7 +135,7 @@ class Game {
                 .setThumbnail(this.round.track?.img)
                 .addField('\u200B', '\u200B')
                 .addField('🏆 Leaderboard', this.leaderboard.toString());
-            this.textChannel.send({ embed: roundSummary });
+            this.textChannel.send({ embeds: [roundSummary] });
         }
         this.currRound++;
         this._startRound();
@@ -120,32 +144,30 @@ class Game {
         this.round?.endRound(false);
         this._endRound('Skipping round...');
     }
-    async _connectToVoiceChannel() {
-        try {
-            this.connection = await this.voiceChannel.join();
-        }
-        catch (err) {
-            console.error(err);
-            this._failJoinVoiceChannel();
-        }
-    }
+    // async _connectToVoiceChannel() {
+    //   try {
+    //     this.connection = await this.voiceChannel.join();
+    //   } catch (err) {
+    //     console.error(err);
+    //     this._failJoinVoiceChannel();
+    //   }
+    // }
     _failJoinVoiceChannel() {
         discord_helpers_js_1.sendEmbed(this.textChannel, 'Could not join voice channel 😞');
-        this.connection = null;
+        this.connection.destroy();
         this.endGame();
     }
     endGame(useCallback = true) {
         console.log(`#${this.textChannel.name}: Game ended ${useCallback ? 'naturally' : 'manually'}`);
         this.currRound = this.roundLimit;
-        this.voiceChannel.leave();
         this.round?.endRound(false);
         this.round = null;
-        this.connection = null;
+        this.connection.destroy();
         const gameSummary = new discord_js_1.MessageEmbed()
             .setTitle('🏁 Final Leaderboard')
             .setColor('#3498DB')
             .setDescription(this.leaderboard.toString());
-        this.textChannel.send({ embed: gameSummary });
+        this.textChannel.send({ embeds: [gameSummary] });
         if (!useCallback)
             return;
         this.callback();

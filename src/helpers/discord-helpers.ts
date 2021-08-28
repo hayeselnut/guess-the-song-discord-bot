@@ -7,5 +7,5 @@ export const parseMessage = (message: Message) => {
 export const tag = (author: User) => `<@${author.id}>`;
 
 export const sendEmbed = (channel: TextChannel, msg: string) => {
-  channel.send({ embed: new MessageEmbed().setDescription(msg) });
+  channel.send({ embeds: [new MessageEmbed().setDescription(msg)] });
 };
