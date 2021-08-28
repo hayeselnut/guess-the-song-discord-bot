@@ -43,6 +43,7 @@ class Game {
             }
         });
         this.connection.subscribe(this.audioPlayer);
+        console.log(this.connection);
         // Game
         this.tracks = tracks;
         this.roundDuration = roundDuration;
@@ -58,7 +59,7 @@ class Game {
         this.callback = callback;
     }
     async startGame() {
-        console.log(`#${this.textChannel.name}: Starting game`);
+        console.log(`#${this.textChannel.name}: Starting game of ${this.roundLimit} rounds...`);
         // await this._connectToVoiceChannel(); // TODO delete
         // Load buffer of next 3 streams
         for (let i = 0; i < Math.min(BUFFER_LIMIT, this.roundLimit); i++) {
@@ -117,6 +118,7 @@ class Game {
             return;
         }
         discord_helpers_js_1.sendEmbed(this.textChannel, `[${this.currRound + 1}/${this.roundLimit}] Starting next song...`);
+        console.log(`#${this.textChannel.name} (${this.currRound + 1}/${this.roundLimit}):`, this.round.track.name, this.round.track.artists);
         this.round.startRound();
     }
     // This function is provided as a callback to the round.

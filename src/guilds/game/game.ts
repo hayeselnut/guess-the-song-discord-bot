@@ -17,8 +17,10 @@ export default class Game {
   guildId: string;
   textChannel: TextChannel;
   voiceChannel: VoiceChannel;
+
   connection: VoiceConnection;
   audioPlayer: AudioPlayer;
+
   tracks: Tracks;
   roundDuration: number;
   roundLimit: number;
@@ -61,6 +63,7 @@ export default class Game {
     });
 
     this.connection.subscribe(this.audioPlayer);
+    console.log(this.connection);
 
     // Game
     this.tracks = tracks;
@@ -81,7 +84,7 @@ export default class Game {
   }
 
   async startGame() {
-    console.log(`#${this.textChannel.name}: Starting game`);
+    console.log(`#${this.textChannel.name}: Starting game of ${this.roundLimit} rounds...`);
     // await this._connectToVoiceChannel(); // TODO delete
 
     // Load buffer of next 3 streams
@@ -146,6 +149,7 @@ export default class Game {
       return;
     }
     sendEmbed(this.textChannel, `[${this.currRound + 1}/${this.roundLimit}] Starting next song...`);
+    console.log(`#${this.textChannel.name} (${this.currRound + 1}/${this.roundLimit}):`, this.round.track.name, this.round.track.artists);
     this.round.startRound();
   }
 

@@ -22,7 +22,6 @@ class Round {
     }
     startRound() {
         this._startTimeLimit();
-        console.log(`#${this.textChannel.name}:`, this.track.name, this.track.artists);
         this._playTrack();
     }
     checkGuess(message) {

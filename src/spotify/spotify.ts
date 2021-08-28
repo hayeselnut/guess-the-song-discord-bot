@@ -32,6 +32,8 @@ export default class Spotify {
       const playlistData = await this.api.getPlaylist(playlistId);
       const tracks = await this._getTracksFromPlaylist(playlistId);
 
+      console.log(`Retrieved ${Object.entries(tracks).length} songs from ${playlistLink}`);
+
       return {
         name: playlistData.body.name,
         img: playlistData.body.images[0]?.url,
@@ -44,8 +46,6 @@ export default class Spotify {
 
   async _retrieveAccessToken() {
     const data = await this.api.clientCredentialsGrant();
-    console.log('The Spotify access token expires in ' + data.body.expires_in);
-    console.log('The Spotify access token is ' + data.body.access_token);
 
     // Save the access token so that it's used in future calls
     this.api.setAccessToken(data.body.access_token);
