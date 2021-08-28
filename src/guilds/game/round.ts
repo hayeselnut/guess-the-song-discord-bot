@@ -1,4 +1,4 @@
-import { AudioPlayer, createAudioResource, VoiceConnection } from '@discordjs/voice';
+import { AudioPlayer, AudioResource, createAudioResource, StreamType, VoiceConnection } from '@discordjs/voice';
 import { Message, MessageEmbed, TextChannel } from 'discord.js';
 import internal from 'stream';
 import { randInt } from '../../helpers/helpers';
@@ -71,8 +71,9 @@ export default class Round {
     }
 
     try {
-      const audioResource = createAudioResource(this.stream); // TODO no seek option
+      const audioResource = createAudioResource(this.stream, { inputType: StreamType.Arbitrary }); // TODO no seek option
       this.audioPlayer.play(audioResource);
+      
       this.audioPlayer.on('error', (err: Error) => {
         console.error(err);
         console.error(`#${this.textChannel.name}:`, 'ERR - Cannot play', this.track.name, this.track.artists);

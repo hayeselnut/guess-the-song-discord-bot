@@ -31,6 +31,9 @@ const help_json_1 = __importDefault(require("./assets/help.json"));
 const discord_helpers_1 = require("./helpers/discord-helpers");
 const leaderboard_1 = __importDefault(require("./guilds/game/leaderboard"));
 const helpers_1 = require("./helpers/helpers");
+const ytdl_core_1 = __importDefault(require("ytdl-core"));
+const cookie_json_1 = __importDefault(require("./assets/cookie.json"));
+const voice_1 = require("@discordjs/voice");
 dotenv.config();
 helpers_1.verifyEnv();
 const db = firestore_helpers_1.getFirestoreDatabase(process.env.FIREBASE_PROJECT_ID, process.env.FIREBASE_PRIVATE_KEY, process.env.FIREBASE_CLIENT_EMAIL);
@@ -39,8 +42,8 @@ const token = process.env.DISCORD_BOT_TOKEN;
 const client = new discord_js_1.Client({
     intents: [discord_js_1.Intents.FLAGS.GUILDS, discord_js_1.Intents.FLAGS.GUILD_MESSAGES, discord_js_1.Intents.FLAGS.GUILD_MESSAGE_REACTIONS],
     makeCache: discord_js_1.Options.cacheWithLimits({ MessageManager: {
-            maxSize: 100,
-            sweepInterval: 43200,
+            maxSize: 25,
+            sweepInterval: 600,
         } }),
 });
 const spotify = new spotify_1.default(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
@@ -90,6 +93,39 @@ const readCommand = (message, prefix) => {
     }
     else if (message.content.startsWith(`${prefix}help`)) {
         help(message, prefix);
+    }
+    else if (message.content.startsWith(`${prefix}test`)) {
+        const voiceChannel = message.member.voice.channel;
+        const permissions = voiceChannel.permissionsFor(client.user.id);
+        if (permissions && (!permissions.has('CONNECT') || !permissions.has('SPEAK'))) {
+            return discord_helpers_1.sendEmbed(message.channel, 'I need the permissions to join and speak in your voice channel');
+        }
+        console.log(permissions?.toArray());
+        const stream = ytdl_core_1.default('https://www.youtube.com/watch?v=C_3d6GntKbk', {
+            filter: 'audioonly',
+            requestOptions: {
+                headers: cookie_json_1.default,
+            },
+        });
+        // const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary});
+        const resource = voice_1.createAudioResource('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', {
+            inputType: voice_1.StreamType.Arbitrary,
+        });
+        const connection = voice_1.joinVoiceChannel({
+            channelId: message.member.voice.channel.id,
+            guildId: message.guild.id,
+            adapterCreator: message.channel.guild.voiceAdapterCreator,
+            selfDeaf: false,
+        });
+        connection.on('stateChange', (oldState, newState) => {
+            console.log("STATE CHANGE", oldState.status, newState.status);
+        });
+        const audioPlayer = voice_1.createAudioPlayer();
+        audioPlayer.on('subscribe', () => {
+            console.log('subscribed!');
+        });
+        audioPlayer.play(resource);
+        connection.subscribe(audioPlayer);
     }
     else {
         discord_helpers_1.sendEmbed(message.channel, `Invalid command. Use \`${prefix}help\` for a list of commands.`);

@@ -23,8 +23,16 @@ class Game {
             channelId: this.voiceChannel.id,
             guildId: this.guildId,
             adapterCreator: this.voiceChannel.guild.voiceAdapterCreator,
+            selfMute: false,
+            selfDeaf: false,
         });
         this.audioPlayer = voice_1.createAudioPlayer();
+        this.connection.on(voice_1.VoiceConnectionStatus.Signalling, () => {
+            console.log(`The connection to ${this.voiceChannel.name} is signalling.`);
+        });
+        this.connection.on(voice_1.VoiceConnectionStatus.Connecting, () => {
+            console.log(`The connection to ${this.voiceChannel.name} is connecting.`);
+        });
         this.connection.on(voice_1.VoiceConnectionStatus.Ready, () => {
             console.log(`The connection to ${this.voiceChannel.name} is ready.`);
         });
@@ -43,7 +51,6 @@ class Game {
             }
         });
         this.connection.subscribe(this.audioPlayer);
-        console.log(this.connection);
         // Game
         this.tracks = tracks;
         this.roundDuration = roundDuration;
@@ -98,6 +105,7 @@ class Game {
                 this.nextRounds[i].stream = null;
             }
         });
+        // const audioResource = createAudioResource(stream);
         if (!this.connection) {
             this._failJoinVoiceChannel();
             return;
@@ -119,6 +127,9 @@ class Game {
         }
         discord_helpers_js_1.sendEmbed(this.textChannel, `[${this.currRound + 1}/${this.roundLimit}] Starting next song...`);
         console.log(`#${this.textChannel.name} (${this.currRound + 1}/${this.roundLimit}):`, this.round.track.name, this.round.track.artists);
+        this.connection.subscribe(this.audioPlayer);
+        console.log(this.connection);
+        console.log(this.audioPlayer);
         this.round.startRound();
     }
     // This function is provided as a callback to the round.
