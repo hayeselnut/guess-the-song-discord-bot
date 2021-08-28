@@ -24,7 +24,12 @@ const db = admin.firestore();
 const guildManager = new GuildManager(db);
 
 const token = process.env.DISCORD_BOT_TOKEN;
-const client = new Discord.Client();
+const client = new Discord.Client({
+  messageEditHistoryMaxSize: 0,
+  messageCacheMaxSize: 100,
+  messageCacheLifetime: 21600,
+  messageSweepInterval: 43200,
+});
 
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
