@@ -69,7 +69,7 @@ class GameManager {
             .setDescription(`Loading ${newRoundLimit} songs...`)
             .setImage(img ?? '');
         message.channel.send({ embeds: [playlistEmbed] });
-        console.log(`Initializing game in GUILD ${message.guild.name}`);
+        console.log(`Initializing game of ${newRoundLimit} rounds in GUILD ${message.guild.name}`);
         const game = new game_js_1.default(message, tracks, newRoundLimit, this.roundDuration, () => {
             if (this.game) {
                 this.updateLeaderboard(this.game);

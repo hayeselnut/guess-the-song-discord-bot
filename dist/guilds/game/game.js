@@ -117,7 +117,7 @@ class Game {
             return;
         }
         discord_helpers_js_1.sendEmbed(this.textChannel, `[${this.currRound + 1}/${this.roundLimit}] Starting next song...`);
-        console.log(`#${this.textChannel.name} (${this.currRound + 1}/${this.roundLimit}):`, this.round.track.name, this.round.track.artists);
+        console.log(`#${this.textChannel.name} [${this.currRound + 1}/${this.roundLimit}]:`, this.round.track.name, this.round.track.artists);
         this.connection.subscribe(this.audioPlayer);
         this.round.startRound();
     }

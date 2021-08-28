@@ -6,14 +6,16 @@ const removeAdditionalInformation = (str) => str.replace(/\(.*\)/g, '')
     .replace(/\{.*\}/g, '')
     .replace(/ - .*/g, '')
     .replace(/feat\. .*/g, '')
-    .replace(/ft\. .*/g, '');
+    .replace(/ft\. .*/g, '')
+    .replace('**', '\\*\\*');
 exports.removeAdditionalInformation = removeAdditionalInformation;
 const normalize = (str, type) => {
     let normalized = str.normalize('NFD').toLowerCase();
     if (type == 'name') {
         normalized = exports.removeAdditionalInformation(normalized);
         normalized = normalized
-            .replace('f**k', 'fuck'); // F**king Perfect
+            .replace('ni\\*\\*as', 'niggas') // Ni**as in Paris - JAY-Z, Kanye West
+            .replace('f\\*\\*k', 'fuck'); // F**king Perfect - P!nk
     }
     else if (type == 'artist') {
         normalized = normalized
