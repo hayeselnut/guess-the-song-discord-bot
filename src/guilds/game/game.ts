@@ -41,23 +41,8 @@ export default class Game {
       channelId: this.voiceChannel.id,
       guildId: this.guildId,
       adapterCreator: this.voiceChannel.guild.voiceAdapterCreator,
-      selfMute: false,
-      selfDeaf: false,
     });
     this.audioPlayer = createAudioPlayer();
-
-
-    this.connection.on(VoiceConnectionStatus.Signalling, () => {
-      console.log(`The connection to ${this.voiceChannel.name} is signalling.`);
-    });
-
-    this.connection.on(VoiceConnectionStatus.Connecting, () => {
-      console.log(`The connection to ${this.voiceChannel.name} is connecting.`);
-    });
-
-    this.connection.on(VoiceConnectionStatus.Ready, () => {
-      console.log(`The connection to ${this.voiceChannel.name} is ready.`);
-    });
 
     this.connection.on(VoiceConnectionStatus.Disconnected, async () => {
       try {
@@ -68,6 +53,8 @@ export default class Game {
         // Seems to be reconnecting to a new channel - ignore disconnect
       } catch (error) {
         console.log('SHOULD END GAME HERE! //TODO')
+        // Manually disconnecting the bot will continue running the game (even shows it in the discord channel)
+        // BUG: where if you then $stop it will throw error because cannot destroy a voice connection already destroyed
         // Seems to be a real disconnect which SHOULDN'T be recovered from
         this.connection.destroy();
       }
@@ -162,8 +149,6 @@ export default class Game {
     sendEmbed(this.textChannel, `[${this.currRound + 1}/${this.roundLimit}] Starting next song...`);
     console.log(`#${this.textChannel.name} (${this.currRound + 1}/${this.roundLimit}):`, this.round.track.name, this.round.track.artists);
     this.connection.subscribe(this.audioPlayer);
-    console.log(this.connection);
-    console.log(this.audioPlayer);
     this.round.startRound();
   }
 

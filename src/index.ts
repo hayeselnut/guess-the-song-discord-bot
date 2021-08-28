@@ -10,11 +10,6 @@ import { parseMessage, sendEmbed } from './helpers/discord-helpers';
 import { HelpCommand, ValidMessage } from './types';
 import Leaderboard from './guilds/game/leaderboard';
 import { isValidMessage, isValidMessageWithVoiceChannel, parseRoundDuration, verifyEnv } from './helpers/helpers';
-import ytdl from 'ytdl-core';
-
-import Cookie from './assets/cookie.json';
-import { createAudioPlayer, createAudioResource, joinVoiceChannel, StreamType } from '@discordjs/voice';
-
 
 dotenv.config();
 verifyEnv();
@@ -28,7 +23,7 @@ const guildManager = new GuildManager(db);
 
 const token = process.env.DISCORD_BOT_TOKEN!;
 const client = new Client({
-  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS],
+  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_VOICE_STATES],
   makeCache: Options.cacheWithLimits({ MessageManager: {
     maxSize: 25,
     sweepInterval: 600,
@@ -85,40 +80,6 @@ const readCommand = (message: ValidMessage, prefix: string) => {
     config(message);
   } else if (message.content.startsWith(`${prefix}help`)) {
     help(message, prefix);
-  } else if (message.content.startsWith(`${prefix}test`)) {
-    const voiceChannel = message.member.voice.channel!;
-    const permissions = voiceChannel.permissionsFor(client.user!.id);
-    if (permissions && (!permissions.has('CONNECT') || !permissions.has('SPEAK'))) {
-      return sendEmbed(message.channel, 'I need the permissions to join and speak in your voice channel');
-    }
-    console.log(permissions?.toArray());
-
-    const stream = ytdl('https://www.youtube.com/watch?v=C_3d6GntKbk', {
-      filter: 'audioonly',
-      requestOptions: {
-        headers: Cookie,
-      },
-    })
-    // const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary});
-    const resource = createAudioResource('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', {
-      inputType: StreamType.Arbitrary,
-    });
-    const connection = joinVoiceChannel({
-      channelId: message.member.voice.channel!.id,
-      guildId: message.guild.id,
-      adapterCreator: message.channel.guild.voiceAdapterCreator,
-      selfDeaf: false,
-    });
-    connection.on('stateChange', (oldState, newState) => {
-      console.log("STATE CHANGE", oldState.status, newState.status);
-    })
-
-    const audioPlayer = createAudioPlayer();
-    audioPlayer.on('subscribe', () => {
-      console.log('subscribed!');
-    })
-    audioPlayer.play(resource);
-    connection.subscribe(audioPlayer);
   } else {
     sendEmbed(message.channel, `Invalid command. Use \`${prefix}help\` for a list of commands.`);
   }
