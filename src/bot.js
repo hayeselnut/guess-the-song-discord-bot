@@ -26,9 +26,9 @@ const guildManager = new GuildManager(db);
 const token = process.env.DISCORD_BOT_TOKEN;
 const client = new Discord.Client({
   messageEditHistoryMaxSize: 0,
-  messageCacheMaxSize: 100,
-  messageCacheLifetime: 21600,
-  messageSweepInterval: 43200,
+  messageCacheMaxSize: 25,
+  messageCacheLifetime: 600,
+  messageSweepInterval: 600,
 });
 
 const clientId = process.env.SPOTIFY_CLIENT_ID;
