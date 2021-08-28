@@ -1,4 +1,5 @@
 {
+    "root": true,
     "env": {
         "browser": true,
         "es2021": true
@@ -12,7 +13,7 @@
         "sourceType": "module"
     },
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint/eslint-plugin"
     ],
     "rules": {
         "indent": ["error", 2],
@@ -20,7 +21,9 @@
         "no-unused-expressions": "warn",
         "no-unused-vars": "warn",
         "object-curly-spacing": ["error", "always"],
-        "max-len": ["error", { "code": 120 }],
-        "operator-linebreak": ["error", "before"]
+        "max-len": ["warn", { "code": 120 }],
+        "operator-linebreak": ["error", "before"],
+        "require-jsdoc": "off",
+        "camelcase": "warn"
     }
 }

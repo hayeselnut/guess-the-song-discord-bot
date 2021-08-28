@@ -1,5 +1,5 @@
-import { Message, TextChannel } from "discord.js";
-import { ValidMessage, ValidMessageWithVoiceChannel as ValidMessageWithVoiceChannel } from "../types";
+import { Message, TextChannel } from 'discord.js';
+import { ValidMessage, ValidMessageWithVoiceChannel as ValidMessageWithVoiceChannel } from '../types';
 
 export const verifyEnv = () => {
   if (!process.env.DISCORD_BOT_TOKEN) {
@@ -20,7 +20,7 @@ export const verifyEnv = () => {
   if (!process.env.FIREBASE_CLIENT_EMAIL) {
     throw new Error('FIREBASE_CLIENT_EMAIL variable not in environment');
   }
-}
+};
 
 export const shuffle = (arr: any[]) => arr.sort(() => Math.random() - 0.5);
 
@@ -38,10 +38,10 @@ export const isValidMessage = (message: Message): message is ValidMessage => {
   if (!message.guild) return false;
   if (!message.member) return false;
   return true;
-}
+};
 
 export const isValidMessageWithVoiceChannel = (message: Message): message is ValidMessageWithVoiceChannel => {
   if (!(isValidMessage(message))) return false;
   if (!message.member.voice.channel) return false;
   return true;
-}
+};

@@ -1,4 +1,4 @@
-import Guesses from "./guesses";
+import Guesses from './guesses';
 
 export default class Leaderboard {
   private points: Map<string, number>; // <PLAYER, POINTS>

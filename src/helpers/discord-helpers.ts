@@ -1,4 +1,4 @@
-import { Channel, Message, MessageEmbed, TextChannel, User } from 'discord.js';
+import { Message, MessageEmbed, TextChannel, User } from 'discord.js';
 
 export const parseMessage = (message: Message) => {
   return message.content.split(/\s+/);

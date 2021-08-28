@@ -1,4 +1,4 @@
-import { Client, Intents, Message, MessageEmbed, Options, VoiceChannel } from 'discord.js';
+import { Client, Intents, Message, MessageEmbed, Options } from 'discord.js';
 import * as dotenv from 'dotenv';
 import { getFirestoreDatabase } from './helpers/firestore-helpers';
 
@@ -17,7 +17,7 @@ verifyEnv();
 const db = getFirestoreDatabase(
   process.env.FIREBASE_PROJECT_ID!,
   process.env.FIREBASE_PRIVATE_KEY!,
-  process.env.FIREBASE_CLIENT_EMAIL!
+  process.env.FIREBASE_CLIENT_EMAIL!,
 );
 const guildManager = new GuildManager(db);
 
@@ -32,7 +32,7 @@ const client = new Client({
 
 const spotify = new Spotify(
   process.env.SPOTIFY_CLIENT_ID!,
-  process.env.SPOTIFY_CLIENT_SECRET!
+  process.env.SPOTIFY_CLIENT_SECRET!,
 );
 
 client.once('ready', () => {
@@ -55,7 +55,7 @@ client.on('messageCreate', (message: Message) => {
   if (message.content.includes('@here') || message.content.includes('@everyone')) return;
 
   // TODO: refactor so guild manager processes the command
-  const prefix = guildManager.getConfig(message.guild.id)?.prefix || "$";
+  const prefix = guildManager.getConfig(message.guild.id)?.prefix || '$';
   if (message.mentions.has(client.user!.id)) {
     help(message, prefix);
   }

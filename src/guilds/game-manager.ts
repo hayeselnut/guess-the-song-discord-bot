@@ -1,10 +1,9 @@
-import { Message, MessageEmbed, TextChannel } from 'discord.js';
+import { MessageEmbed } from 'discord.js';
 import { firestore } from 'firebase-admin';
 import { sendEmbed } from '../helpers/discord-helpers.js';
-import { isValidMessageWithVoiceChannel, parseRoundDuration } from '../helpers/helpers.js';
+import { parseRoundDuration } from '../helpers/helpers.js';
 import { Config, Tracks, ValidMessage, ValidMessageWithVoiceChannel } from '../types.js';
 import Game from './game/game.js';
-import Leaderboard from './game/leaderboard.js';
 
 export default class GameManager {
   db: firestore.Firestore;

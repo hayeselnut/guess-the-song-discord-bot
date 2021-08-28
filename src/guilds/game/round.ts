@@ -1,7 +1,6 @@
-import { AudioPlayer, AudioResource, createAudioResource, StreamType, VoiceConnection } from '@discordjs/voice';
-import { Message, MessageEmbed, TextChannel } from 'discord.js';
+import { AudioPlayer, createAudioResource, StreamType } from '@discordjs/voice';
+import { MessageEmbed, TextChannel } from 'discord.js';
 import internal from 'stream';
-import { randInt } from '../../helpers/helpers';
 import { Track, ValidMessage } from '../../types.js';
 import Guesses from './guesses.js';
 

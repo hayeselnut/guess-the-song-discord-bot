@@ -1,4 +1,4 @@
-import { Guild, GuildMember, Message, TextChannel, User, VoiceChannel, VoiceState } from "discord.js";
+import { Guild, GuildMember, Message, TextChannel, VoiceChannel, VoiceState } from 'discord.js';
 
 export type Track = {
     id: string,

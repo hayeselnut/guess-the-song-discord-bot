@@ -1,4 +1,4 @@
-import { Message, MessageEmbed, TextChannel, VoiceChannel } from 'discord.js';
+import { MessageEmbed, TextChannel, VoiceChannel } from 'discord.js';
 import yts from 'yt-search';
 import ytdl from 'ytdl-core';
 
@@ -9,7 +9,7 @@ import Round from './round.js';
 
 import Cookie from '../../assets/cookie.json';
 import { Tracks, ValidMessage, ValidMessageWithVoiceChannel } from '../../types.js';
-import { AudioPlayer, createAudioPlayer, createAudioResource, entersState, joinVoiceChannel, VoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
+import { AudioPlayer, createAudioPlayer, entersState, joinVoiceChannel, VoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
 
 const BUFFER_LIMIT = 5;
 
@@ -52,7 +52,7 @@ export default class Game {
         ]);
         // Seems to be reconnecting to a new channel - ignore disconnect
       } catch (error) {
-        console.log('SHOULD END GAME HERE! //TODO')
+        console.log('SHOULD END GAME HERE! //TODO');
         // Manually disconnecting the bot will continue running the game (even shows it in the discord channel)
         // BUG: where if you then $stop it will throw error because cannot destroy a voice connection already destroyed
         // Seems to be a real disconnect which SHOULDN'T be recovered from
@@ -192,8 +192,8 @@ export default class Game {
 
   _failJoinVoiceChannel() {
     sendEmbed(this.textChannel, 'Could not join voice channel 😞');
-      this.connection.destroy();
-      this.endGame();
+    this.connection.destroy();
+    this.endGame();
   }
 
   endGame(useCallback=true) {

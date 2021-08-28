@@ -1,4 +1,3 @@
-import { Client, Message, TextChannel } from 'discord.js';
 import { firestore } from 'firebase-admin';
 import DefaultConfig from '../assets/default-config.json';
 import { sendEmbed } from '../helpers/discord-helpers.js';
@@ -49,7 +48,6 @@ export default class GuildManager {
   }
 
   initializeGame(message: ValidMessageWithVoiceChannel, name: string, img: string | undefined, tracks: Tracks, roundLimit: number) {
-
     const gameManager = this._getGameManager(message.guild.id);
     gameManager?.initializeGame(message, name, img, tracks, roundLimit);
   }
@@ -112,10 +110,10 @@ export default class GuildManager {
   _initializeNewGuild(guildId: string) {
     if (this.guilds.has(guildId)) return;
 
-    const gameManager = new GameManager(this.db, null, guildId, {...DefaultConfig, leaderboard: {}});
+    const gameManager = new GameManager(this.db, null, guildId, { ...DefaultConfig, leaderboard: {} });
     this.guilds.set(guildId, gameManager);
 
     // Upload to database
-    this.db.collection('guilds').doc(guildId).set({...DefaultConfig, leaderboard: {}});
+    this.db.collection('guilds').doc(guildId).set({ ...DefaultConfig, leaderboard: {} });
   }
 }
