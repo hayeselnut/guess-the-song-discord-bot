@@ -6,13 +6,14 @@ type NormalizedTrack = {
 }
 
 export const removeAdditionalInformation = (str: string): string =>
-  str.replace(/\(.*\)/g, '')
-    .replace(/\[.*\]/g, '')
-    .replace(/\{.*\}/g, '')
-    .replace(/ - .*/g, '')
-    .replace(/feat\. .*/g, '')
-    .replace(/ft\. .*/g, '')
-    .replace('**', '\\*\\*');
+  str.replaceAll(/\(.*\)/g, '')
+    .replaceAll(/\[.*\]/g, '')
+    .replaceAll(/\{.*\}/g, '')
+    .replaceAll(/ - .*/g, '')
+    .replaceAll(/ feat\. .*/g, '')
+    .replaceAll(/ ft\. .*/g, '')
+    .replaceAll('**', '\\*\\*')
+    .trim();
 
 export const normalize = (str: string, type: NormalizeTypes): string => {
   let normalized = str.normalize('NFD').toLowerCase();
@@ -20,27 +21,27 @@ export const normalize = (str: string, type: NormalizeTypes): string => {
   if (type == 'name') {
     normalized = removeAdditionalInformation(normalized);
     normalized = normalized
-      .replace('ni\\*\\*as', 'niggas') // Ni**as in Paris - JAY-Z, Kanye West
-      .replace('f\\*\\*k', 'fuck'); // F**king Perfect - P!nk
+      .replaceAll('ni\\*\\*as', 'niggas') // Ni**as in Paris - JAY-Z, Kanye West
+      .replaceAll('f\\*\\*k', 'fuck'); // F**king Perfect - P!nk
   } else if (type == 'artist') {
     normalized = normalized
-      .replace('a$ap', 'asap') // A$AP Rocky
-      .replace('mø', 'mo') // MØ
-      .replace('p!nk', 'pink'); // P!nk
+      .replaceAll('a$ap', 'asap') // A$AP Rocky
+      .replaceAll('mø', 'mo') // MØ
+      .replaceAll('p!nk', 'pink'); // P!nk
   }
 
   return normalized
-    .replace('0', 'zero')
-    .replace('1', 'one')
-    .replace('2', 'two')
-    .replace('3', 'three')
-    .replace('4', 'four')
-    .replace('5', 'five')
-    .replace('6', 'six')
-    .replace('7', 'seven')
-    .replace('8', 'eight')
-    .replace('9', 'nine')
-    .replace(' & ', ' and ')
+    .replaceAll(/0/g, 'zero')
+    .replaceAll(/1/g, 'one')
+    .replaceAll(/2/g, 'two')
+    .replaceAll(/3/g, 'three')
+    .replaceAll(/4/g, 'four')
+    .replaceAll(/5/g, 'five')
+    .replaceAll(/6/g, 'six')
+    .replaceAll(/7/g, 'seven')
+    .replaceAll(/8/g, 'eight')
+    .replaceAll(/9/g, 'nine')
+    .replaceAll(' & ', ' and ')
     .replace(/^the /g, '')
     .replace(/[^a-z0-9]/g, '') || str;
 };
