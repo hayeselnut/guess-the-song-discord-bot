@@ -1,13 +1,15 @@
 import * as admin from 'firebase-admin';
 
-export const getFirestoreDatabase = (projectId: string, privateKey: string, clientEmail: string): FirebaseFirestore.Firestore => {
-  const serviceAccount: admin.ServiceAccount = {
-    projectId,
-    privateKey: privateKey.replace(/\\n/g, '\n'),
-    clientEmail,
-  };
-
-  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-
-  return admin.firestore();
+const serviceAccount: admin.ServiceAccount = {
+  projectId: process.env.FIREBASE_PROJECT_ID!,
+  privateKey: process.env.FIREBASE_PRIVATE_KEY!.replace(/\\n/g, '\n'),
+  clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
 };
+
+admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+
+const db = admin.firestore();
+
+export default db;
+
+// Best way to manage state/ stateful variables in exports/javascript

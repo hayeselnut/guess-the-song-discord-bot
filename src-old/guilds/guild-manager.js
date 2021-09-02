@@ -78,7 +78,7 @@ class GuildManager {
             round_duration: default_config_json_1.default.round_duration,
             emote_nearly_correct_guesses: default_config_json_1.default.emote_nearly_correct_guesses,
         }, { merge: true });
-        discord_helpers_js_1.sendEmbed(message.channel, 'Configs have been reset');
+        (0, discord_helpers_js_1.sendEmbed)(message.channel, 'Configs have been reset');
     }
     _getGame(guildId, channelId) {
         const game = this.guilds.get(guildId)?.game;

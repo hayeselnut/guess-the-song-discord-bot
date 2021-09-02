@@ -19,17 +19,17 @@ class Game {
         this.guildId = message.guild.id;
         this.textChannel = message.channel;
         this.voiceChannel = message.member.voice.channel;
-        this.connection = voice_1.joinVoiceChannel({
+        this.connection = (0, voice_1.joinVoiceChannel)({
             channelId: this.voiceChannel.id,
             guildId: this.guildId,
             adapterCreator: this.voiceChannel.guild.voiceAdapterCreator,
         });
-        this.audioPlayer = voice_1.createAudioPlayer();
+        this.audioPlayer = (0, voice_1.createAudioPlayer)();
         this.connection.on(voice_1.VoiceConnectionStatus.Disconnected, async () => {
             try {
                 await Promise.race([
-                    voice_1.entersState(this.connection, voice_1.VoiceConnectionStatus.Signalling, 5000),
-                    voice_1.entersState(this.connection, voice_1.VoiceConnectionStatus.Connecting, 5000),
+                    (0, voice_1.entersState)(this.connection, voice_1.VoiceConnectionStatus.Signalling, 5000),
+                    (0, voice_1.entersState)(this.connection, voice_1.VoiceConnectionStatus.Connecting, 5000),
                 ]);
                 // Seems to be reconnecting to a new channel - ignore disconnect
             }
@@ -46,8 +46,7 @@ class Game {
         this.tracks = tracks;
         this.roundDuration = roundDuration;
         this.roundLimit = roundLimit;
-        this.order = helpers_js_1.shuffle(Object.keys(tracks)).slice(0, this.roundLimit);
-        this.paused = false;
+        this.order = (0, helpers_js_1.shuffle)(Object.keys(tracks)).slice(0, this.roundLimit);
         this.leaderboard = new leaderboard_js_1.default();
         // Round buffers (this helps the discord bot play a song instantly instead of waiting for await to finish)
         this.nextRounds = []; // Buffer of next rounds containing preloaded streams
@@ -80,9 +79,9 @@ class Game {
         ;
         const track = this.tracks[trackId];
         const youtubeQuery = `${track.name} ${track.artists.join(' ')}`;
-        const youtubeResults = await yt_search_1.default(youtubeQuery);
+        const youtubeResults = await (0, yt_search_1.default)(youtubeQuery);
         const video = youtubeResults.videos[0];
-        const stream = ytdl_core_1.default(video.url, {
+        const stream = (0, ytdl_core_1.default)(video.url, {
             filter: 'audioonly',
             requestOptions: {
                 headers: cookie_json_1.default,
@@ -113,10 +112,10 @@ class Game {
         this.round = this.nextRounds.shift();
         if (!this.round) {
             console.error('Could not load round from empty buffer');
-            discord_helpers_js_1.sendEmbed(this.textChannel, 'Could not load round from empty buffer');
+            (0, discord_helpers_js_1.sendEmbed)(this.textChannel, 'Could not load round from empty buffer');
             return;
         }
-        discord_helpers_js_1.sendEmbed(this.textChannel, `[${this.currRound + 1}/${this.roundLimit}] Starting next song...`);
+        (0, discord_helpers_js_1.sendEmbed)(this.textChannel, `[${this.currRound + 1}/${this.roundLimit}] Starting next song...`);
         console.log(`#${this.textChannel.name} [${this.currRound + 1}/${this.roundLimit}]:`, this.round.track.name, this.round.track.artists);
         this.connection.subscribe(this.audioPlayer);
         this.round.startRound();
@@ -155,7 +154,7 @@ class Game {
     //   }
     // }
     _failJoinVoiceChannel() {
-        discord_helpers_js_1.sendEmbed(this.textChannel, 'Could not join voice channel 😞');
+        (0, discord_helpers_js_1.sendEmbed)(this.textChannel, 'Could not join voice channel 😞');
         this.connection.destroy();
         this.endGame();
     }

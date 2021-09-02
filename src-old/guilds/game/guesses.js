@@ -24,10 +24,10 @@ class Guesses {
     _checkGuessForName(message) {
         if (this.answeredBy.get(SONG_INDEX))
             return false;
-        const guess = normalize_helpers_js_1.normalize(message.content, 'name');
+        const guess = (0, normalize_helpers_js_1.normalize)(message.content, 'name');
         if (guess != this.track.normalizedName)
             return false;
-        this.answeredBy.set(SONG_INDEX, discord_helpers_js_1.tag(message.author));
+        this.answeredBy.set(SONG_INDEX, (0, discord_helpers_js_1.tag)(message.author));
         this.remainingPoints--;
         return true;
     }
@@ -35,16 +35,16 @@ class Guesses {
         return this.track.normalizedArtists.map((artist, index) => {
             if (this.answeredBy.get(index))
                 return false;
-            const guess = normalize_helpers_js_1.normalize(message.content, 'artist');
+            const guess = (0, normalize_helpers_js_1.normalize)(message.content, 'artist');
             if (artist != guess)
                 return false;
-            this.answeredBy.set(index, discord_helpers_js_1.tag(message.author));
+            this.answeredBy.set(index, (0, discord_helpers_js_1.tag)(message.author));
             this.remainingPoints--;
             return true;
         }).some((b) => b);
     }
     toString(final = false) {
-        const displayName = normalize_helpers_js_1.removeAdditionalInformation(this.track.name);
+        const displayName = (0, normalize_helpers_js_1.removeAdditionalInformation)(this.track.name);
         const nameGuesses = this.answeredBy.get(SONG_INDEX)
             ? `✅ Song: **${displayName}** guessed correctly by ${this.answeredBy.get(SONG_INDEX)} (+1)`
             : final

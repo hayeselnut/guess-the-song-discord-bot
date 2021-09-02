@@ -54,7 +54,7 @@ class Round {
             return this.endRound(true, 'Could not load song. Skipping song...');
         }
         try {
-            const audioResource = voice_1.createAudioResource(this.stream, { inputType: voice_1.StreamType.Arbitrary }); // TODO no seek option
+            const audioResource = (0, voice_1.createAudioResource)(this.stream, { inputType: voice_1.StreamType.Arbitrary }); // TODO no seek option
             this.audioPlayer.play(audioResource);
             this.audioPlayer.on('error', (err) => {
                 console.error(err);

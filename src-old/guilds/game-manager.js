@@ -20,16 +20,16 @@ class GameManager {
     }
     updatePrefix(prefix, message) {
         const newPrefix = String(prefix);
-        discord_helpers_js_1.sendEmbed(message.channel, `Prefix has been set to \`${newPrefix}\``);
+        (0, discord_helpers_js_1.sendEmbed)(message.channel, `Prefix has been set to \`${newPrefix}\``);
         this.prefix = newPrefix;
         this._updateDatabase();
     }
     updateRoundDuration(duration, message) {
-        const newRoundDuration = helpers_js_1.parseRoundDuration(duration);
+        const newRoundDuration = (0, helpers_js_1.parseRoundDuration)(duration);
         if (isNaN(newRoundDuration)) {
-            return discord_helpers_js_1.sendEmbed(message.channel, 'Round duration limit must be a number');
+            return (0, discord_helpers_js_1.sendEmbed)(message.channel, 'Round duration limit must be a number');
         }
-        discord_helpers_js_1.sendEmbed(message.channel, `Round duration limit has been set to ${newRoundDuration} seconds`);
+        (0, discord_helpers_js_1.sendEmbed)(message.channel, `Round duration limit has been set to ${newRoundDuration} seconds`);
         this.roundDuration = newRoundDuration;
         this._updateDatabase();
     }

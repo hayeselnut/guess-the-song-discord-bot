@@ -1,5 +1,7 @@
 import { Message, TextChannel } from 'discord.js';
-import { ValidMessage, ValidMessageWithVoiceChannel as ValidMessageWithVoiceChannel } from '../types';
+import { firestore } from 'firebase-admin';
+import GameManager from '../guilds/game-manager';
+import { Config, ValidMessage, ValidMessageWithVoiceChannel as ValidMessageWithVoiceChannel } from '../types';
 
 export const verifyEnv = () => {
   if (!process.env.DISCORD_BOT_TOKEN) {
@@ -44,4 +46,11 @@ export const isValidMessageWithVoiceChannel = (message: Message): message is Val
   if (!(isValidMessage(message))) return false;
   if (!message.member.voice.channel) return false;
   return true;
+};
+
+export const loadGuilds = async (db: firestore.Firestore, guilds: { [id: string]: GameManager}) => {
+  const snapshot = await db.collection('guilds').get();
+  snapshot.forEach((doc) => {
+    guilds[doc.id] = new GameManager(db, null, doc.id, doc.data() as Config);
+  });
 };

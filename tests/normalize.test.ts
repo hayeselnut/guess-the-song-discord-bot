@@ -6,6 +6,10 @@ describe('normalize song names', () => {
     expect(normalize('Somebody To You', 'name')).toBe('somebodytoyou');
   });
 
+  it('accents', () => {
+    expect(normalize('Señorita', 'name')).toBe('senorita');
+  });
+
   it('numbers', () => {
     expect(normalize('22', 'name')).toBe('twotwo');
     expect(normalize('7 Years', 'name')).toBe('sevenyears');

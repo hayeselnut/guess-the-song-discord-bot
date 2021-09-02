@@ -1,23 +1,21 @@
 import SpotifyWebApi from 'spotify-web-api-node';
 import { normalizeTrack } from '../helpers/normalize-helpers';
-import { Track, Tracks, Playlist } from '../types/tracks';
+import { Playlist, Track, Tracks } from '../types';
 
-class Spotify {
+export default class Spotify {
   api: SpotifyWebApi;
 
   constructor(clientId: string, clientSecret: string) {
     this.api = new SpotifyWebApi({ clientId, clientSecret });
   }
 
-  async getPlaylists(playlistLinks: string[]): Promise<Playlist> {
+  async getPlaylists(playlistLinks: string[]): Promise<Playlist | undefined> {
     await this._retrieveAccessToken();
 
     const playlists = (await Promise.all(playlistLinks.map((link) => this._getPlaylist(link))))
       .filter((playlist): playlist is Playlist => playlist !== undefined);
 
-    if (playlists.length === 0) {
-      throw new Error('No tracks found');
-    };
+    if (playlists.length === 0) return undefined;
 
     return {
       name: playlists.map((playlist) => playlist.name).join(' + '), // Show all names joined by ` + `
@@ -90,8 +88,3 @@ class Spotify {
     return playlistLink;
   };
 }
-
-export default new Spotify(
-  process.env.SPOTIFY_CLIENT_ID,
-  process.env.SPOTIFY_CLIENT_SECRET,
-);

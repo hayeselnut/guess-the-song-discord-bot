@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@discordjs/voice": "0.6.0",
-    "@types/node": "^16.7.4",
+    "@reduxjs/toolkit": "^1.6.1",
     "@types/spotify-web-api-node": "^5.0.3",
     "@types/yt-search": "^2.3.2",
     "discord.js": "^13.1.0",
@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@types/jest": "^27.0.1",
+    "@types/node": "^16.7.8",
     "@typescript-eslint/eslint-plugin": "^4.29.3",
     "@typescript-eslint/parser": "^4.29.3",
     "eslint": "^7.32.0",

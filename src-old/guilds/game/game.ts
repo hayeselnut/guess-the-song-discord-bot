@@ -25,7 +25,6 @@ export default class Game {
   roundDuration: number;
   roundLimit: number;
   order: string[];
-  paused: boolean;
   leaderboard: Leaderboard;
   nextRounds: Round[];
   round: Round | null | undefined;
@@ -67,7 +66,6 @@ export default class Game {
     this.roundDuration = roundDuration;
     this.roundLimit = roundLimit;
     this.order = shuffle(Object.keys(tracks)).slice(0, this.roundLimit);
-    this.paused = false;
     this.leaderboard = new Leaderboard();
 
     // Round buffers (this helps the discord bot play a song instantly instead of waiting for await to finish)

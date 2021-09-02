@@ -19,13 +19,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getFirestoreDatabase = void 0;
 const admin = __importStar(require("firebase-admin"));
-const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+const getFirestoreDatabase = (projectId, privateKey, clientEmail) => {
+    const serviceAccount = {
+        projectId,
+        privateKey: privateKey.replace(/\\n/g, '\n'),
+        clientEmail,
+    };
+    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+    return admin.firestore();
 };
-admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-const db = admin.firestore();
-exports.default = db;
-// Best way to manage state/ stateful variables in exports/javascript
+exports.getFirestoreDatabase = getFirestoreDatabase;

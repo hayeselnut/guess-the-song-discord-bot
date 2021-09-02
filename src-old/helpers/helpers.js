@@ -1,7 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidMessageWithVoiceChannel = exports.isValidMessage = exports.parseRoundDuration = exports.randInt = exports.sleep = exports.shuffle = exports.verifyEnv = void 0;
+exports.loadGuilds = exports.isValidMessageWithVoiceChannel = exports.isValidMessage = exports.parseRoundDuration = exports.randInt = exports.sleep = exports.shuffle = exports.verifyEnv = void 0;
 const discord_js_1 = require("discord.js");
+const game_manager_1 = __importDefault(require("../guilds/game-manager"));
 const verifyEnv = () => {
     if (!process.env.DISCORD_BOT_TOKEN) {
         throw new Error('DISCORD_BOT_TOKEN variable not in environment');
@@ -45,10 +49,17 @@ const isValidMessage = (message) => {
 };
 exports.isValidMessage = isValidMessage;
 const isValidMessageWithVoiceChannel = (message) => {
-    if (!(exports.isValidMessage(message)))
+    if (!((0, exports.isValidMessage)(message)))
         return false;
     if (!message.member.voice.channel)
         return false;
     return true;
 };
 exports.isValidMessageWithVoiceChannel = isValidMessageWithVoiceChannel;
+const loadGuilds = async (db, guilds) => {
+    const snapshot = await db.collection('guilds').get();
+    snapshot.forEach((doc) => {
+        guilds[doc.id] = new game_manager_1.default(db, null, doc.id, doc.data());
+    });
+};
+exports.loadGuilds = loadGuilds;
