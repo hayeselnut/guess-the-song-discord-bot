@@ -43,10 +43,6 @@ export default class GameManager {
     this._updateDatabase();
   }
 
-  // updateEmote(emote) {
-  //   this.emoteNearlyCorrectGuesses = emote;
-  // }
-
   updateLeaderboard(game: Game) {
     const players = game.leaderboard.getPlayers();
     if (!players.length) return;

@@ -25,3 +25,5 @@ export const throwIfInsufficientVoicePermissions = (message: ValidMessageWithVoi
     throw new Error('I need the permissions to join and speak in your voice channel');
   }
 };
+
+export const shuffle = (arr: any[]) => arr.sort(() => Math.random() - 0.5);
