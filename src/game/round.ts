@@ -2,7 +2,7 @@ import { AudioPlayer, AudioResource } from '@discordjs/voice';
 import { MessageEmbed, TextChannel } from 'discord.js';
 
 import { AudioResourceWithTrack, ValidMessage } from '../types/discord';
-import { Callback, EndRoundReason } from '../types/game';
+import { EndRoundCallback, EndRoundReason } from '../types/game';
 import { Track } from '../types/tracks';
 
 import Guesses from './guesses';
@@ -15,10 +15,10 @@ export default class Round {
   guesses: Guesses;
   timer: NodeJS.Timeout;
   timeLimit: number;
-  callback: Callback;
+  callback: EndRoundCallback;
 
   constructor(audioResource: AudioResourceWithTrack, audioPlayer: AudioPlayer, textChannel: TextChannel,
-    timeLimit: number, callback: Callback) {
+    timeLimit: number, callback: EndRoundCallback) {
     this.audioPlayer = audioPlayer;
     this.textChannel = textChannel;
 
@@ -37,7 +37,7 @@ export default class Round {
   startRound() {
     // Start playing audio resource
     try {
-      // TODO assuming that the connection is already subscriebd to the audio resource
+      // Asssumes connection is already subscribed to audio resource
       this.audioPlayer.play(this.audioResource as AudioResource);
 
       this.audioPlayer.on('error', (err: Error) => {
@@ -73,7 +73,7 @@ export default class Round {
     this.textChannel.send({ embeds: [progressEmbed] });
   }
 
-  endRound(reason: EndRoundReason, callback?: Callback) {
+  endRound(reason: EndRoundReason, callback?: EndRoundCallback) {
     clearTimeout(this.timer);
 
     if (callback) {

@@ -4,7 +4,7 @@ import GuildState from './guild-state';
 
 import DefaultConfig from '../assets/default-config.json';
 
-class Guilds {
+class GuildStateManager {
   _guilds: { [id: string]: GuildState } = {};
 
   constructor() {
@@ -37,4 +37,4 @@ class Guilds {
   }
 };
 
-export default new Guilds();
+export default new GuildStateManager();

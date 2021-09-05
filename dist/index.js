@@ -44,6 +44,7 @@ client_1.default.on('messageCreate', (message) => {
     if (message.content.includes('@here') || message.content.includes('@everyone'))
         return;
     console.log(Object.keys(guilds_1.default._guilds).length, 'guidls found in Firestore');
+    console.log('Guilds:', client_1.default.guilds.cache.size);
     guilds_1.default.getOrCreate(message.guild.id).readMessage(message);
 });
 const token = process.env.DISCORD_BOT_TOKEN;

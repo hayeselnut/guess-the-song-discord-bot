@@ -21,5 +21,3 @@ export const parseMessage = (message: Message) => message.content.split(/\s+/);
 export const sendEmbed = (channel: TextChannel, msg: string) => {
   channel.send({ embeds: [new MessageEmbed().setDescription(msg)] });
 };
-
-// TODO don't need tag function, just do ${message.author}

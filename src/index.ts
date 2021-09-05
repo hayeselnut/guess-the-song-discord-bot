@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import Guilds from './guilds/guilds';
+import GuildStateManager from './guild-state/guild-state-manager';
 import client from './client/client';
 
 import { isValidMessage } from './helpers/bot-helpers';
@@ -23,9 +23,10 @@ client.on('messageCreate', (message: Message) => {
   if (!isValidMessage(message)) return;
   if (message.author.bot) return;
   if (message.content.includes('@here') || message.content.includes('@everyone')) return;
-  console.log(Object.keys(Guilds._guilds).length, 'guidls found in Firestore');
+  console.log(Object.keys(GuildStateManager._guilds).length, 'guilds found in Firestore');
+  console.log('Current guilds:', client.guilds.cache.size);
 
-  Guilds.getOrCreate(message.guild.id).readMessage(message);
+  GuildStateManager.getOrCreate(message.guild.id).readMessage(message);
 });
 
 const token = process.env.DISCORD_BOT_TOKEN;

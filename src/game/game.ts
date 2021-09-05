@@ -9,7 +9,7 @@ import {
 import { MessageEmbed, StageChannel, TextChannel, VoiceChannel } from 'discord.js';
 import { sendEmbed } from '../helpers/bot-helpers';
 import { ValidMessage, ValidMessageWithVoice } from '../types/discord';
-import { Callback, EndGameReason, EndRoundReason, GuildConfig } from '../types/game';
+import { EndGameCallback, EndGameReason, EndRoundReason, GuildConfig } from '../types/game';
 import { Tracks } from '../types/tracks';
 import AudioResourceBuffer from './audio-resource-buffer';
 import Leaderboard from '../leaderboard/leaderboard';
@@ -34,9 +34,9 @@ export default class Game {
   private audioPlayer: AudioPlayer;
   private connection: VoiceConnection;
 
-  private callback: Callback;
+  private callback: EndGameCallback;
 
-  constructor(message: ValidMessageWithVoice, config: GuildConfig, tracks: Tracks, callback: Callback) {
+  constructor(message: ValidMessageWithVoice, config: GuildConfig, tracks: Tracks, callback: EndGameCallback) {
     this.starterId = message.member.id;
     this.timeLimit = config.round_duration;
     this.emoteNearlyCorrectGuesses = config.emote_nearly_correct_guesses;
@@ -71,7 +71,6 @@ export default class Game {
         ]);
         // Seems to be reconnecting to a new channel - ignore disconnect
       } catch (error) {
-        console.log('SHOULD END GAME HERE! //TODO');
         // Manually disconnecting the bot will continue running the game (even shows it in the discord channel)
         // BUG: where if you then $stop it will throw error because cannot destroy a voice connection already destroyed
         // Seems to be a real disconnect which SHOULDN'T be recovered from
@@ -93,12 +92,12 @@ export default class Game {
     this._startRound();
   }
 
-  endGame(reason: EndGameReason, callback?: Callback) {
+  endGame(reason: EndGameReason, callback?: EndGameCallback) {
     this.finished = true;
     console.log(`#${this.textChannel.name}: Game ended with reason ${reason}`);
     this.round = null;
 
-    // TODO should check if connectio nis already destroyed
+    // TODO should check if connection is already destroyed
     this.connection.destroy();
 
     const gameSummary = new MessageEmbed()
@@ -112,10 +111,10 @@ export default class Game {
     }
   }
 
+  // TODO: implement skipRound()
   skipRound() {
     console.log('Skip game');
     console.log('only starter id can skip!');
-    // TODO
   }
 
   private _startRound() {

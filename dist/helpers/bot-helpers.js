@@ -26,4 +26,3 @@ const sendEmbed = (channel, msg) => {
     channel.send({ embeds: [new discord_js_1.MessageEmbed().setDescription(msg)] });
 };
 exports.sendEmbed = sendEmbed;
-// TODO don't need tag function, just do ${message.author}

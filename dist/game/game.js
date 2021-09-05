@@ -41,7 +41,6 @@ class Game {
                 // Seems to be reconnecting to a new channel - ignore disconnect
             }
             catch (error) {
-                console.log('SHOULD END GAME HERE! //TODO');
                 // Manually disconnecting the bot will continue running the game (even shows it in the discord channel)
                 // BUG: where if you then $stop it will throw error because cannot destroy a voice connection already destroyed
                 // Seems to be a real disconnect which SHOULDN'T be recovered from
@@ -63,7 +62,7 @@ class Game {
         this.finished = true;
         console.log(`#${this.textChannel.name}: Game ended with reason ${reason}`);
         this.round = null;
-        // TODO should check if connectio nis already destroyed
+        // TODO should check if connection is already destroyed
         this.connection.destroy();
         const gameSummary = new discord_js_1.MessageEmbed()
             .setTitle('🏁 Final Leaderboard')
@@ -74,10 +73,10 @@ class Game {
             callback(reason);
         }
     }
+    // TODO: implement skipRound()
     skipRound() {
         console.log('Skip game');
         console.log('only starter id can skip!');
-        // TODO
     }
     _startRound() {
         if (this.finished || this.currRound >= this.timeLimit) {

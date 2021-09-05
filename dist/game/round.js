@@ -21,7 +21,7 @@ class Round {
     startRound() {
         // Start playing audio resource
         try {
-            // TODO assuming that the connection is already subscriebd to the audio resource
+            // Asssumes connection is already subscribed to audio resource
             this.audioPlayer.play(this.audioResource);
             this.audioPlayer.on('error', (err) => {
                 console.error(`#${this.textChannel.name}:`, 'ERR - Cannot play', this.track.name, this.track.artists, err);

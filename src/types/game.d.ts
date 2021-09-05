@@ -7,6 +7,7 @@ export type GuildConfig = {
 export type LeaderboardPoints = { [id: string]: number }
 
 export type EndRoundReason = 'CORRECT' | 'TIMEOUT' | 'FORCE_SKIP' | 'LOAD_FAIL';
-export type EndGameReason = 'ALL_ROUNDS_PLAYED' | 'FORCE_STOP' | 'DISCONNECTED';
+export type EndRoundCallback = (reason: EndRoundReason) => void;
 
-export type Callback = (reason: any) => void; // TODO
+export type EndGameReason = 'ALL_ROUNDS_PLAYED' | 'FORCE_STOP' | 'DISCONNECTED';
+export type EndGameCallback = (reason: EndGameReason) => void;
