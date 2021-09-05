@@ -1,5 +1,5 @@
 import HelpInstructions from '../assets/help.json';
-import client from '../client';
+import client from '../client/client';
 import { ValidMessageWithVoice } from '../types/discord';
 
 export const parseStartGameArgs = (args: string[], prefix: string) => {

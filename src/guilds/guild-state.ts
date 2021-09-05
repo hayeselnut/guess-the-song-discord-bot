@@ -4,7 +4,7 @@ import { EndGameReason, GuildConfig, LeaderboardPoints } from '../types/game';
 import { ValidMessage } from '../types/discord';
 import { HelpCommand } from '../types/bot';
 
-import client from '../client';
+import client from '../client/client';
 import spotify from '../spotify/spotify';
 import Game from '../game/game';
 import Leaderboard from '../leaderboard/leaderboard';
@@ -12,7 +12,7 @@ import Leaderboard from '../leaderboard/leaderboard';
 import { isValidMessageWithVoice, parseMessage, sendEmbed } from '../helpers/bot-helpers';
 import { parseStartGameArgs, throwIfInsufficientVoicePermissions } from '../helpers/game-helpers';
 
-import HelpInstructions from '../assets/help.json';
+import Help from '../assets/help.json';
 import DefaultConfig from '../assets/default-config.json';
 
 export default class GuildState {
@@ -130,19 +130,11 @@ export default class GuildState {
   private _help(message: ValidMessage) {
     const helpEmbed = new MessageEmbed()
       .setTitle('🤖 Hello, I\'m Guess the Song Bot!')
-      .setDescription(HelpInstructions.description)
-      .addField(
-        'Game commands',
-        HelpInstructions.game_commands.map((cmd: HelpCommand) =>
-          `${cmd.emoji} \`${this.config.prefix}${cmd.usage}\`: ${cmd.description}`,
-        ).join('\n\n'),
-      )
-      .addField(
-        'Help commands',
-        HelpInstructions.help_commands.map((cmd: HelpCommand) =>
-          `${cmd.emoji} \`${this.config.prefix}${cmd.usage}\`: ${cmd.description}`,
-        ).join('\n\n'),
-      );
+      .setDescription(Help.description)
+      .addFields(Object.entries(Help.commands).map(([name, cmd]) => ({
+        name,
+        value: `${cmd.emoji} \`${this.config.prefix}${cmd.usage}\`: ${cmd.description}`,
+      })));
 
     message.channel.send({ embeds: [helpEmbed] });
   };

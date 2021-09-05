@@ -1,8 +1,8 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import Guilds from './guild-manager/guilds';
-import client from './client';
+import Guilds from './guilds/guilds';
+import client from './client/client';
 
 import { isValidMessage } from './helpers/bot-helpers';
 import { Message } from 'discord.js';
