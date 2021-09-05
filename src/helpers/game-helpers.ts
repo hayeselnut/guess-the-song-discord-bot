@@ -1,10 +1,10 @@
-import HelpInstructions from '../assets/help.json';
+import Help from '../assets/help.json';
 import client from '../client/client';
 import { ValidMessageWithVoice } from '../types/discord';
 
 export const parseStartGameArgs = (args: string[], prefix: string) => {
   if (args.length < 3) {
-    const [startHelp] = HelpInstructions.game_commands.filter((help) => help.usage.startsWith('start'));
+    const startHelp = Help.commands.start;
     throw new Error(`Usage: \`${prefix}${startHelp.usage}\``);
   }
 

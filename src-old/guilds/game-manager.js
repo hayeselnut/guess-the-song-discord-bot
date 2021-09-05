@@ -33,9 +33,6 @@ class GameManager {
         this.roundDuration = newRoundDuration;
         this._updateDatabase();
     }
-    // updateEmote(emote) {
-    //   this.emoteNearlyCorrectGuesses = emote;
-    // }
     updateLeaderboard(game) {
         const players = game.leaderboard.getPlayers();
         if (!players.length)

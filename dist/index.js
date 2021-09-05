@@ -23,43 +23,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv = __importStar(require("dotenv"));
-const bot_helpers_1 = require("./helpers/bot-helpers");
 dotenv.config();
-const discord_js_1 = require("discord.js");
-const guilds_1 = __importDefault(require("./guild-manager/guilds"));
-// import { getFirestoreDatabase } from './helpers/firestore-helpers';
-const spotify_1 = __importDefault(require("./spotify/spotify"));
-const spotify = new spotify_1.default(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
-const client = new discord_js_1.Client({
-    intents: [
-        discord_js_1.Intents.FLAGS.GUILDS,
-        discord_js_1.Intents.FLAGS.GUILD_MESSAGES,
-        discord_js_1.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-        discord_js_1.Intents.FLAGS.GUILD_VOICE_STATES,
-    ],
-    makeCache: discord_js_1.Options.cacheWithLimits({ MessageManager: {
-            maxSize: 25,
-            sweepInterval: 600,
-        } }),
-});
-client.once('ready', () => {
+const guilds_1 = __importDefault(require("./guilds/guilds"));
+const client_1 = __importDefault(require("./client/client"));
+const bot_helpers_1 = require("./helpers/bot-helpers");
+client_1.default.once('ready', () => {
     console.log('Ready!');
 });
-client.once('reconnecting', () => {
+client_1.default.once('reconnecting', () => {
     console.log('Reconnecting!');
 });
-client.once('disconnect', () => {
+client_1.default.once('disconnect', () => {
     console.log('Disconnect!');
 });
-client.on('messageCreate', (message) => {
-    // if (!ready) return;
-    console.log(Object.keys(guilds_1.default).length);
+client_1.default.on('messageCreate', (message) => {
     if (!(0, bot_helpers_1.isValidMessage)(message))
         return;
     if (message.author.bot)
         return;
     if (message.content.includes('@here') || message.content.includes('@everyone'))
         return;
+    console.log(Object.keys(guilds_1.default._guilds).length, 'guidls found in Firestore');
+    guilds_1.default.getOrCreate(message.guild.id).readMessage(message);
 });
 const token = process.env.DISCORD_BOT_TOKEN;
-client.login(token);
+client_1.default.login(token);

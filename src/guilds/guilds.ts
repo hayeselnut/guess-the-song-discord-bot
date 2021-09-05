@@ -5,7 +5,8 @@ import GuildState from './guild-state';
 import DefaultConfig from '../assets/default-config.json';
 
 class Guilds {
-  private _guilds: { [id: string]: GuildState } = {};
+  _guilds: { [id: string]: GuildState } = {};
+
   constructor() {
     this._guilds = {};
 

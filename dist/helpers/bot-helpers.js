@@ -1,28 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidMessage = exports.verifyEnv = void 0;
+exports.sendEmbed = exports.parseMessage = exports.isValidMessageWithVoice = exports.isValidMessage = void 0;
 const discord_js_1 = require("discord.js");
-const verifyEnv = () => {
-    if (!process.env.DISCORD_BOT_TOKEN) {
-        throw new Error('DISCORD_BOT_TOKEN variable not in environment');
-    }
-    if (!process.env.SPOTIFY_CLIENT_ID) {
-        throw new Error('SPOTIFY_CLIENT_ID variable not in environment');
-    }
-    if (!process.env.SPOTIFY_CLIENT_SECRET) {
-        throw new Error('SPOTIFY_CLIENT_SECRET variable not in environment');
-    }
-    if (!process.env.FIREBASE_PROJECT_ID) {
-        throw new Error('FIREBASE_PROJECT_ID variable not in environment');
-    }
-    if (!process.env.FIREBASE_PRIVATE_KEY) {
-        throw new Error('FIREBASE_PRIVATE_KEY variable not in environment');
-    }
-    if (!process.env.FIREBASE_CLIENT_EMAIL) {
-        throw new Error('FIREBASE_CLIENT_EMAIL variable not in environment');
-    }
-};
-exports.verifyEnv = verifyEnv;
 const isValidMessage = (message) => {
     if (!(message.channel instanceof discord_js_1.TextChannel))
         return false;
@@ -33,3 +12,18 @@ const isValidMessage = (message) => {
     return true;
 };
 exports.isValidMessage = isValidMessage;
+const isValidMessageWithVoice = (message) => {
+    if (!((0, exports.isValidMessage)(message)))
+        return false;
+    if (!message.member.voice.channel)
+        return false;
+    return true;
+};
+exports.isValidMessageWithVoice = isValidMessageWithVoice;
+const parseMessage = (message) => message.content.split(/\s+/);
+exports.parseMessage = parseMessage;
+const sendEmbed = (channel, msg) => {
+    channel.send({ embeds: [new discord_js_1.MessageEmbed().setDescription(msg)] });
+};
+exports.sendEmbed = sendEmbed;
+// TODO don't need tag function, just do ${message.author}

@@ -23,10 +23,10 @@ client.on('messageCreate', (message: Message) => {
   if (!isValidMessage(message)) return;
   if (message.author.bot) return;
   if (message.content.includes('@here') || message.content.includes('@everyone')) return;
-  console.log(Object.keys(Guilds).length, 'guidls found in Firestore');
+  console.log(Object.keys(Guilds._guilds).length, 'guidls found in Firestore');
 
   Guilds.getOrCreate(message.guild.id).readMessage(message);
 });
 
-const token = process.env.DISCORD_BOT_TOKEN!;
+const token = process.env.DISCORD_BOT_TOKEN;
 client.login(token);

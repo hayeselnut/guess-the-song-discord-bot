@@ -2,7 +2,6 @@ import { MessageEmbed } from 'discord.js';
 
 import { EndGameReason, GuildConfig, LeaderboardPoints } from '../types/game';
 import { ValidMessage } from '../types/discord';
-import { HelpCommand } from '../types/bot';
 
 import client from '../client/client';
 import spotify from '../spotify/spotify';
@@ -131,10 +130,12 @@ export default class GuildState {
     const helpEmbed = new MessageEmbed()
       .setTitle('🤖 Hello, I\'m Guess the Song Bot!')
       .setDescription(Help.description)
-      .addFields(Object.entries(Help.commands).map(([name, cmd]) => ({
-        name,
-        value: `${cmd.emoji} \`${this.config.prefix}${cmd.usage}\`: ${cmd.description}`,
-      })));
+      .addFields(
+        Object.entries(Help.commands).map(([name, cmd]) => ({
+          name: `${cmd.emoji} ${name}`,
+          value: `\`${this.config.prefix}${cmd.usage}\`: ${cmd.description}`,
+        })),
+      );
 
     message.channel.send({ embeds: [helpEmbed] });
   };

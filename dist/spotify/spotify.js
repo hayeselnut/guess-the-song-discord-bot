@@ -13,8 +13,10 @@ class Spotify {
         await this._retrieveAccessToken();
         const playlists = (await Promise.all(playlistLinks.map((link) => this._getPlaylist(link))))
             .filter((playlist) => playlist !== undefined);
-        if (playlists.length === 0)
-            return undefined;
+        if (playlists.length === 0) {
+            throw new Error('No tracks found');
+        }
+        ;
         return {
             name: playlists.map((playlist) => playlist.name).join(' + '),
             img: playlists.find((playlist) => playlist.img !== null && playlist.img !== undefined)?.img,
@@ -75,4 +77,4 @@ class Spotify {
     }
     ;
 }
-exports.default = Spotify;
+exports.default = new Spotify(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
