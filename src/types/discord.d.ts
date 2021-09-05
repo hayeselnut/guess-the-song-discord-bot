@@ -17,3 +17,7 @@ export interface GuildMemberWithVoice extends GuildMember {
 export interface ValidMessageWithVoice extends ValidMessage {
   member: GuildMemberWithVoice
 }
+
+export interface AudioResourceWithTrack extends AudioResource {
+  metadata: Track
+}

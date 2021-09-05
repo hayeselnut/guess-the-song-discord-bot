@@ -1,7 +1,12 @@
-export type Config = {
+export type GuildConfig = {
   prefix: string,
   round_duration: number,
   emote_nearly_correct_guesses: boolean,
 };
 
-export type Leaderboard = { [id: string]: number }
+export type LeaderboardPoints = { [id: string]: number }
+
+export type EndRoundReason = 'CORRECT' | 'TIMEOUT' | 'FORCE_SKIP' | 'LOAD_FAIL';
+export type EndGameReason = 'ALL_ROUNDS_PLAYED' | 'FORCE_STOP' | 'DISCONNECTED';
+
+export type Callback = (reason: any) => void; // TODO
