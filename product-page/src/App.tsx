@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 
-function App() {
+const App = () => {
   return (
     <>
       <header>
@@ -17,18 +17,26 @@ function App() {
       </section>
       <section id='guess-by-typing-in-a-text-channel'>
         <h2>Easy guessing by typing into your text channel</h2>
-        <div style={{ backgroundColor: 'red', width: '600px', height: '200px'}} />
+        <div style={{ backgroundColor: 'red', width: '600px', height: '200px' }} />
       </section>
       <section id='shuffle-multiple-playlists-into-one-game'>
         <h2>Can combine multiple Spotify playlists together</h2>
-        <div style={{ backgroundColor: 'green', width: '600px', height: '200px'}} />
+        <div style={{ backgroundColor: 'green', width: '600px', height: '200px' }} />
       </section>
       <section id='customisable-configurations'>
         <h2>Customisations</h2>
-        <div style={{ display: 'inline-block', backgroundColor: 'blue', margin: '10px', width: '100px', height: '100px'}} />
-        <div style={{ display: 'inline-block', backgroundColor: 'blue', margin: '10px', width: '100px', height: '100px'}} />
-        <div style={{ display: 'inline-block', backgroundColor: 'blue', margin: '10px', width: '100px', height: '100px'}} />
-        <div style={{ display: 'inline-block', backgroundColor: 'blue', margin: '10px', width: '100px', height: '100px'}} />
+        <div style={{ display: 'inline-block', backgroundColor: 'blue',
+          margin: '10px', width: '100px', height: '100px' }}
+        />
+        <div style={{ display: 'inline-block', backgroundColor: 'blue',
+          margin: '10px', width: '100px', height: '100px' }}
+        />
+        <div style={{ display: 'inline-block', backgroundColor: 'blue',
+          margin: '10px', width: '100px', height: '100px' }}
+        />
+        <div style={{ display: 'inline-block', backgroundColor: 'blue',
+          margin: '10px', width: '100px', height: '100px' }}
+        />
       </section>
       <section id='ready-to-start-playing'>
         <h2>Ready to start playing?</h2>
@@ -39,6 +47,6 @@ function App() {
       </section>
     </>
   );
-}
+};
 
 export default App;
