@@ -32,30 +32,11 @@ class Game {
             console.error(`⚠ ERROR with resource ${error.resource.metadata.name}`, error.message);
             this.round?.endRound('LOAD_FAIL');
         });
-        this.connection = (0, voice_1.joinVoiceChannel)({
+        this.connectToVoiceChannel({
             channelId: this.voiceChannel.id,
             guildId: this.guildId,
             adapterCreator: this.voiceChannel.guild.voiceAdapterCreator,
-        }).on(voice_1.VoiceConnectionStatus.Disconnected, async () => {
-            console.log('Entered disconnected state');
-            try {
-                await Promise.race([
-                    (0, voice_1.entersState)(this.connection, voice_1.VoiceConnectionStatus.Signalling, 5000),
-                    (0, voice_1.entersState)(this.connection, voice_1.VoiceConnectionStatus.Connecting, 5000),
-                ]);
-                // Seems to be reconnecting to a new channel - ignore disconnect
-                console.log('Reconnection detected');
-            }
-            catch (error) {
-                // Manually disconnecting the bot will continue running the game (even shows it in the discord channel)
-                // BUG: where if you then $stop it will throw error because cannot destroy a voice connection already destroyed
-                // Seems to be a real disconnect which SHOULDN'T be recovered from
-                console.log('Never reconnected, destroying connection...');
-                this.connection.destroy();
-                this.endGame('DISCONNECTED');
-            }
         });
-        this.connection.subscribe(this.audioPlayer);
     }
     checkGuess(message) {
         this.round?.checkGuess(message);
@@ -68,9 +49,8 @@ class Game {
     endGame(reason) {
         this.finished = true;
         this.round = null;
-        // TODO should check if connection is already destroyed
-        console.log('destorying connection here, stop reason', reason);
-        this.connection.destroy();
+        const connection = (0, voice_1.getVoiceConnection)(this.guildId);
+        connection?.destroy();
         console.log(`#${this.textChannel.name}: Game ended with reason ${reason}`);
         const gameSummary = new discord_js_1.MessageEmbed()
             .setTitle('🏁 Final Leaderboard')
@@ -115,6 +95,29 @@ class Game {
         }
         this.currRound++;
         this._startRound();
+    }
+    connectToVoiceChannel(options) {
+        const connection = (0, voice_1.joinVoiceChannel)(options)
+            .on(voice_1.VoiceConnectionStatus.Disconnected, async () => {
+            console.log('Entered disconnected state');
+            try {
+                await Promise.race([
+                    (0, voice_1.entersState)(connection, voice_1.VoiceConnectionStatus.Signalling, 5000),
+                    (0, voice_1.entersState)(connection, voice_1.VoiceConnectionStatus.Connecting, 5000),
+                ]);
+                // Seems to be reconnecting to a new channel - ignore disconnect
+                console.log('Reconnection detected');
+            }
+            catch (error) {
+                // Manually disconnecting the bot will continue running the game (even shows it in the discord channel)
+                // BUG: where if you then $stop it will throw error because cannot destroy a voice connection already destroyed
+                // Seems to be a real disconnect which SHOULDN'T be recovered from
+                console.log('Never reconnected, destroying connection...');
+                connection.destroy();
+                this.endGame('DISCONNECTED');
+            }
+        });
+        connection.subscribe(this.audioPlayer);
     }
 }
 exports.default = Game;
