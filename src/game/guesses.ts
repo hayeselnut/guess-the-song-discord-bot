@@ -47,7 +47,6 @@ export default class Guesses {
       const guess = normalize(message.content, 'name');
       if (guess != this.track.normalizedName) return false;
 
-      console.log(message.author.toString());
       this.answeredBy.set(SONG_INDEX, message.author.toString());
       return true;
     }

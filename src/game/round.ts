@@ -14,7 +14,6 @@ export default class Round {
   audioResource: AudioResourceWithTrack;
   guesses: Guesses;
   timer: NodeJS.Timeout;
-  timeLimit: number;
   callback: EndRoundCallback;
 
   constructor(audioResource: AudioResourceWithTrack, audioPlayer: AudioPlayer, textChannel: TextChannel,
@@ -28,10 +27,10 @@ export default class Round {
     this.guesses = new Guesses(this.track);
 
     this.callback = callback;
-    this.timeLimit = timeLimit;
     this.timer = setTimeout(() => {
-      this.endRound('TIMEOUT');
-    }, this.timeLimit * 1000);
+      console.debug('Timeout!');
+      this.endRound('TIMEOUT', this.callback);
+    }, timeLimit * 1000);
   }
 
   startRound() {
@@ -42,7 +41,7 @@ export default class Round {
 
       this.audioPlayer.on('error', (err: Error) => {
         console.error(`#${this.textChannel.name}:`, 'ERR - Cannot play', this.track.name, this.track.artists, err);
-        return this.endRound('LOAD_FAIL');
+        return this.endRound('LOAD_FAIL', this.callback);
       });
     } catch (err) {
       console.error(
@@ -52,14 +51,14 @@ export default class Round {
         this.track.artists,
         err,
       );
-      return this.endRound('LOAD_FAIL');
+      return this.endRound('LOAD_FAIL', this.callback);
     }
   }
 
   checkGuess(message: ValidMessage) {
     const guessCorrect = this.guesses.checkGuess(message);
     if (guessCorrect && this.guesses.guessedAll()) {
-      this.endRound('CORRECT');
+      this.endRound('CORRECT', this.callback);
     } else if (guessCorrect) {
       this._showProgress();
     }

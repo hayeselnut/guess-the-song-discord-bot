@@ -23,8 +23,8 @@ class AudioResourceBuffer {
         }
     }
     getNextAudioResourceAndUpdateBuffer() {
-        // Load next track if possible
-        if (this.bufferIndex >= this.roundLimit) {
+        // Buffer a new track if possible
+        if (this.bufferIndex < this.roundLimit) {
             this._pushNewAudioResourceToBuffer();
         }
         // Return next audio resource

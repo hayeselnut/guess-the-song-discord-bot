@@ -18,6 +18,7 @@ import Round from './round';
 export default class Game {
   private starterId: string; // Person who started the game
   private timeLimit: number;
+  private roundLimit: number;
   private emoteNearlyCorrectGuesses: boolean;
   private tracks: Tracks
   private guildId: string;
@@ -36,9 +37,10 @@ export default class Game {
 
   private callback: EndGameCallback;
 
-  constructor(message: ValidMessageWithVoice, config: GuildConfig, tracks: Tracks, callback: EndGameCallback) {
+  constructor(message: ValidMessageWithVoice, config: GuildConfig, roundLimit: number, tracks: Tracks, callback: EndGameCallback) {
     this.starterId = message.member.id;
     this.timeLimit = config.round_duration;
+    this.roundLimit = roundLimit;
     this.emoteNearlyCorrectGuesses = config.emote_nearly_correct_guesses;
     this.tracks = tracks;
     this.guildId = message.guild.id;
@@ -49,21 +51,22 @@ export default class Game {
     this.currRound = 0;
     this.finished = false;
     this.leaderboard = new Leaderboard();
-    this.buffer = new AudioResourceBuffer(this.tracks, this.timeLimit);
+    this.buffer = new AudioResourceBuffer(this.tracks, this.roundLimit);
 
     // Round state
     this.round = null;
 
     this.callback = callback;
 
-    this.audioPlayer = createAudioPlayer();
+    this.audioPlayer = createAudioPlayer().on('error', (error: any) => {
+      console.error(`Error: ${error.message} with resource ${error.resource.metadata.name}`);
+    });
+
     this.connection = joinVoiceChannel({
       channelId: this.voiceChannel.id,
       guildId: this.guildId,
       adapterCreator: this.voiceChannel.guild.voiceAdapterCreator,
-    });
-
-    this.connection.on(VoiceConnectionStatus.Disconnected, async () => {
+    }).on(VoiceConnectionStatus.Disconnected, async () => {
       try {
         await Promise.race([
           entersState(this.connection, VoiceConnectionStatus.Signalling, 5_000),
@@ -75,7 +78,7 @@ export default class Game {
         // BUG: where if you then $stop it will throw error because cannot destroy a voice connection already destroyed
         // Seems to be a real disconnect which SHOULDN'T be recovered from
         this.connection.destroy();
-        this.endGame('DISCONNECTED');
+        this.endGame('DISCONNECTED', this.callback);
       }
     });
     this.connection.subscribe(this.audioPlayer);
@@ -118,13 +121,13 @@ export default class Game {
   }
 
   private _startRound() {
-    if (this.finished || this.currRound >= this.timeLimit) {
-      return this.endGame('ALL_ROUNDS_PLAYED');
+    if (this.finished || this.currRound >= this.roundLimit) {
+      return this.endGame('ALL_ROUNDS_PLAYED', this.callback);
     }
 
     const audioResource = this.buffer.getNextAudioResourceAndUpdateBuffer();
     if (!audioResource) {
-      // TODO handle audio resource is undefined
+      console.log('// TODO audio resource is undefined');
       return;
     }
     this.round = new Round(
@@ -135,7 +138,12 @@ export default class Game {
       (reason: EndRoundReason) => this._endRoundCallback(reason),
     );
     this.round.startRound();
-    sendEmbed(this.textChannel, `[${this.currRound + 1}/${this.timeLimit}] Starting next song...`);
+    sendEmbed(this.textChannel, `[${this.currRound + 1}/${this.roundLimit}] Starting next song...`);
+    console.log(
+      `#${this.textChannel.name} [${this.currRound + 1}/${this.roundLimit}]:`,
+      this.round.track.name,
+      this.round.track.artists,
+    );
   }
 
   private _endRoundCallback(reason: EndRoundReason) {
@@ -148,7 +156,7 @@ export default class Game {
     if (this.round) {
       this.leaderboard.update(this.round.guesses);
       const roundSummary = new MessageEmbed()
-        .setTitle(`[${this.currRound + 1}/${this.timeLimit}] ${title}`)
+        .setTitle(`[${this.currRound + 1}/${this.roundLimit}] ${title}`)
         .setColor(reason === 'CORRECT' ? 'GREEN' : 'RED')
         .setDescription(this.round.guesses.toResultString())
         .setThumbnail(this.round.track.img)

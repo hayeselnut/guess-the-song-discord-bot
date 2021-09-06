@@ -15,7 +15,8 @@ class Round {
         this.callback = callback;
         this.timeLimit = timeLimit;
         this.timer = setTimeout(() => {
-            this.endRound('TIMEOUT');
+            console.log('Timeout!');
+            this.endRound('TIMEOUT', this.callback);
         }, this.timeLimit * 1000);
     }
     startRound() {
@@ -25,18 +26,18 @@ class Round {
             this.audioPlayer.play(this.audioResource);
             this.audioPlayer.on('error', (err) => {
                 console.error(`#${this.textChannel.name}:`, 'ERR - Cannot play', this.track.name, this.track.artists, err);
-                return this.endRound('LOAD_FAIL');
+                return this.endRound('LOAD_FAIL', this.callback);
             });
         }
         catch (err) {
             console.error(`#${this.textChannel.name}:`, '[ERROR NOT HANDLED PROPERLY] - Cannot play', this.track.name, this.track.artists, err);
-            return this.endRound('LOAD_FAIL');
+            return this.endRound('LOAD_FAIL', this.callback);
         }
     }
     checkGuess(message) {
         const guessCorrect = this.guesses.checkGuess(message);
         if (guessCorrect && this.guesses.guessedAll()) {
-            this.endRound('CORRECT');
+            this.endRound('CORRECT', this.callback);
         }
         else if (guessCorrect) {
             this._showProgress();

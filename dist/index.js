@@ -24,11 +24,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
-const guilds_1 = __importDefault(require("./guilds/guilds"));
+const guild_manager_1 = __importDefault(require("./guilds/guild-manager"));
 const client_1 = __importDefault(require("./client/client"));
 const bot_helpers_1 = require("./helpers/bot-helpers");
 client_1.default.once('ready', () => {
     console.log('Ready!');
+    console.log(Object.keys(guild_manager_1.default._guilds).length, 'guilds found in Firestore');
+    console.log('Current guilds:', client_1.default.guilds.cache.size);
 });
 client_1.default.once('reconnecting', () => {
     console.log('Reconnecting!');
@@ -43,9 +45,7 @@ client_1.default.on('messageCreate', (message) => {
         return;
     if (message.content.includes('@here') || message.content.includes('@everyone'))
         return;
-    console.log(Object.keys(guilds_1.default._guilds).length, 'guidls found in Firestore');
-    console.log('Guilds:', client_1.default.guilds.cache.size);
-    guilds_1.default.getOrCreate(message.guild.id).readMessage(message);
+    guild_manager_1.default.getOrCreate(message.guild.id).readMessage(message);
 });
 const token = process.env.DISCORD_BOT_TOKEN;
 client_1.default.login(token);

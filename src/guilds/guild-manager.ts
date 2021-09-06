@@ -1,15 +1,14 @@
 import db from '../helpers/firestore-helpers';
 import { GuildConfig, LeaderboardPoints } from '../types/game';
-import GuildState from './guild-state';
+import Guild from './guild';
 
 import DefaultConfig from '../assets/default-config.json';
 
-class GuildStateManager {
-  _guilds: { [id: string]: GuildState } = {};
+class GuildManager {
+  _guilds: { [id: string]: Guild } = {};
 
   constructor() {
     this._guilds = {};
-
     this._loadGuilds();
   }
 
@@ -17,7 +16,7 @@ class GuildStateManager {
     const snapshot = await db.collection('guilds').get();
     snapshot.forEach((doc) => {
       const { leaderboard, ...guildConfig } = doc.data();
-      this._guilds[doc.id] = new GuildState(
+      this._guilds[doc.id] = new Guild(
         guildConfig as GuildConfig,
         leaderboard as LeaderboardPoints,
       );
@@ -27,7 +26,7 @@ class GuildStateManager {
   getOrCreate(guildId: string) {
     if (!(guildId in this._guilds)) {
       // Create new guild manager
-      this._guilds[guildId] = new GuildState();
+      this._guilds[guildId] = new Guild();
 
       // Upload to database
       db.collection('guilds').doc(guildId).set({ ...DefaultConfig, leaderboard: {} });
@@ -37,4 +36,4 @@ class GuildStateManager {
   }
 };
 
-export default new GuildStateManager();
+export default new GuildManager();

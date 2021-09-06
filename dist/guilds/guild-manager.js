@@ -4,9 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const firestore_helpers_1 = __importDefault(require("../helpers/firestore-helpers"));
-const guild_state_1 = __importDefault(require("./guild-state"));
+const guild_1 = __importDefault(require("./guild"));
 const default_config_json_1 = __importDefault(require("../assets/default-config.json"));
-class Guilds {
+class GuildManager {
     constructor() {
         this._guilds = {};
         this._guilds = {};
@@ -16,13 +16,13 @@ class Guilds {
         const snapshot = await firestore_helpers_1.default.collection('guilds').get();
         snapshot.forEach((doc) => {
             const { leaderboard, ...guildConfig } = doc.data();
-            this._guilds[doc.id] = new guild_state_1.default(guildConfig, leaderboard);
+            this._guilds[doc.id] = new guild_1.default(guildConfig, leaderboard);
         });
     }
     getOrCreate(guildId) {
         if (!(guildId in this._guilds)) {
             // Create new guild manager
-            this._guilds[guildId] = new guild_state_1.default();
+            this._guilds[guildId] = new guild_1.default();
             // Upload to database
             firestore_helpers_1.default.collection('guilds').doc(guildId).set({ ...default_config_json_1.default, leaderboard: {} });
         }
@@ -30,4 +30,4 @@ class Guilds {
     }
 }
 ;
-exports.default = new Guilds();
+exports.default = new GuildManager();

@@ -35,7 +35,6 @@ class Guesses {
         const guess = (0, normalize_helpers_1.normalize)(message.content, 'name');
         if (guess != this.track.normalizedName)
             return false;
-        console.log(message.author.toString());
         this.answeredBy.set(SONG_INDEX, message.author.toString());
         return true;
     }

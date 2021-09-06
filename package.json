@@ -5,6 +5,7 @@
   "scripts": {
     "build": "rimraf dist && tsc",
     "start": "node --experimental-json-modules dist/index.js",
+    "startDev": "node --experimental-json-modules --trace-warnings dist/index.js",
     "test": "jest"
   },
   "dependencies": {

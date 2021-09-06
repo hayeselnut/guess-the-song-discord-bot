@@ -10,9 +10,10 @@ const audio_resource_buffer_1 = __importDefault(require("./audio-resource-buffer
 const leaderboard_1 = __importDefault(require("../leaderboard/leaderboard"));
 const round_1 = __importDefault(require("./round"));
 class Game {
-    constructor(message, config, tracks, callback) {
+    constructor(message, config, roundLimit, tracks, callback) {
         this.starterId = message.member.id;
         this.timeLimit = config.round_duration;
+        this.roundLimit = roundLimit;
         this.emoteNearlyCorrectGuesses = config.emote_nearly_correct_guesses;
         this.tracks = tracks;
         this.guildId = message.guild.id;
@@ -22,17 +23,18 @@ class Game {
         this.currRound = 0;
         this.finished = false;
         this.leaderboard = new leaderboard_1.default();
-        this.buffer = new audio_resource_buffer_1.default(this.tracks, this.timeLimit);
+        this.buffer = new audio_resource_buffer_1.default(this.tracks, this.roundLimit);
         // Round state
         this.round = null;
         this.callback = callback;
-        this.audioPlayer = (0, voice_1.createAudioPlayer)();
+        this.audioPlayer = (0, voice_1.createAudioPlayer)().on('error', (error) => {
+            console.error(`Error: ${error.message} with resource ${error.resource.metadata.name}`);
+        });
         this.connection = (0, voice_1.joinVoiceChannel)({
             channelId: this.voiceChannel.id,
             guildId: this.guildId,
             adapterCreator: this.voiceChannel.guild.voiceAdapterCreator,
-        });
-        this.connection.on(voice_1.VoiceConnectionStatus.Disconnected, async () => {
+        }).on(voice_1.VoiceConnectionStatus.Disconnected, async () => {
             try {
                 await Promise.race([
                     (0, voice_1.entersState)(this.connection, voice_1.VoiceConnectionStatus.Signalling, 5000),
@@ -45,7 +47,7 @@ class Game {
                 // BUG: where if you then $stop it will throw error because cannot destroy a voice connection already destroyed
                 // Seems to be a real disconnect which SHOULDN'T be recovered from
                 this.connection.destroy();
-                this.endGame('DISCONNECTED');
+                this.endGame('DISCONNECTED', this.callback);
             }
         });
         this.connection.subscribe(this.audioPlayer);
@@ -79,17 +81,18 @@ class Game {
         console.log('only starter id can skip!');
     }
     _startRound() {
-        if (this.finished || this.currRound >= this.timeLimit) {
-            return this.endGame('ALL_ROUNDS_PLAYED');
+        if (this.finished || this.currRound >= this.roundLimit) {
+            return this.endGame('ALL_ROUNDS_PLAYED', this.callback);
         }
         const audioResource = this.buffer.getNextAudioResourceAndUpdateBuffer();
         if (!audioResource) {
-            // TODO handle audio resource is undefined
+            console.log('// TODO audio resource is undefined');
             return;
         }
         this.round = new round_1.default(audioResource, this.audioPlayer, this.textChannel, this.timeLimit, (reason) => this._endRoundCallback(reason));
         this.round.startRound();
-        (0, bot_helpers_1.sendEmbed)(this.textChannel, `[${this.currRound + 1}/${this.timeLimit}] Starting next song...`);
+        (0, bot_helpers_1.sendEmbed)(this.textChannel, `[${this.currRound + 1}/${this.roundLimit}] Starting next song...`);
+        console.log(`#${this.textChannel.name} [${this.currRound + 1}/${this.roundLimit}]:`, this.round.track.name, this.round.track.artists);
     }
     _endRoundCallback(reason) {
         const title = reason === 'CORRECT' ? 'Round summary'
@@ -100,7 +103,7 @@ class Game {
         if (this.round) {
             this.leaderboard.update(this.round.guesses);
             const roundSummary = new discord_js_1.MessageEmbed()
-                .setTitle(`[${this.currRound + 1}/${this.timeLimit}] ${title}`)
+                .setTitle(`[${this.currRound + 1}/${this.roundLimit}] ${title}`)
                 .setColor(reason === 'CORRECT' ? 'GREEN' : 'RED')
                 .setDescription(this.round.guesses.toResultString())
                 .setThumbnail(this.round.track.img)

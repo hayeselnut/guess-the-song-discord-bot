@@ -12,7 +12,8 @@ const bot_helpers_1 = require("../helpers/bot-helpers");
 const game_helpers_1 = require("../helpers/game-helpers");
 const help_json_1 = __importDefault(require("../assets/help.json"));
 const default_config_json_1 = __importDefault(require("../assets/default-config.json"));
-class GuildState {
+// Responsible for maintaining Guild state and parsing messages
+class Guild {
     constructor(config = default_config_json_1.default, leaderboard = {}) {
         this.config = config;
         this.game = null;
@@ -29,10 +30,11 @@ class GuildState {
         // Check guess if the game exists
         this.game?.checkGuess(message);
     }
-    _readCommand(message) {
+    async _readCommand(message) {
         try {
             if (message.content.startsWith(`${this.config.prefix}start`)) {
-                this._startGame(message);
+                // Must await to catch the error thrown
+                await this._startGame(message);
             }
             else if (message.content.startsWith(`${this.config.prefix}stop`)) {
                 this._stopGame(message);
@@ -55,7 +57,7 @@ class GuildState {
         }
         catch (error) {
             if (error instanceof Error) {
-                (0, bot_helpers_1.sendEmbed)(message.channel, error.message);
+                return (0, bot_helpers_1.sendEmbed)(message.channel, error.message);
             }
             console.error('ERROR reading command', error);
         }
@@ -79,7 +81,7 @@ class GuildState {
             .setImage(img ?? '');
         message.channel.send({ embeds: [playlistEmbed] });
         console.log(`${message.guild.name} - #${message.channel.name}: Initializing game of ${newRoundLimit} rounds`);
-        this.game = new game_1.default(message, this.config, tracks, (reason) => this._endGameCallback(reason));
+        this.game = new game_1.default(message, this.config, newRoundLimit, tracks, (reason) => this._endGameCallback(reason));
         this.game.startGame();
     }
     _stopGame(message) {
@@ -118,4 +120,4 @@ class GuildState {
     }
     ;
 }
-exports.default = GuildState;
+exports.default = Guild;

@@ -14,7 +14,8 @@ import { parseStartGameArgs, throwIfInsufficientVoicePermissions } from '../help
 import Help from '../assets/help.json';
 import DefaultConfig from '../assets/default-config.json';
 
-export default class GuildState {
+// Responsible for maintaining Guild state and parsing messages
+export default class Guild {
   private config: GuildConfig;
   private game: Game | null;
   private leaderboard: Leaderboard;
@@ -39,10 +40,11 @@ export default class GuildState {
     this.game?.checkGuess(message);
   }
 
-  private _readCommand(message: ValidMessage) {
+  private async _readCommand(message: ValidMessage) {
     try {
       if (message.content.startsWith(`${this.config.prefix}start`)) {
-        this._startGame(message);
+        // Must await to catch the error thrown
+        await this._startGame(message);
       } else if (message.content.startsWith(`${this.config.prefix}stop`)) {
         this._stopGame(message);
       } else if (message.content.startsWith(`${this.config.prefix}skip`)) {
@@ -58,7 +60,7 @@ export default class GuildState {
       }
     } catch (error) {
       if (error instanceof Error) {
-        sendEmbed(message.channel, error.message);
+        return sendEmbed(message.channel, error.message);
       }
       console.error('ERROR reading command', error);
     }
@@ -91,6 +93,7 @@ export default class GuildState {
     this.game = new Game(
       message,
       this.config,
+      newRoundLimit,
       tracks,
       (reason: EndGameReason) => this._endGameCallback(reason),
     );
