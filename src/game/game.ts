@@ -37,7 +37,8 @@ export default class Game {
 
   private callback: EndGameCallback;
 
-  constructor(message: ValidMessageWithVoice, config: GuildConfig, roundLimit: number, tracks: Tracks, callback: EndGameCallback) {
+  constructor(message: ValidMessageWithVoice, config: GuildConfig,
+    roundLimit: number, tracks: Tracks, callback: EndGameCallback) {
     this.starterId = message.member.id;
     this.timeLimit = config.round_duration;
     this.roundLimit = roundLimit;
@@ -114,10 +115,9 @@ export default class Game {
     }
   }
 
-  // TODO: implement skipRound()
   skipRound() {
-    console.log('Skip game');
-    console.log('only starter id can skip!');
+    console.log('// TODO only starter id can skip!');
+    this.round?.skipRound();
   }
 
   private _startRound() {

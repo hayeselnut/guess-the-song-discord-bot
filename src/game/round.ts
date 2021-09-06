@@ -72,6 +72,10 @@ export default class Round {
     this.textChannel.send({ embeds: [progressEmbed] });
   }
 
+  skipRound() {
+    this.endRound('FORCE_SKIP', this.callback);
+  }
+
   endRound(reason: EndRoundReason, callback?: EndRoundCallback) {
     clearTimeout(this.timer);
 

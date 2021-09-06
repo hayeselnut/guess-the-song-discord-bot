@@ -75,10 +75,9 @@ class Game {
             callback(reason);
         }
     }
-    // TODO: implement skipRound()
     skipRound() {
-        console.log('Skip game');
-        console.log('only starter id can skip!');
+        console.log('// TODO only starter id can skip!');
+        this.round?.skipRound();
     }
     _startRound() {
         if (this.finished || this.currRound >= this.roundLimit) {

@@ -13,11 +13,10 @@ class Round {
         this.track = this.audioResource.metadata;
         this.guesses = new guesses_1.default(this.track);
         this.callback = callback;
-        this.timeLimit = timeLimit;
         this.timer = setTimeout(() => {
-            console.log('Timeout!');
+            console.debug('Timeout!');
             this.endRound('TIMEOUT', this.callback);
-        }, this.timeLimit * 1000);
+        }, timeLimit * 1000);
     }
     startRound() {
         // Start playing audio resource
@@ -48,6 +47,9 @@ class Round {
             .setDescription(this.guesses.toProgressString())
             .setColor('GOLD');
         this.textChannel.send({ embeds: [progressEmbed] });
+    }
+    skipRound() {
+        this.endRound('FORCE_SKIP', this.callback);
     }
     endRound(reason, callback) {
         clearTimeout(this.timer);
