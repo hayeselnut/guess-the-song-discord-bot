@@ -1,9 +1,11 @@
 import {
   AudioPlayer,
   createAudioPlayer,
+  CreateVoiceConnectionOptions,
   entersState,
+  getVoiceConnection,
   joinVoiceChannel,
-  VoiceConnection,
+  JoinVoiceChannelOptions,
   VoiceConnectionStatus,
 } from '@discordjs/voice';
 import { MemberMention, MessageEmbed, StageChannel, TextChannel, VoiceChannel } from 'discord.js';
@@ -33,7 +35,6 @@ export default class Game {
   private round: Round | null;
 
   private audioPlayer: AudioPlayer;
-  private connection: VoiceConnection;
 
   private callback: EndGameCallback;
 
@@ -59,30 +60,17 @@ export default class Game {
 
     this.callback = callback;
 
-    this.audioPlayer = createAudioPlayer().on('error', (error: any) => {
-      console.error(`Error: ${error.message} with resource ${error.resource.metadata.name}`);
-    });
+    this.audioPlayer = createAudioPlayer()
+      .on('error', (error: any) => {
+        console.error(`⚠ ERROR with resource ${error.resource.metadata.name}`, error.message);
+        this.round?.endRound('LOAD_FAIL');
+      });
 
-    this.connection = joinVoiceChannel({
+    this.connectToVoiceChannel({
       channelId: this.voiceChannel.id,
       guildId: this.guildId,
       adapterCreator: this.voiceChannel.guild.voiceAdapterCreator,
-    }).on(VoiceConnectionStatus.Disconnected, async () => {
-      try {
-        await Promise.race([
-          entersState(this.connection, VoiceConnectionStatus.Signalling, 5_000),
-          entersState(this.connection, VoiceConnectionStatus.Connecting, 5_000),
-        ]);
-        // Seems to be reconnecting to a new channel - ignore disconnect
-      } catch (error) {
-        // Manually disconnecting the bot will continue running the game (even shows it in the discord channel)
-        // BUG: where if you then $stop it will throw error because cannot destroy a voice connection already destroyed
-        // Seems to be a real disconnect which SHOULDN'T be recovered from
-        this.connection.destroy();
-        this.endGame('DISCONNECTED', this.callback);
-      }
     });
-    this.connection.subscribe(this.audioPlayer);
   }
 
   checkGuess(message: ValidMessage) {
@@ -92,15 +80,14 @@ export default class Game {
   async startGame() {
     // Wait for buffer to load before starting rounds
     await this.buffer.initializeBuffer();
-
     this._startRound();
   }
 
-  endGame(reason: EndGameReason, callback?: EndGameCallback) {
+  endGame(reason: EndGameReason) {
     this.finished = true;
     this.round = null;
-    // TODO should check if connection is already destroyed
-    this.connection.destroy();
+    const connection = getVoiceConnection(this.guildId);
+    connection?.destroy();
 
     console.log(`#${this.textChannel.name}: Game ended with reason ${reason}`);
 
@@ -110,18 +97,16 @@ export default class Game {
       .setDescription(this.leaderboard.toString());
     this.textChannel.send({ embeds: [gameSummary] });
 
-    if (callback) {
-      callback(reason);
-    }
+    this.callback(reason);
   }
 
   skipRound() {
-    this.round?.skipRound();
+    this.round?.endRound('FORCE_SKIP');
   }
 
   private _startRound() {
     if (this.finished || this.currRound >= this.roundLimit) {
-      return this.endGame('ALL_ROUNDS_PLAYED', this.callback);
+      return this.endGame('ALL_ROUNDS_PLAYED');
     }
 
     const audioResource = this.buffer.getNextAudioResourceAndUpdateBuffer();
@@ -166,5 +151,28 @@ export default class Game {
 
     this.currRound++;
     this._startRound();
+  }
+
+  private connectToVoiceChannel(options: JoinVoiceChannelOptions & CreateVoiceConnectionOptions) {
+    const connection = joinVoiceChannel(options)
+      .on(VoiceConnectionStatus.Disconnected, async () => {
+        console.log('Entered disconnected state');
+        try {
+          await Promise.race([
+            entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
+            entersState(connection, VoiceConnectionStatus.Connecting, 5_000),
+          ]);
+          // Seems to be reconnecting to a new channel - ignore disconnect
+          console.log('Reconnection detected');
+        } catch (error) {
+        // Manually disconnecting the bot will continue running the game (even shows it in the discord channel)
+        // BUG: where if you then $stop it will throw error because cannot destroy a voice connection already destroyed
+        // Seems to be a real disconnect which SHOULDN'T be recovered from
+          console.log('Never reconnected, destroying connection...');
+          connection.destroy();
+          this.endGame('DISCONNECTED');
+        }
+      });
+    connection.subscribe(this.audioPlayer);
   }
 }

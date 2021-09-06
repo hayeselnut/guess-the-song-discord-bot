@@ -10,29 +10,25 @@ class Round {
         this.audioPlayer = audioPlayer;
         this.textChannel = textChannel;
         this.audioResource = audioResource;
-        this.track = this.audioResource.metadata;
+        this.track = audioResource.metadata;
         this.guesses = new guesses_1.default(this.track);
         this.callback = callback;
         this.timer = setTimeout(() => {
-            console.debug('Timeout!');
-            this.endRound('TIMEOUT', this.callback);
+            this.endRound('TIMEOUT');
         }, timeLimit * 1000);
     }
     startRound() {
         // Start playing audio resource
-        try {
-            // Asssumes connection is already subscribed to audio resource
-            this.audioPlayer.play(this.audioResource);
+        if (this.audioResource.ended) {
+            console.log(`#${this.textChannel.name}: Could not load`, this.track.name, this.track.artists);
+            return this.endRound('LOAD_FAIL');
         }
-        catch (err) {
-            console.error(`#${this.textChannel.name}:`, '[ERROR CAUGHT IN CATCH] - Cannot play', this.track.name, this.track.artists, err);
-            return this.endRound('LOAD_FAIL', this.callback);
-        }
+        this.audioPlayer.play(this.audioResource);
     }
     checkGuess(message) {
         const guessCorrect = this.guesses.checkGuess(message);
         if (guessCorrect && this.guesses.guessedAll()) {
-            this.endRound('CORRECT', this.callback);
+            this.endRound('CORRECT');
         }
         else if (guessCorrect) {
             this._showProgress();
@@ -44,14 +40,11 @@ class Round {
             .setColor('GOLD');
         this.textChannel.send({ embeds: [progressEmbed] });
     }
-    skipRound() {
-        this.endRound('FORCE_SKIP', this.callback);
-    }
-    endRound(reason, callback) {
+    endRound(reason) {
         clearTimeout(this.timer);
-        if (callback) {
-            callback(reason);
-        }
+        setTimeout(() => {
+            this.callback(reason);
+        }, 100);
     }
 }
 exports.default = Round;

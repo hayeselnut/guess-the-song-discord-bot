@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const voice_1 = require("@discordjs/voice");
 const yt_search_1 = __importDefault(require("yt-search"));
 const ytdl_core_1 = __importDefault(require("ytdl-core"));
-const cookie_json_1 = __importDefault(require("../assets/cookie.json"));
 const game_helpers_1 = require("../helpers/game-helpers");
 class AudioResourceBuffer {
     constructor(tracks, roundLimit) {
@@ -39,7 +38,8 @@ class AudioResourceBuffer {
         const stream = (0, ytdl_core_1.default)(video.url, {
             filter: 'audioonly',
             requestOptions: {
-                headers: cookie_json_1.default,
+                // headers: Cookie,
+                header: { cookie: 'PREF=f4=4000000&tz=Australia.Sydney' },
             },
         });
         // TODO handle error on load

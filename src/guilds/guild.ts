@@ -102,6 +102,10 @@ export default class Guild {
 
   private _stopGame(message: ValidMessage) {
     if (!this.game) throw new Error('Nothing to stop here!');
+    if (this.game.host !== message.member.toString()) {
+      throw new Error(`Only the host ${this.game.host} can stop a game.`);
+    }
+
     this.game.endGame('FORCE_STOP');
   }
 

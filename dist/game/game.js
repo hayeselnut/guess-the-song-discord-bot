@@ -27,27 +27,32 @@ class Game {
         // Round state
         this.round = null;
         this.callback = callback;
-        this.audioPlayer = (0, voice_1.createAudioPlayer)().on('error', (error) => {
-            console.error(`Error: ${error.message} with resource ${error.resource.metadata.name}`);
+        this.audioPlayer = (0, voice_1.createAudioPlayer)()
+            .on('error', (error) => {
+            console.error(`⚠ ERROR with resource ${error.resource.metadata.name}`, error.message);
+            this.round?.endRound('LOAD_FAIL');
         });
         this.connection = (0, voice_1.joinVoiceChannel)({
             channelId: this.voiceChannel.id,
             guildId: this.guildId,
             adapterCreator: this.voiceChannel.guild.voiceAdapterCreator,
         }).on(voice_1.VoiceConnectionStatus.Disconnected, async () => {
+            console.log('Entered disconnected state');
             try {
                 await Promise.race([
                     (0, voice_1.entersState)(this.connection, voice_1.VoiceConnectionStatus.Signalling, 5000),
                     (0, voice_1.entersState)(this.connection, voice_1.VoiceConnectionStatus.Connecting, 5000),
                 ]);
                 // Seems to be reconnecting to a new channel - ignore disconnect
+                console.log('Reconnection detected');
             }
             catch (error) {
                 // Manually disconnecting the bot will continue running the game (even shows it in the discord channel)
                 // BUG: where if you then $stop it will throw error because cannot destroy a voice connection already destroyed
                 // Seems to be a real disconnect which SHOULDN'T be recovered from
+                console.log('Never reconnected, destroying connection...');
                 this.connection.destroy();
-                this.endGame('DISCONNECTED', this.callback);
+                this.endGame('DISCONNECTED');
             }
         });
         this.connection.subscribe(this.audioPlayer);
@@ -60,10 +65,11 @@ class Game {
         await this.buffer.initializeBuffer();
         this._startRound();
     }
-    endGame(reason, callback) {
+    endGame(reason) {
         this.finished = true;
         this.round = null;
         // TODO should check if connection is already destroyed
+        console.log('destorying connection here, stop reason', reason);
         this.connection.destroy();
         console.log(`#${this.textChannel.name}: Game ended with reason ${reason}`);
         const gameSummary = new discord_js_1.MessageEmbed()
@@ -71,16 +77,14 @@ class Game {
             .setColor('BLUE')
             .setDescription(this.leaderboard.toString());
         this.textChannel.send({ embeds: [gameSummary] });
-        if (callback) {
-            callback(reason);
-        }
+        this.callback(reason);
     }
     skipRound() {
-        this.round?.skipRound();
+        this.round?.endRound('FORCE_SKIP');
     }
     _startRound() {
         if (this.finished || this.currRound >= this.roundLimit) {
-            return this.endGame('ALL_ROUNDS_PLAYED', this.callback);
+            return this.endGame('ALL_ROUNDS_PLAYED');
         }
         const audioResource = this.buffer.getNextAudioResourceAndUpdateBuffer();
         if (!audioResource) {

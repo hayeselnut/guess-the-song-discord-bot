@@ -1,4 +1,4 @@
-import { AudioResource, createAudioResource, StreamType } from '@discordjs/voice';
+import { createAudioResource, StreamType } from '@discordjs/voice';
 import yts from 'yt-search';
 import ytdl from 'ytdl-core';
 
@@ -49,7 +49,8 @@ export default class AudioResourceBuffer {
     const stream = ytdl(video.url, {
       filter: 'audioonly',
       requestOptions: {
-        headers: Cookie,
+        // headers: Cookie,
+        header: { cookie: 'PREF=f4=4000000&tz=Australia.Sydney' },
       },
     });
     // TODO handle error on load

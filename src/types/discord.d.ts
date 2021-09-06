@@ -1,3 +1,4 @@
+import { AudioResource } from '@discordjs/voice';
 import { Guild, GuildMember, Message, StageChannel, TextChannel, VoiceChannel, VoiceState } from 'discord.js';
 
 export interface ValidMessage extends Message {
