@@ -40,7 +40,7 @@ class Guild {
                 this._stopGame(message);
             }
             else if (message.content.startsWith(`${this.config.prefix}skip`)) {
-                this._skipGame(message);
+                this._skipRound(message);
             }
             else if (message.content.startsWith(`${this.config.prefix}leaderboard`)) {
                 this._showLeaderboard(message);
@@ -57,7 +57,7 @@ class Guild {
         }
         catch (error) {
             if (error instanceof Error) {
-                return (0, bot_helpers_1.sendEmbed)(message.channel, error.message);
+                return (0, bot_helpers_1.sendEmbed)(message.channel, `⚠: ${error.message}`);
             }
             console.error('ERROR reading command', error);
         }
@@ -85,14 +85,15 @@ class Guild {
         this.game.startGame();
     }
     _stopGame(message) {
-        if (!this.game) {
-            return (0, bot_helpers_1.sendEmbed)(message.channel, 'Nothing to stop here!');
-        }
+        if (!this.game)
+            throw new Error('Nothing to stop here!');
         this.game.endGame('FORCE_STOP');
     }
-    _skipGame(message) {
-        if (!this.game) {
-            return (0, bot_helpers_1.sendEmbed)(message.channel, 'Nothing to skip here!');
+    _skipRound(message) {
+        if (!this.game)
+            throw new Error('Nothing to skip here!');
+        if (this.game.host !== message.member.toString()) {
+            throw new Error(`Only the host ${this.game.host} can skip rounds.`);
         }
         this.game.skipRound();
     }

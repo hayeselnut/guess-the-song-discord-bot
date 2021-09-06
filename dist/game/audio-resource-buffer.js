@@ -46,7 +46,6 @@ class AudioResourceBuffer {
         const audioResource = (0, voice_1.createAudioResource)(stream, {
             inputType: voice_1.StreamType.Arbitrary,
             metadata: track,
-            // playbackDuration: ???
         }); // TODO no seek option?
         this.buffer.push(audioResource);
         this.bufferIndex++;

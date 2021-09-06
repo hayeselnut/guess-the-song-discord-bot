@@ -53,12 +53,11 @@ export default class AudioResourceBuffer {
       },
     });
     // TODO handle error on load
-    const audioResource: AudioResourceWithTrack = createAudioResource(stream, {
+    const audioResource = createAudioResource(stream, {
       inputType: StreamType.Arbitrary,
       metadata: track,
-      // playbackDuration: ???
     }); // TODO no seek option?
-    this.buffer.push(audioResource);
+    this.buffer.push(audioResource as AudioResourceWithTrack);
     this.bufferIndex++;
   }
 }

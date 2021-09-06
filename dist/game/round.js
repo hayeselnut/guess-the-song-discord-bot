@@ -23,13 +23,9 @@ class Round {
         try {
             // Asssumes connection is already subscribed to audio resource
             this.audioPlayer.play(this.audioResource);
-            this.audioPlayer.on('error', (err) => {
-                console.error(`#${this.textChannel.name}:`, 'ERR - Cannot play', this.track.name, this.track.artists, err);
-                return this.endRound('LOAD_FAIL', this.callback);
-            });
         }
         catch (err) {
-            console.error(`#${this.textChannel.name}:`, '[ERROR NOT HANDLED PROPERLY] - Cannot play', this.track.name, this.track.artists, err);
+            console.error(`#${this.textChannel.name}:`, '[ERROR CAUGHT IN CATCH] - Cannot play', this.track.name, this.track.artists, err);
             return this.endRound('LOAD_FAIL', this.callback);
         }
     }

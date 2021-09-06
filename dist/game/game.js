@@ -11,7 +11,7 @@ const leaderboard_1 = __importDefault(require("../leaderboard/leaderboard"));
 const round_1 = __importDefault(require("./round"));
 class Game {
     constructor(message, config, roundLimit, tracks, callback) {
-        this.starterId = message.member.id;
+        this.host = message.member.toString();
         this.timeLimit = config.round_duration;
         this.roundLimit = roundLimit;
         this.emoteNearlyCorrectGuesses = config.emote_nearly_correct_guesses;
@@ -62,10 +62,10 @@ class Game {
     }
     endGame(reason, callback) {
         this.finished = true;
-        console.log(`#${this.textChannel.name}: Game ended with reason ${reason}`);
         this.round = null;
         // TODO should check if connection is already destroyed
         this.connection.destroy();
+        console.log(`#${this.textChannel.name}: Game ended with reason ${reason}`);
         const gameSummary = new discord_js_1.MessageEmbed()
             .setTitle('🏁 Final Leaderboard')
             .setColor('BLUE')
@@ -76,7 +76,6 @@ class Game {
         }
     }
     skipRound() {
-        console.log('// TODO only starter id can skip!');
         this.round?.skipRound();
     }
     _startRound() {

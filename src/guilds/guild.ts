@@ -48,7 +48,7 @@ export default class Guild {
       } else if (message.content.startsWith(`${this.config.prefix}stop`)) {
         this._stopGame(message);
       } else if (message.content.startsWith(`${this.config.prefix}skip`)) {
-        this._skipGame(message);
+        this._skipRound(message);
       } else if (message.content.startsWith(`${this.config.prefix}leaderboard`)) {
         this._showLeaderboard(message);
       } else if (message.content.startsWith(`${this.config.prefix}config`)) {
@@ -60,7 +60,7 @@ export default class Guild {
       }
     } catch (error) {
       if (error instanceof Error) {
-        return sendEmbed(message.channel, error.message);
+        return sendEmbed(message.channel, `⚠: ${error.message}`);
       }
       console.error('ERROR reading command', error);
     }
@@ -101,16 +101,16 @@ export default class Guild {
   }
 
   private _stopGame(message: ValidMessage) {
-    if (!this.game) {
-      return sendEmbed(message.channel, 'Nothing to stop here!');
-    }
+    if (!this.game) throw new Error('Nothing to stop here!');
     this.game.endGame('FORCE_STOP');
   }
 
-  private _skipGame(message: ValidMessage) {
-    if (!this.game) {
-      return sendEmbed(message.channel, 'Nothing to skip here!');
+  private _skipRound(message: ValidMessage) {
+    if (!this.game) throw new Error('Nothing to skip here!');
+    if (this.game.host !== message.member.toString()) {
+      throw new Error(`Only the host ${this.game.host} can skip rounds.`);
     }
+
     this.game.skipRound();
   }
 
