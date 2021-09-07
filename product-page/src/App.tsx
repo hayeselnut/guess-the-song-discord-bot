@@ -1,5 +1,6 @@
 import React from 'react';
-import './App.css';
+// import { Button } from 'react-bootstrap/Button';
+// import './App.css';
 
 const App = () => {
   return (
@@ -8,9 +9,12 @@ const App = () => {
         <h1>Guess the Song</h1>
         <h2>Discord Bot</h2>
 
+        {/* <Button>Invite to your server</Button>
+        <Button>TOP.GG</Button> */}
         <button>Invite to your server</button>
         <button>TOP.GG</button>
       </header>
+
       <section id='how-to-start-with-spotify'>
         <h2>Extracts songs from Spotify playlists and shuffles them into a game</h2>
         <code>$start 10 link</code>
