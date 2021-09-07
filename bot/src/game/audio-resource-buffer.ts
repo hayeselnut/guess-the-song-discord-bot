@@ -49,8 +49,7 @@ export default class AudioResourceBuffer {
     const stream = ytdl(video.url, {
       filter: 'audioonly',
       requestOptions: {
-        // headers: Cookie,
-        header: { cookie: 'PREF=f4=4000000&tz=Australia.Sydney' },
+        headers: Cookie,
       },
     });
     // TODO handle error on load
