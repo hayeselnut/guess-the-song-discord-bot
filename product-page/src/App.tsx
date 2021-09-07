@@ -30,6 +30,10 @@ const App = () => {
               <TopGGButton />
             </div>
           </div>
+
+          <div style={{ textAlign: 'center' }}>
+            <i className="bi bi-arrow-down" style={{ fontSize: '5rem' }} />
+          </div>
         </Container>
       </header>
 
