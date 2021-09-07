@@ -6,7 +6,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const voice_1 = require("@discordjs/voice");
 const yt_search_1 = __importDefault(require("yt-search"));
 const ytdl_core_1 = __importDefault(require("ytdl-core"));
+const prism_media_1 = __importDefault(require("prism-media"));
+const cookie_json_1 = __importDefault(require("../assets/cookie.json"));
 const game_helpers_1 = require("../helpers/game-helpers");
+// These are arguments used to convert the input to a format suitable for @discordjs/voice
+const FFMPEG_ARGUMENTS = [
+    '-analyzeduration', '0',
+    '-loglevel', '0',
+    '-f', 's16le',
+    '-ar', '48000',
+    '-ac', '2',
+];
+//   const FFMPEG_OPUS_ARGUMENTS = [
+//     '-analyzeduration', '0',
+//     '-loglevel', '0',
+//     '-acodec', 'libopus',
+//     '-f', 'opus',
+//     '-ar', '48000',
+//     '-ac', '2',
+// ];
 class AudioResourceBuffer {
     constructor(tracks, roundLimit) {
         this.buffer = [];
@@ -38,15 +56,18 @@ class AudioResourceBuffer {
         const stream = (0, ytdl_core_1.default)(video.url, {
             filter: 'audioonly',
             requestOptions: {
-                // headers: Cookie,
-                header: { cookie: 'PREF=f4=4000000&tz=Australia.Sydney' },
+                headers: cookie_json_1.default,
             },
         });
-        // TODO handle error on load
-        const audioResource = (0, voice_1.createAudioResource)(stream, {
-            inputType: voice_1.StreamType.Arbitrary,
+        // Seek
+        // An audio stream starting from 30secs in
+        const transcoder = new prism_media_1.default.FFmpeg({
+            args: ['-ss', '30', ...FFMPEG_ARGUMENTS],
+        });
+        const audioResource = (0, voice_1.createAudioResource)(stream.pipe(transcoder), {
+            inputType: voice_1.StreamType.Raw,
             metadata: track,
-        }); // TODO no seek option?
+        });
         this.buffer.push(audioResource);
         this.bufferIndex++;
     }
