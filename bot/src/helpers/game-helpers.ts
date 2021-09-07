@@ -27,3 +27,10 @@ export const throwIfInsufficientVoicePermissions = (message: ValidMessageWithVoi
 };
 
 export const shuffle = (arr: any[]) => arr.sort(() => Math.random() - 0.5);
+
+export const randStart = (vidSecs: number) => {
+  const start = 0;
+  const end = vidSecs * 0.75;
+
+  return Math.floor(Math.random() * (end - start) + start);
+};

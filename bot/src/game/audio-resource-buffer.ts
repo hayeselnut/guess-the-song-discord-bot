@@ -2,11 +2,10 @@ import { createAudioResource, StreamType } from '@discordjs/voice';
 import yts from 'yt-search';
 import ytdl from 'ytdl-core';
 import prism from 'prism-media';
-import fs from 'fs';
 
 import { Tracks } from '../types/tracks';
 import Cookie from '../assets/cookie.json';
-import { shuffle } from '../helpers/game-helpers';
+import { randStart as randSeek, shuffle } from '../helpers/game-helpers';
 import { AudioResourceWithTrack } from '../types/discord';
 
 // These are arguments used to convert the input to a format suitable for @discordjs/voice
@@ -17,15 +16,6 @@ const FFMPEG_ARGUMENTS = [
   '-ar', '48000',
   '-ac', '2',
 ];
-
-//   const FFMPEG_OPUS_ARGUMENTS = [
-//     '-analyzeduration', '0',
-//     '-loglevel', '0',
-//     '-acodec', 'libopus',
-//     '-f', 'opus',
-//     '-ar', '48000',
-//     '-ac', '2',
-// ];
 
 export default class AudioResourceBuffer {
   buffer: AudioResourceWithTrack[];
@@ -66,7 +56,7 @@ export default class AudioResourceBuffer {
     const youtubeQuery = `${track.name} ${track.artists.join(' ')}`;
     const youtubeResults = await yts(youtubeQuery);
     const video = youtubeResults.videos[0];
-
+    console.log(video);
     const stream = ytdl(video.url, {
       filter: 'audioonly',
       requestOptions: {
@@ -74,9 +64,9 @@ export default class AudioResourceBuffer {
       },
     });
 
-    // An audio stream starting from 30secs in
+    // Starts audio stream to a random point
     const transcoder = new prism.FFmpeg({
-      args: ['-ss', '30', ...FFMPEG_ARGUMENTS],
+      args: ['-ss', `${randSeek(video.seconds)}`, ...FFMPEG_ARGUMENTS],
     });
 
     const audioResource = createAudioResource(stream.pipe(transcoder), {

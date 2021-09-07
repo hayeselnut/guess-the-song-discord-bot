@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.shuffle = exports.throwIfInsufficientVoicePermissions = exports.parseStartGameArgs = void 0;
+exports.randStart = exports.shuffle = exports.throwIfInsufficientVoicePermissions = exports.parseStartGameArgs = void 0;
 const help_json_1 = __importDefault(require("../assets/help.json"));
 const client_1 = __importDefault(require("../client/client"));
 const parseStartGameArgs = (args, prefix) => {
@@ -29,3 +29,9 @@ const throwIfInsufficientVoicePermissions = (message) => {
 exports.throwIfInsufficientVoicePermissions = throwIfInsufficientVoicePermissions;
 const shuffle = (arr) => arr.sort(() => Math.random() - 0.5);
 exports.shuffle = shuffle;
+const randStart = (vidSecs) => {
+    const start = 0;
+    const end = vidSecs * 0.75;
+    return Math.floor(Math.random() * (end - start) + start);
+};
+exports.randStart = randStart;

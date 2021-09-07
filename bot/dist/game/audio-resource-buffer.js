@@ -17,14 +17,6 @@ const FFMPEG_ARGUMENTS = [
     '-ar', '48000',
     '-ac', '2',
 ];
-//   const FFMPEG_OPUS_ARGUMENTS = [
-//     '-analyzeduration', '0',
-//     '-loglevel', '0',
-//     '-acodec', 'libopus',
-//     '-f', 'opus',
-//     '-ar', '48000',
-//     '-ac', '2',
-// ];
 class AudioResourceBuffer {
     constructor(tracks, roundLimit) {
         this.buffer = [];
@@ -53,16 +45,16 @@ class AudioResourceBuffer {
         const youtubeQuery = `${track.name} ${track.artists.join(' ')}`;
         const youtubeResults = await (0, yt_search_1.default)(youtubeQuery);
         const video = youtubeResults.videos[0];
+        console.log(video);
         const stream = (0, ytdl_core_1.default)(video.url, {
             filter: 'audioonly',
             requestOptions: {
                 headers: cookie_json_1.default,
             },
         });
-        // Seek
-        // An audio stream starting from 30secs in
+        // Starts audio stream to a random point
         const transcoder = new prism_media_1.default.FFmpeg({
-            args: ['-ss', '30', ...FFMPEG_ARGUMENTS],
+            args: ['-ss', `${(0, game_helpers_1.randStart)(video.seconds)}`, ...FFMPEG_ARGUMENTS],
         });
         const audioResource = (0, voice_1.createAudioResource)(stream.pipe(transcoder), {
             inputType: voice_1.StreamType.Raw,
