@@ -10,8 +10,8 @@ export const parseStartGameArgs = (args: string[], prefix: string) => {
 
   const base = 10;
   const roundLimit = parseInt(args[1], base);
-  if (isNaN(roundLimit)) {
-    throw new Error(`\`${args[1]}\` is not a valid round limit. Round limit must be an integer.`);
+  if (isNaN(roundLimit) || roundLimit <= 0) {
+    throw new Error(`\`${args[1]}\` is not a valid round limit. Round limit must be a positive integer.`);
   }
 
   const playlistLinks = args.slice(2);

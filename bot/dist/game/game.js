@@ -32,7 +32,7 @@ class Game {
             console.error(`⚠ ERROR with resource ${error.resource.metadata.name}`, error.message);
             this.round?.endRound('LOAD_FAIL');
         });
-        this.connectToVoiceChannel({
+        this._connectToVoiceChannel({
             channelId: this.voiceChannel.id,
             guildId: this.guildId,
             adapterCreator: this.voiceChannel.guild.voiceAdapterCreator,
@@ -48,6 +48,7 @@ class Game {
     }
     endGame(reason) {
         this.finished = true;
+        this.round?.endRound('FORCE_STOP');
         this.round = null;
         const connection = (0, voice_1.getVoiceConnection)(this.guildId);
         connection?.destroy();
@@ -79,7 +80,7 @@ class Game {
     _endRoundCallback(reason) {
         const title = reason === 'CORRECT' ? 'Round summary'
             : reason === 'TIMEOUT' ? 'Too slow! Skipping song...'
-                : reason === 'FORCE_SKIP' ? 'Skipping round...'
+                : reason === 'FORCE_SKIP' || reason === 'FORCE_STOP' ? 'Skipping round...'
                     // reason === 'LOAD_FAIL'
                     : 'Could not load song. Skipping song...';
         if (this.round) {
@@ -94,9 +95,11 @@ class Game {
             this.textChannel.send({ embeds: [roundSummary] });
         }
         this.currRound++;
-        this._startRound();
+        if (reason !== 'FORCE_STOP') {
+            this._startRound();
+        }
     }
-    connectToVoiceChannel(options) {
+    _connectToVoiceChannel(options) {
         const connection = (0, voice_1.joinVoiceChannel)(options)
             .on(voice_1.VoiceConnectionStatus.Disconnected, async () => {
             console.log('Entered disconnected state');
