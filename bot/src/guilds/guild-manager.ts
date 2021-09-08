@@ -1,4 +1,4 @@
-import db from '../helpers/firestore-helpers';
+import db from '../db/db';
 import { GuildConfig, LeaderboardPoints } from '../types/game';
 import Guild from './guild';
 
@@ -17,6 +17,7 @@ class GuildManager {
     snapshot.forEach((doc) => {
       const { leaderboard, ...guildConfig } = doc.data();
       this._guilds[doc.id] = new Guild(
+        doc.id,
         guildConfig as GuildConfig,
         leaderboard as LeaderboardPoints,
       );
@@ -26,7 +27,7 @@ class GuildManager {
   getOrCreate(guildId: string) {
     if (!(guildId in this._guilds)) {
       // Create new guild manager
-      this._guilds[guildId] = new Guild();
+      this._guilds[guildId] = new Guild(guildId);
 
       // Upload to database
       db.collection('guilds').doc(guildId).set({ ...DefaultConfig, leaderboard: {} });

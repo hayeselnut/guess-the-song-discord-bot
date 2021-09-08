@@ -13,14 +13,17 @@ import { parseStartGameArgs, throwIfInsufficientVoicePermissions } from '../help
 
 import Help from '../assets/help.json';
 import DefaultConfig from '../assets/default-config.json';
+import db from '../db/db';
 
 // Responsible for maintaining Guild state and parsing messages
 export default class Guild {
   private config: GuildConfig;
+  private guildId: string;
   private game: Game | null;
   private leaderboard: Leaderboard;
 
-  constructor(config = DefaultConfig, leaderboard: LeaderboardPoints = {}) {
+  constructor(guildId: string, config = DefaultConfig, leaderboard: LeaderboardPoints = {}) {
+    this.guildId = guildId;
     this.config = config;
     this.game = null;
     this.leaderboard = new Leaderboard(leaderboard);
@@ -123,6 +126,11 @@ export default class Guild {
       this.leaderboard.mergeAndIncrementWinners(this.game.leaderboard);
     }
     this.game = null;
+
+    // Update database
+    db.collection('guilds').doc(this.guildId).set({
+      leaderboard: this.leaderboard.points,
+    }, { merge: true });
   }
 
   private _showLeaderboard(message: ValidMessage) {

@@ -2,7 +2,7 @@ import Guesses from '../game/guesses';
 import { LeaderboardPoints } from '../types/game';
 
 export default class Leaderboard {
-  private points: LeaderboardPoints;
+  readonly points: LeaderboardPoints;
 
   constructor(initialState?: LeaderboardPoints) {
     // Storing points in a object rather than map since it's easier to upload to database

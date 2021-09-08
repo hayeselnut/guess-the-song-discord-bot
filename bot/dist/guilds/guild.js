@@ -12,9 +12,11 @@ const bot_helpers_1 = require("../helpers/bot-helpers");
 const game_helpers_1 = require("../helpers/game-helpers");
 const help_json_1 = __importDefault(require("../assets/help.json"));
 const default_config_json_1 = __importDefault(require("../assets/default-config.json"));
+const db_1 = __importDefault(require("../db/db"));
 // Responsible for maintaining Guild state and parsing messages
 class Guild {
-    constructor(config = default_config_json_1.default, leaderboard = {}) {
+    constructor(guildId, config = default_config_json_1.default, leaderboard = {}) {
+        this.guildId = guildId;
         this.config = config;
         this.game = null;
         this.leaderboard = new leaderboard_1.default(leaderboard);
@@ -105,6 +107,10 @@ class Guild {
             this.leaderboard.mergeAndIncrementWinners(this.game.leaderboard);
         }
         this.game = null;
+        // Update database
+        db_1.default.collection('guilds').doc(this.guildId).set({
+            leaderboard: this.leaderboard.points,
+        }, { merge: true });
     }
     _showLeaderboard(message) {
         (0, bot_helpers_1.sendEmbed)(message.channel, this.leaderboard.toString());

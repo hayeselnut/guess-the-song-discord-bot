@@ -20,7 +20,7 @@ const FFMPEG_ARGUMENTS = [
 class AudioResourceBuffer {
     constructor(tracks, roundLimit) {
         this.buffer = [];
-        this.bufferSize = 5;
+        this.bufferSize = 2;
         this.bufferIndex = 0;
         this.roundLimit = roundLimit;
         this.tracks = tracks;
@@ -41,27 +41,34 @@ class AudioResourceBuffer {
     }
     async _pushNewAudioResourceToBuffer() {
         const trackId = this.order[this.bufferIndex];
+        // Increment index as soon as possible so that another call to this function
+        // won't push the same song to buffer
+        this.bufferIndex++;
         const track = this.tracks[trackId];
         const youtubeQuery = `${track.name} ${track.artists.join(' ')}`;
         const youtubeResults = await (0, yt_search_1.default)(youtubeQuery);
         const video = youtubeResults.videos[0];
         console.log(video);
-        const stream = (0, ytdl_core_1.default)(video.url, {
+        const stream = (0, ytdl_core_1.default)(video.videoId, {
             filter: 'audioonly',
             requestOptions: {
                 headers: cookie_json_1.default,
             },
+            // Disabling chunking recommended by node-ytdl-core documentation
+            dlChunkSize: 0,
+        })
+            .on('error', (error) => {
+            console.error(`ERROR when loading '${track.name}' into buffer: ${error.message}`);
         });
-        // Starts audio stream to a random point
+        // Seeks a random time
         const transcoder = new prism_media_1.default.FFmpeg({
-            args: ['-ss', `${(0, game_helpers_1.randStart)(video.seconds)}`, ...FFMPEG_ARGUMENTS],
+            args: ['-ss', `${(0, game_helpers_1.randSeek)(video.seconds)}`, ...FFMPEG_ARGUMENTS],
         });
         const audioResource = (0, voice_1.createAudioResource)(stream.pipe(transcoder), {
             inputType: voice_1.StreamType.Raw,
             metadata: track,
         });
         this.buffer.push(audioResource);
-        this.bufferIndex++;
     }
 }
 exports.default = AudioResourceBuffer;

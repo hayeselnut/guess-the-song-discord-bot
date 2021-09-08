@@ -19,7 +19,7 @@ class Round {
     }
     startRound() {
         // Start playing audio resource
-        if (this.audioResource.ended) {
+        if (this.audioResource.ended || !this.audioResource.started) {
             console.log(`#${this.textChannel.name}: Could not load`, this.track.name, this.track.artists);
             return this.endRound('LOAD_FAIL');
         }

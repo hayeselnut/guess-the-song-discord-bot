@@ -69,7 +69,10 @@ class Game {
         }
         const audioResource = this.buffer.getNextAudioResourceAndUpdateBuffer();
         if (!audioResource) {
-            console.log('// TODO audio resource is undefined');
+            console.log(`#${this.textChannel.name} [${this.currRound + 1}/${this.roundLimit}]:`, `Audio resource was undefined. Restarting round after 2 seconds...`);
+            setTimeout(() => {
+                this._startRound();
+            }, 2000);
             return;
         }
         this.round = new round_1.default(audioResource, this.audioPlayer, this.textChannel, this.timeLimit, (reason) => this._endRoundCallback(reason));
