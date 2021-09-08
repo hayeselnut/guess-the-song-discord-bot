@@ -27,7 +27,7 @@ export default class AudioResourceBuffer {
 
   constructor(tracks: Tracks, roundLimit: number) {
     this.buffer = [];
-    this.bufferSize = 2;
+    this.bufferSize = 5;
     this.bufferIndex = 0;
     this.roundLimit = roundLimit;
     this.tracks = tracks;
