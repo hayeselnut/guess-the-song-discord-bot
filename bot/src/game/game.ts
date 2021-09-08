@@ -118,10 +118,9 @@ export default class Game {
         `Audio resource was undefined. Restarting round after 2 seconds...`,
       );
 
-      setTimeout(() => {
+      return setTimeout(() => {
         this._startRound();
-      }, 2000);
-      return;
+      }, 2 * 1000);
     }
 
     this.round = new Round(
