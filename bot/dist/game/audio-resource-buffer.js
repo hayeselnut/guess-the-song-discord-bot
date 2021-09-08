@@ -20,7 +20,7 @@ const FFMPEG_ARGUMENTS = [
 class AudioResourceBuffer {
     constructor(tracks, roundLimit) {
         this.buffer = [];
-        this.bufferSize = 2;
+        this.bufferSize = 5;
         this.bufferIndex = 0;
         this.roundLimit = roundLimit;
         this.tracks = tracks;
@@ -48,7 +48,6 @@ class AudioResourceBuffer {
         const youtubeQuery = `${track.name} ${track.artists.join(' ')}`;
         const youtubeResults = await (0, yt_search_1.default)(youtubeQuery);
         const video = youtubeResults.videos[0];
-        console.log(video);
         const stream = (0, ytdl_core_1.default)(video.videoId, {
             filter: 'audioonly',
             requestOptions: {

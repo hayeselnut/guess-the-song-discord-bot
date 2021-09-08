@@ -1,38 +1,159 @@
-.App {
+:root {
+  --discord-dark-grey: #36393F;
+  --discord-grey: #40444B;
+  --discord-light-grey: #B9BBBE;
+}
+
+header {
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+}
+
+section {
+  min-height: 50vh;
+  display: grid;
+  align-content: center;
+  margin: 2rem;
+}
+
+footer {
+  min-height: 40vh;
+  display: grid;
+  align-content: center;
+  justify-content: center;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+h1 {
+  font-size: 5rem;
+  font-family: 'raleway', sans-serif;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+h2 {
+  font-size: 3rem;
+  font-family: 'raleway', sans-serif;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.feature-title {
+  font-size: 3rem;
+  margin-bottom: 2rem;
+}
+
+.debug {
+  border: 0px solid black;
+}
+
+.title-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap-reverse;
+}
+
+.titles {
+  text-align: right;
+}
+
+.gradientText {
+  font-family: 'raleway-bold', sans-serif;
+  font-size: 5rem;
+  background: linear-gradient(45deg, #ff0f7b, #f89b29);
+
+  background-clip: text;
+  color: transparent;
+}
+
+.bird {
+  width: 25rem;
+  margin: 2rem;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2rem;
+}
+
+.arrow {
+  display: grid;
+  justify-content: center;
+}
+
+.arrow .bi-arrow-down {
+  cursor: pointer;
+  font-size: 2rem;
+}
+
+.floating {
+  animation-name: floating;
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes floating {
+  from { transform: translate(0,  0px); }
+  65%  { transform: translate(0, 15px); }
+  to   { transform: translate(0, -0px); }
+}
+
+/* FEATURES */
+
+.feature {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.center {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
+/* SPOTIFY INTEGRATION */
+
+.start-command {
+  background-color: var(--discord-dark-grey);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  max-width: fit-content;
+  text-align: center;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.start-command code {
+  font-family: 'pt-mono', monospace;
+  color: var(--discord-light-grey);
+  font-size: 1.125rem;
+  overflow: auto;
+}
+
+/* GUESSING */
+
+.guessing-example {
+  background-color: var(--discord-dark-grey);
+  border-radius: 1rem;
+  box-shadow: 1px 1px 10px 2px #888888;
+  padding: 1rem;
+}
+
+/* CUSTOMISATIONS */
+
+.customisations {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
+
+.customisation {
+  width: 10vw;
+  text-align: center;
+}
+
+.customisations caption {
+  width: inherit;
+  text-align: center;
 }

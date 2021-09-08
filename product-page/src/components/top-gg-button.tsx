@@ -6,7 +6,7 @@ const TopGGButton = () => {
     <>
       <Button
         style={{
-          margin: '0.5rem',
+          margin: '1rem',
         }}
         size='lg'
         href='https://top.gg/bot/868458391247405067'

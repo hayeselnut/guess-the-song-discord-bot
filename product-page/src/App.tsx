@@ -1,91 +1,98 @@
 import React from 'react';
-import { Container, Row, Col, Image } from 'react-bootstrap';
+import { Container, Image } from 'react-bootstrap';
 import InviteButton from './components/invite-button';
 import TopGGButton from './components/top-gg-button';
 
+import './App.css';
+
 import Bird from './assets/bird.svg';
+import GuessingExample from './assets/guessing.png';
 
 const App = () => {
+  const scrollToFeatures = () => {
+    document.getElementById('spotify-integration')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <>
       <header>
-        <Container style={{ border: '0px solid black' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',
-            flexWrap: 'wrap-reverse' }}
-          >
-            <div style={{ textAlign: 'right', border: '0px solid red' }}>
+        <Container className='debug'>
+          <div className='title-display debug'>
+            <div className='titles'>
               <h1>
                 <div className='gradientText'>Guess the Song</div>
                 <div>discord bot</div>
               </h1>
             </div>
-            <div style={{ width: '50%', border: '0px solid red' }}>
-              <Image src={Bird} fluid style={{ margin: '2rem' }} />
-            </div>
+            <Image src={Bird} className='bird' />
           </div>
 
-          <div style={{ marginTop: '10rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <div>
-              <InviteButton />
-              <TopGGButton />
-            </div>
+          <div className='buttons debug'>
+            <InviteButton />
+            <TopGGButton />
           </div>
 
-          <div style={{ textAlign: 'center' }}>
-            <i className="bi bi-arrow-down" style={{ fontSize: '5rem' }} />
+          <div className='arrow floating debug'>
+            <i className="bi bi-arrow-down" onClick={scrollToFeatures} />
           </div>
         </Container>
+
       </header>
 
-      <section id='how-to-start-with-spotify'>
-        <Container>
-          <h2>Extracts songs from Spotify playlists and shuffles them into a game</h2>
-          <code>$start 10 link</code>
+      <section id='spotify-integration'>
+        <Container className='center debug'>
+          <h2 className='feature-title'>Spotify integration</h2>
+          <p>Create a game with any Spotify playlist</p>
+          <div className='start-command'>
+            <code>
+              $start 10 https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M
+            </code>
+          </div>
         </Container>
       </section>
 
-      <section id='guess-by-typing-in-a-text-channel'>
+      <section id='guessing'>
+        <Container className='feature'>
+          <Image src={GuessingExample} className='guessing-example' width='40%' />
+          <div style={{ width: '40%' }}>
+            <h2 className='feature-title'>Guess by typing into your channel</h2>
+            <p>
+              You get one point for the song name and every listed artist.
+            </p>
+          </div>
+        </Container>
+        <div>
+        </div>
+      </section>
+
+      <section id='customisations'>
         <Container>
-          <h2>Easy guessing by typing into your text channel</h2>
-          <div style={{ backgroundColor: 'red', width: '600px', height: '200px' }} />
+          <h2 className='feature-title'>Customisations</h2>
+
+          <div className='customisations debug'>
+            <div className='customisation debug'>
+              <i className="bi bi-stopwatch" style={{ fontSize: '5rem' }} />
+              <caption className='debug'>Set time limit for each round</caption>
+            </div>
+
+            <div className='customisation debug'>
+              <i className="bi bi-spellcheck" style={{ fontSize: '5rem' }} />
+              <caption className='debug'>Allow similar answers</caption>
+            </div>
+
+            <div className='customisation debug'>
+              <i className="bi bi-code" style={{ fontSize: '5rem' }} />
+              <caption className='debug'>Set command prefix for your server</caption>
+            </div>
+          </div>
+
         </Container>
       </section>
 
-      <section id='shuffle-multiple-playlists-into-one-game'>
+      <footer>
         <Container>
-          <h2>Can combine multiple Spotify playlists together</h2>
-          <div style={{ backgroundColor: 'green', width: '600px', height: '200px' }} />
-        </Container>
-      </section>
-
-      <section id='customisable-configurations'>
-        <Container>
-          <h2>Customisations</h2>
-          <div style={{ display: 'inline-block', backgroundColor: 'blue',
-            margin: '10px', width: '100px', height: '100px' }}
-          />
-          <div style={{ display: 'inline-block', backgroundColor: 'blue',
-            margin: '10px', width: '100px', height: '100px' }}
-          />
-          <div style={{ display: 'inline-block', backgroundColor: 'blue',
-            margin: '10px', width: '100px', height: '100px' }}
-          />
-          <div style={{ display: 'inline-block', backgroundColor: 'blue',
-            margin: '10px', width: '100px', height: '100px' }}
-          />
-        </Container>
-      </section>
-
-      <section id='ready-to-start-playing'>
-        <Container>
-          <h2>Ready to start playing?</h2>
+          <h2>Ready to start guessing?</h2>
           <InviteButton />
-        </Container>
-      </section>
-
-      <footer id='contact'>
-        <Container>
-          <span>Contact me</span>
         </Container>
       </footer>
     </>
