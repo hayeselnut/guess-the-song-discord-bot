@@ -38,6 +38,7 @@ const spotify = new Spotify(clientId, clientSecret);
 
 client.once('ready', () => {
   console.log('Ready!');
+  console.log('Current guilds:', client.guilds.cache.size);
 });
 
 client.once('reconnecting', () => {
