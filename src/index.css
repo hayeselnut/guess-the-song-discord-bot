@@ -1,74 +1,32 @@
 @font-face {
   font-family: 'raleway';
-  src: url('./assets//fonts/Raleway-VariableFont_wght.ttf');
+  src: url('./assets/fonts/Raleway-VariableFont_wght.ttf');
 }
 
 @font-face {
   font-family: 'raleway-bold';
-  src: url('./assets//fonts/Raleway-Bold.ttf');
+  src: url('./assets/fonts/Raleway-Bold.ttf');
 }
 
 @font-face {
   font-family: 'raleway-black';
-  src: url('./assets//fonts/Raleway-Black.ttf');
+  src: url('./assets/fonts/Raleway-Black.ttf');
+}
+
+@font-face {
+  font-family: 'cabin';
+  src: url('./assets/fonts/Cabin-VariableFont.ttf');
+}
+
+@font-face {
+  font-family: 'pt-mono';
+  src: url('./assets/fonts/PTMono-Regular.ttf');
 }
 
 body {
   margin: 0;
-  font-family: 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'cabin', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* background-color: #edf6f9; */
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-
-header {
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-section {
-  height: 50vh;
-}
-
-h1 {
-  font-size: 48px;
-  font-family: 'raleway', sans-serif;
-}
-
-h2 {
-  font-size: 48px;
-  font-family: 'raleway', sans-serif;
-  /* text-align: right; */
-  margin-right: 0.5rem;
-}
-
-.gradientText {
-  font-family: 'raleway-bold', sans-serif;
-  font-size: 84px;
-  background: linear-gradient(45deg, #ff0f7b, #f89b29);
-
-  background-clip: text;
-  color: transparent;
-}
-
-.bird {
-  /* background-image: url('./assets/undraw_happy_music_g6wc.svg'); */
-  background-repeat: no-repeat;
-  background-position-x: right;
-  background-position-y: top;
-  background-size: 40%;
-
-  position: absolute;
-  z-index: -1;
-  width: 100%;
-  /* border: 5px solid black; */
-  height: 100vh;
+  background-color: #F6F2E8;
 }
