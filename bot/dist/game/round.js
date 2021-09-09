@@ -19,17 +19,15 @@ class Round {
         }, timeLimit * 1000); // timeLimit is in secs
     }
     startRound() {
-        // `started` flag will be false if stream has not finished loading or error occured e.g. 410 error
-        // To ensure we give sufficient time for stream to load and not mistakenly read it as an error,
-        // we will try playing the resource again after a retry delay.
         if (this.audioResource.ended) {
             console.log(`#${this.textChannel.name}: Could not load`, this.track.name, this.track.artists);
             return this.endRound('LOAD_FAIL');
         }
+        // `started` flag will be false if stream has not finished loading or error occured e.g. 410 error
+        // End round after 5 seconds if the resource has still not started (most likely caused by error)
         if (!this.audioResource.started) {
             console.log(`#${this.textChannel.name}: Delay when loading`, this.track.name, this.track.artists);
             setTimeout(() => {
-                // Ensure music starts playing within 3 seconds, otherwise end round
                 if (!this.audioResource.started) {
                     console.log(`#${this.textChannel.name}: Did not load in time`, this.track.name, this.track.artists);
                     this.endRound('LOAD_FAIL');

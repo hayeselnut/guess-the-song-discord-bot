@@ -20,7 +20,7 @@ const FFMPEG_ARGUMENTS = [
 class AudioResourceBuffer {
     constructor(tracks, roundLimit) {
         this.buffer = [];
-        this.bufferSize = 2;
+        this.bufferSize = 5;
         this.bufferIndex = 0;
         this.roundLimit = roundLimit;
         this.tracks = tracks;
