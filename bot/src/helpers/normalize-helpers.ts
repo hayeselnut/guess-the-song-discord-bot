@@ -10,12 +10,13 @@ export const censorArtists = (name: string, artists: string[]) => {
   let censoredName = name;
   artists.forEach((artist) => {
     censoredName = censoredName
+      .replaceAll(new RegExp(` feat\\. .*${artist}.*`, 'g'), '')
+      .replaceAll(new RegExp(` ft\\. .*${artist}.*`, 'g'), '')
+      .replaceAll(new RegExp(` featuring .*${artist}.*`, 'g'), '')
       .replaceAll(new RegExp(`\\(.*${artist}.*\\)`, 'g'), '')
       .replaceAll(new RegExp(`\\[.*${artist}.*\\]`, 'g'), '')
       .replaceAll(new RegExp(`\\{.*${artist}.*\\}`, 'g'), '')
-      .replaceAll(new RegExp(` - .*${artist}.*`, 'g'), '')
-      .replaceAll(new RegExp(` feat\\. .*${artist}.*`, 'g'), '')
-      .replaceAll(new RegExp(` ft\\. .*${artist}.*`, 'g'), '');
+      .replaceAll(new RegExp(` - .*${artist}.*`, 'g'), '');
   });
 
   return censoredName.replaceAll('**', '\\*\\*').trim();

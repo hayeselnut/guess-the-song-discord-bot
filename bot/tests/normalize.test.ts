@@ -137,11 +137,19 @@ describe('display name', () => {
     expect(censorArtists('F**kin\' Problems (feat. Drake, 2 Chainz & Kendrick Lamar)', ['Drake', '2 Chainz', 'Kendrick Lamar'])).toBe('F\\*\\*kin\' Problems');
     expect(censorArtists('Titanium (feat. Sia)', ['Sia'])).toBe('Titanium');
     expect(censorArtists('Airplanes (feat. Hayley Williams of Paramore)', ['Hayley Williams'])).toBe('Airplanes');
+    expect(censorArtists('Letting Go (Dutty Love) featuring Nicki Minaj (feat. Nicki Minaj)', ['Sean Kingston', 'Nicki Minaj'])).toBe('Letting Go (Dutty Love)');
+    expect(censorArtists('Luxurious - Remix featuring Slim Thug', ['Gwen Stefani', 'Slim Thug'])).toBe('Luxurious - Remix');
+
     expect(censorArtists('(You Drive Me) Crazy', ['Britney Spears'])).toBe('(You Drive Me) Crazy');
     expect(censorArtists('(You Drive Me) Crazy - The Stop Remix!', ['Britney Spears'])).toBe('(You Drive Me) Crazy - The Stop Remix!');
     expect(censorArtists('Forever ... (is a long time)', ['Halsey'])).toBe('Forever ... (is a long time)');
     expect(censorArtists('Stronger (What Doesn\'t Kill You)', ['Kelly Clarsson'])).toBe('Stronger (What Doesn\'t Kill You)');
     expect(censorArtists('Earned It (Fifty Shades Of Grey) - From The "Fifty Shades Of Grey" Soundtrack', ['The Weeknd'])).toBe('Earned It (Fifty Shades Of Grey) - From The "Fifty Shades Of Grey" Soundtrack');
     expect(censorArtists('CAN\'T STOP THE FEELING! (Original Song from DreamWorks Animation\'s "TROLLS")', ['Justin Timberlake'])).toBe('CAN\'T STOP THE FEELING! (Original Song from DreamWorks Animation\'s "TROLLS")');
+
+    expect(censorArtists('Without me (with Juice WRLD)', ['Halsey', 'Juice WRLD'])).toBe('Without me');
+
+    expect(censorArtists('Featuring', ['Ross Deweees'])).toBe('Featuring');
+    expect(censorArtists('Featuring Mark Hoppus', ['Hot Mulligan'])).toBe('Featuring Mark Hoppus');
   });
 });
