@@ -13,16 +13,17 @@ const bot_helpers_1 = require("../helpers/bot-helpers");
 const game_helpers_1 = require("../helpers/game-helpers");
 const help_json_1 = __importDefault(require("../assets/help.json"));
 const default_config_json_1 = __importDefault(require("../assets/default-config.json"));
+const config_manager_1 = __importDefault(require("./config-manager"));
 // Responsible for maintaining Guild state and parsing messages
 class Guild {
     constructor(guildId, config = default_config_json_1.default, points = {}) {
         this.guildId = guildId;
-        this.config = config;
         this.game = null;
         this.leaderboard = new leaderboard_1.default(points);
+        this.configManager = new config_manager_1.default(this.guildId, config);
     }
     readMessage(message) {
-        if (message.content.startsWith(this.config.prefix)) {
+        if (message.content.startsWith(this.configManager.prefix)) {
             this.readCommand(message);
         }
         // Mentioning the bot shows the help menu
@@ -34,27 +35,27 @@ class Guild {
     }
     async readCommand(message) {
         try {
-            if (message.content.startsWith(`${this.config.prefix}start`)) {
+            if (message.content.startsWith(`${this.configManager.prefix}start`)) {
                 // Must await to catch the error thrown
                 await this.startGame(message);
             }
-            else if (message.content.startsWith(`${this.config.prefix}stop`)) {
+            else if (message.content.startsWith(`${this.configManager.prefix}stop`)) {
                 this.stopGame(message);
             }
-            else if (message.content.startsWith(`${this.config.prefix}skip`)) {
+            else if (message.content.startsWith(`${this.configManager.prefix}skip`)) {
                 this.skipRound(message);
             }
-            else if (message.content.startsWith(`${this.config.prefix}leaderboard`)) {
+            else if (message.content.startsWith(`${this.configManager.prefix}leaderboard`)) {
                 this.showLeaderboard(message);
             }
-            else if (message.content.startsWith(`${this.config.prefix}config`)) {
-                this.showConfig(message);
+            else if (message.content.startsWith(`${this.configManager.prefix}config`)) {
+                this.configManager.readConfigCommand(message);
             }
-            else if (message.content.startsWith(`${this.config.prefix}help`)) {
+            else if (message.content.startsWith(`${this.configManager.prefix}help`)) {
                 this.showHelp(message);
             }
             else {
-                throw new Error(`Invalid command. Use \`${this.config.prefix}help\` for a list of commands.`);
+                throw new Error(`Invalid command. Use \`${this.configManager.prefix}help\` for a list of commands.`);
             }
         }
         catch (error) {
@@ -68,7 +69,7 @@ class Guild {
         if (this.game)
             throw new Error(`There's already a game running!`);
         const args = (0, bot_helpers_1.parseMessage)(message);
-        const { roundLimit, playlistLinks } = (0, game_helpers_1.parseStartGameArgs)(args, this.config.prefix);
+        const { roundLimit, playlistLinks } = (0, game_helpers_1.parseStartGameArgs)(args, this.configManager.prefix);
         if (!(0, bot_helpers_1.isValidMessageWithVoice)(message)) {
             throw new Error('You need to be in a voice channel to play music');
         }
@@ -85,7 +86,7 @@ class Guild {
         console.log(`${message.guild.name} - #${message.channel.name}: Initializing game of ${newRoundLimit} rounds`);
         // Create arrow function to preserve 'this' context
         const endGameCallback = (reason) => this.endGameCallback(reason);
-        this.game = new game_1.default(message, this.config, newRoundLimit, tracks, endGameCallback);
+        this.game = new game_1.default(message, this.configManager.config, newRoundLimit, tracks, endGameCallback);
         this.game.startGame();
     }
     stopGame(message) {
@@ -117,10 +118,6 @@ class Guild {
     showLeaderboard(message) {
         (0, bot_helpers_1.sendEmbed)(message.channel, this.leaderboard.toString());
     }
-    showConfig(message) {
-        // TODO allow setting of configs
-        (0, bot_helpers_1.sendEmbed)(message.channel, JSON.stringify(this.config));
-    }
     showHelp(message) {
         const helpEmbed = new discord_js_1.MessageEmbed()
             .setTitle('🤖 Hello, I\'m Guess the Song Bot!')
@@ -128,9 +125,9 @@ class Guild {
             .addFields(Object.entries(help_json_1.default.commands).map(([name, cmd]) => ({
             name: `${cmd.emoji} ${name}`,
             value: `
-            \`${this.config.prefix}${cmd.usage}\`: ${cmd.description}
+            \`${this.configManager.prefix}${cmd.usage}\`: ${cmd.description}
 
-            Example: \`${this.config.prefix}${cmd.example}\`
+            Example: \`${this.configManager.prefix}${cmd.example}\`
           `,
         })));
         message.channel.send({ embeds: [helpEmbed] });

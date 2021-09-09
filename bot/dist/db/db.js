@@ -28,4 +28,3 @@ const serviceAccount = {
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
 exports.default = db;
-// Best way to manage state/ stateful variables in exports/javascript

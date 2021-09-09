@@ -14,22 +14,25 @@ import { parseStartGameArgs, throwIfInsufficientVoicePermissions } from '../help
 
 import Help from '../assets/help.json';
 import DefaultConfig from '../assets/default-config.json';
+import ConfigManager from './config-manager';
 
 // Responsible for maintaining Guild state and parsing messages
 export default class Guild {
   private leaderboard: Leaderboard;
   private game: Game | null = null;
+  private configManager: ConfigManager;
 
   constructor(
     private readonly guildId: string,
-    private config: GuildConfig = DefaultConfig,
+    config: GuildConfig = DefaultConfig,
     points: LeaderboardPoints = {},
   ) {
     this.leaderboard = new Leaderboard(points);
+    this.configManager = new ConfigManager(this.guildId, config);
   }
 
   readMessage(message: ValidMessage) {
-    if (message.content.startsWith(this.config.prefix)) {
+    if (message.content.startsWith(this.configManager.prefix)) {
       this.readCommand(message);
     }
 
@@ -44,21 +47,21 @@ export default class Guild {
 
   private async readCommand(message: ValidMessage) {
     try {
-      if (message.content.startsWith(`${this.config.prefix}start`)) {
+      if (message.content.startsWith(`${this.configManager.prefix}start`)) {
         // Must await to catch the error thrown
         await this.startGame(message);
-      } else if (message.content.startsWith(`${this.config.prefix}stop`)) {
+      } else if (message.content.startsWith(`${this.configManager.prefix}stop`)) {
         this.stopGame(message);
-      } else if (message.content.startsWith(`${this.config.prefix}skip`)) {
+      } else if (message.content.startsWith(`${this.configManager.prefix}skip`)) {
         this.skipRound(message);
-      } else if (message.content.startsWith(`${this.config.prefix}leaderboard`)) {
+      } else if (message.content.startsWith(`${this.configManager.prefix}leaderboard`)) {
         this.showLeaderboard(message);
-      } else if (message.content.startsWith(`${this.config.prefix}config`)) {
-        this.showConfig(message);
-      } else if (message.content.startsWith(`${this.config.prefix}help`)) {
+      } else if (message.content.startsWith(`${this.configManager.prefix}config`)) {
+        this.configManager.readConfigCommand(message);
+      } else if (message.content.startsWith(`${this.configManager.prefix}help`)) {
         this.showHelp(message);
       } else {
-        throw new Error(`Invalid command. Use \`${this.config.prefix}help\` for a list of commands.`);
+        throw new Error(`Invalid command. Use \`${this.configManager.prefix}help\` for a list of commands.`);
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -72,7 +75,7 @@ export default class Guild {
     if (this.game) throw new Error(`There's already a game running!`);
 
     const args = parseMessage(message);
-    const { roundLimit, playlistLinks } = parseStartGameArgs(args, this.config.prefix);
+    const { roundLimit, playlistLinks } = parseStartGameArgs(args, this.configManager.prefix);
 
     if (!isValidMessageWithVoice(message)) {
       throw new Error('You need to be in a voice channel to play music');
@@ -94,7 +97,7 @@ export default class Guild {
 
     // Create arrow function to preserve 'this' context
     const endGameCallback = (reason: EndGameReason) => this.endGameCallback(reason);
-    this.game = new Game(message, this.config, newRoundLimit, tracks, endGameCallback);
+    this.game = new Game(message, this.configManager.config, newRoundLimit, tracks, endGameCallback);
     this.game.startGame();
   }
 
@@ -132,11 +135,6 @@ export default class Guild {
     sendEmbed(message.channel, this.leaderboard.toString());
   }
 
-  private showConfig(message: ValidMessage) {
-    // TODO allow setting of configs
-    sendEmbed(message.channel, JSON.stringify(this.config));
-  }
-
   private showHelp(message: ValidMessage) {
     const helpEmbed = new MessageEmbed()
       .setTitle('🤖 Hello, I\'m Guess the Song Bot!')
@@ -145,9 +143,9 @@ export default class Guild {
         Object.entries(Help.commands).map(([name, cmd]) => ({
           name: `${cmd.emoji} ${name}`,
           value: `
-            \`${this.config.prefix}${cmd.usage}\`: ${cmd.description}
+            \`${this.configManager.prefix}${cmd.usage}\`: ${cmd.description}
 
-            Example: \`${this.config.prefix}${cmd.example}\`
+            Example: \`${this.configManager.prefix}${cmd.example}\`
           `,
         })),
       );
