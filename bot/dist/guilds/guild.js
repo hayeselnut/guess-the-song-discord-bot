@@ -45,10 +45,10 @@ class Guild {
                 this._skipRound(message);
             }
             else if (message.content.startsWith(`${this.config.prefix}leaderboard`)) {
-                this._showLeaderboard(message);
+                this._leaderboard(message);
             }
             else if (message.content.startsWith(`${this.config.prefix}config`)) {
-                this._showConfig(message);
+                this._config(message);
             }
             else if (message.content.startsWith(`${this.config.prefix}help`)) {
                 this._help(message);
@@ -112,10 +112,10 @@ class Guild {
             leaderboard: this.leaderboard.points,
         }, { merge: true });
     }
-    _showLeaderboard(message) {
+    _leaderboard(message) {
         (0, bot_helpers_1.sendEmbed)(message.channel, this.leaderboard.toString());
     }
-    _showConfig(message) {
+    _config(message) {
         (0, bot_helpers_1.sendEmbed)(message.channel, JSON.stringify(this.config));
     }
     _help(message) {
@@ -124,7 +124,11 @@ class Guild {
             .setDescription(help_json_1.default.description)
             .addFields(Object.entries(help_json_1.default.commands).map(([name, cmd]) => ({
             name: `${cmd.emoji} ${name}`,
-            value: `\`${this.config.prefix}${cmd.usage}\`: ${cmd.description}`,
+            value: `
+            \`${this.config.prefix}${cmd.usage}\`: ${cmd.description}
+
+            Example: \`${this.config.prefix}${cmd.example}\`
+          `,
         })));
         message.channel.send({ embeds: [helpEmbed] });
     }

@@ -53,9 +53,9 @@ export default class Guild {
       } else if (message.content.startsWith(`${this.config.prefix}skip`)) {
         this._skipRound(message);
       } else if (message.content.startsWith(`${this.config.prefix}leaderboard`)) {
-        this._showLeaderboard(message);
+        this._leaderboard(message);
       } else if (message.content.startsWith(`${this.config.prefix}config`)) {
-        this._showConfig(message);
+        this._config(message);
       } else if (message.content.startsWith(`${this.config.prefix}help`)) {
         this._help(message);
       } else {
@@ -133,11 +133,11 @@ export default class Guild {
     }, { merge: true });
   }
 
-  private _showLeaderboard(message: ValidMessage) {
+  private _leaderboard(message: ValidMessage) {
     sendEmbed(message.channel, this.leaderboard.toString());
   }
 
-  private _showConfig(message: ValidMessage) {
+  private _config(message: ValidMessage) {
     sendEmbed(message.channel, JSON.stringify(this.config));
   }
 
@@ -148,7 +148,11 @@ export default class Guild {
       .addFields(
         Object.entries(Help.commands).map(([name, cmd]) => ({
           name: `${cmd.emoji} ${name}`,
-          value: `\`${this.config.prefix}${cmd.usage}\`: ${cmd.description}`,
+          value: `
+            \`${this.config.prefix}${cmd.usage}\`: ${cmd.description}
+
+            Example: \`${this.config.prefix}${cmd.example}\`
+          `,
         })),
       );
 
