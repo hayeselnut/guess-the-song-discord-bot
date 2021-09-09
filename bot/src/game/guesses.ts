@@ -1,5 +1,5 @@
 import { Track } from '../../src-old/types';
-import { normalize, removeAdditionalInformation } from '../helpers/normalize-helpers';
+import { censorArtists, normalize, removeAdditionalInformation } from '../helpers/normalize-helpers';
 import { ValidMessage } from '../types/discord';
 
 const SONG_INDEX = -1;
@@ -64,7 +64,7 @@ export default class Guesses {
     }
 
     _toString(final: boolean = false) {
-      const displayName = removeAdditionalInformation(this.track.name);
+      const displayName = final ? this.track.name : censorArtists(this.track.name, this.track.artists);
       const nameGuesses = this.answeredBy.get(SONG_INDEX)
         ? `✅ Song: **${displayName}** guessed correctly by ${this.answeredBy.get(SONG_INDEX)} (+1)`
         : final

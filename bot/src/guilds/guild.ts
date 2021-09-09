@@ -138,6 +138,7 @@ export default class Guild {
   }
 
   private _config(message: ValidMessage) {
+    // TODO allow setting of configs
     sendEmbed(message.channel, JSON.stringify(this.config));
   }
 

@@ -5,6 +5,22 @@ type NormalizedTrack = {
   normalizedArtists: string[],
 }
 
+export const censorArtists = (name: string, artists: string[]) => {
+  // Assumes the artist's name is printed exactly in title
+  let censoredName = name;
+  artists.forEach((artist) => {
+    censoredName = censoredName
+      .replaceAll(new RegExp(`\\(.*${artist}.*\\)`, 'g'), '')
+      .replaceAll(new RegExp(`\\[.*${artist}.*\\]`, 'g'), '')
+      .replaceAll(new RegExp(`\\{.*${artist}.*\\}`, 'g'), '')
+      .replaceAll(new RegExp(` - .*${artist}.*`, 'g'), '')
+      .replaceAll(new RegExp(` feat\\. .*${artist}.*`, 'g'), '')
+      .replaceAll(new RegExp(` ft\\. .*${artist}.*`, 'g'), '');
+  });
+
+  return censoredName.replaceAll('**', '\\*\\*').trim();
+};
+
 export const removeAdditionalInformation = (str: string): string =>
   str.replaceAll(/\(.*\)/g, '')
     .replaceAll(/\[.*\]/g, '')

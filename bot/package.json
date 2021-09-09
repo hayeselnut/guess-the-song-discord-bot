@@ -23,7 +23,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "libsodium-wrappers": "^0.7.9",
     "opusscript": "^0.0.8",
-    "prism": "^4.1.2",
+    "prism": "^1.0.0",
     "spotify-web-api-node": "^5.0.2",
     "yt-search": "^2.10.1",
     "ytdl-core": "^4.9.1"
