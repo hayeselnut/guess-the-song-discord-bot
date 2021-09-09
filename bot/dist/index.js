@@ -29,7 +29,7 @@ const client_1 = __importDefault(require("./client/client"));
 const bot_helpers_1 = require("./helpers/bot-helpers");
 client_1.default.once('ready', () => {
     console.log('Ready!');
-    console.log(Object.keys(guild_manager_1.default._guilds).length, 'guilds found in Firestore');
+    console.log(guild_manager_1.default.size, 'guilds found in Firestore');
     console.log('Current guilds:', client_1.default.guilds.cache.size);
 });
 client_1.default.once('reconnecting', () => {

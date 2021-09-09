@@ -1,9 +1,4 @@
-type NormalizeTypes = 'name' | 'artist';
-
-type NormalizedTrack = {
-  normalizedName: string,
-  normalizedArtists: string[],
-}
+import { NormalizedTrack, NormalizeTypes } from '../types/game';
 
 export const censorArtists = (name: string, artists: string[]) => {
   // Assumes the artist's name is printed exactly in title

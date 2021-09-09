@@ -9,54 +9,44 @@ import {
   VoiceConnectionStatus,
 } from '@discordjs/voice';
 import { MemberMention, MessageEmbed, StageChannel, TextChannel, VoiceChannel } from 'discord.js';
-import { sendEmbed } from '../helpers/bot-helpers';
+
 import { ValidMessage, ValidMessageWithVoice } from '../types/discord';
 import { EndGameCallback, EndGameReason, EndRoundReason, GuildConfig } from '../types/game';
 import { Tracks } from '../types/tracks';
+
 import AudioResourceBuffer from './audio-resource-buffer';
 import Leaderboard from '../leaderboard/leaderboard';
 import Round from './round';
 
+import { sendEmbed } from '../helpers/bot-helpers';
+
 export default class Game {
   readonly host: MemberMention; // Person who started the game
-  private timeLimit: number;
-  private roundLimit: number;
-  private emoteNearlyCorrectGuesses: boolean;
-  private tracks: Tracks
-  private guildId: string;
-  private textChannel: TextChannel;
-  private voiceChannel: VoiceChannel | StageChannel;
+  private readonly guildId: string;
+  private readonly textChannel: TextChannel;
+  private readonly voiceChannel: VoiceChannel | StageChannel;
 
-  private currRound: number;
-  private finished: boolean;
-  readonly leaderboard: Leaderboard;
-  private buffer: AudioResourceBuffer;
+  private currRound: number = 0;
+  private finished: boolean = false;
+  private round: Round | null = null;
+  leaderboard: Leaderboard = new Leaderboard();
 
-  private round: Round | null;
+  private readonly buffer: AudioResourceBuffer;
+  private readonly audioPlayer: AudioPlayer;
 
-  private audioPlayer: AudioPlayer;
-
-  private callback: EndGameCallback;
-
-  constructor(message: ValidMessageWithVoice, config: GuildConfig,
-    roundLimit: number, tracks: Tracks, callback: EndGameCallback) {
+  constructor(
+    message: ValidMessageWithVoice,
+    private readonly config: GuildConfig,
+    private readonly roundLimit: number,
+    private readonly tracks: Tracks,
+    private callback: EndGameCallback,
+  ) {
     this.host = message.member.toString();
-    this.timeLimit = config.round_duration;
-    this.roundLimit = roundLimit;
-    this.emoteNearlyCorrectGuesses = config.emote_nearly_correct_guesses;
-    this.tracks = tracks;
     this.guildId = message.guild.id;
     this.textChannel = message.channel;
     this.voiceChannel = message.member.voice.channel;
 
-    this.currRound = 0;
-    this.finished = false;
-    this.leaderboard = new Leaderboard();
     this.buffer = new AudioResourceBuffer(this.tracks, this.roundLimit);
-
-    this.round = null;
-
-    this.callback = callback;
 
     this.audioPlayer = createAudioPlayer()
       .on('error', (error: any) => {
@@ -65,21 +55,25 @@ export default class Game {
         this.round?.endRound('LOAD_FAIL');
       });
 
-    this._connectToVoiceChannel({
+    this.connectToVoiceChannel({
       channelId: this.voiceChannel.id,
       guildId: this.guildId,
       adapterCreator: this.voiceChannel.guild.voiceAdapterCreator,
     });
   }
 
+  async startGame() {
+    // Wait for buffer to load before starting rounds
+    await this.buffer.initializeBuffer();
+    this.startRound();
+  }
+
   checkGuess(message: ValidMessage) {
     this.round?.checkGuess(message);
   }
 
-  async startGame() {
-    // Wait for buffer to load before starting rounds
-    await this.buffer.initializeBuffer();
-    this._startRound();
+  skipRound() {
+    this.round?.endRound('FORCE_SKIP');
   }
 
   endGame(reason: EndGameReason) {
@@ -101,11 +95,7 @@ export default class Game {
     this.callback(reason);
   }
 
-  skipRound() {
-    this.round?.endRound('FORCE_SKIP');
-  }
-
-  private _startRound() {
+  private startRound() {
     if (this.finished || this.currRound >= this.roundLimit) {
       return this.endGame('ALL_ROUNDS_PLAYED');
     }
@@ -118,18 +108,15 @@ export default class Game {
       );
 
       return setTimeout(() => {
-        this._startRound();
+        this.startRound();
       }, 2 * 1000);
     }
 
-    this.round = new Round(
-      audioResource,
-      this.audioPlayer,
-      this.textChannel,
-      this.timeLimit,
-      (reason: EndRoundReason) => this._endRoundCallback(reason),
-    );
+    // Create arrow function to preserve 'this' context
+    const endRoundCallback = (reason: EndRoundReason) => this.endRoundCallback(reason);
+    this.round = new Round(audioResource, this.audioPlayer, this.textChannel, this.config, endRoundCallback);
     this.round.startRound();
+
     sendEmbed(this.textChannel, `[${this.currRound + 1}/${this.roundLimit}] Starting next song...`);
     console.log(
       `#${this.textChannel.name} [${this.currRound + 1}/${this.roundLimit}]:`,
@@ -138,7 +125,7 @@ export default class Game {
     );
   }
 
-  private _endRoundCallback(reason: EndRoundReason) {
+  private endRoundCallback(reason: EndRoundReason) {
     const title = reason === 'CORRECT' ? 'Round summary'
       : reason === 'TIMEOUT' ? 'Too slow! Skipping song...'
         : reason === 'FORCE_SKIP' || reason === 'FORCE_STOP' ? 'Skipping round...'
@@ -160,11 +147,11 @@ export default class Game {
     this.currRound++;
 
     if (reason !== 'FORCE_STOP') {
-      this._startRound();
+      this.startRound();
     }
   }
 
-  private _connectToVoiceChannel(options: JoinVoiceChannelOptions & CreateVoiceConnectionOptions) {
+  private connectToVoiceChannel(options: JoinVoiceChannelOptions & CreateVoiceConnectionOptions) {
     const connection = joinVoiceChannel(options)
       .on(VoiceConnectionStatus.Disconnected, async () => {
         console.log(`#${this.textChannel.name}: Entered disconnected state`);

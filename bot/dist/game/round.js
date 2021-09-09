@@ -6,17 +6,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
 const guesses_1 = __importDefault(require("./guesses"));
 class Round {
-    constructor(audioResource, audioPlayer, textChannel, timeLimit, callback) {
-        this.finished = false;
+    constructor(audioResource, audioPlayer, textChannel, config, callback) {
+        this.audioResource = audioResource;
         this.audioPlayer = audioPlayer;
         this.textChannel = textChannel;
-        this.audioResource = audioResource;
+        this.config = config;
+        this.callback = callback;
+        this.finished = false;
         this.track = audioResource.metadata;
         this.guesses = new guesses_1.default(this.track);
-        this.callback = callback;
         this.timer = setTimeout(() => {
             this.endRound('TIMEOUT');
-        }, timeLimit * 1000); // timeLimit is in secs
+        }, this.config.round_duration * 1000); // timeLimit is in secs
     }
     startRound() {
         if (this.audioResource.ended) {
@@ -41,18 +42,12 @@ class Round {
     }
     checkGuess(message) {
         const guessCorrect = this.guesses.checkGuess(message);
-        if (guessCorrect && this.guesses.guessedAll()) {
+        if (guessCorrect && this.guesses.isFinished()) {
             this.endRound('CORRECT');
         }
         else if (guessCorrect) {
-            this._showProgress();
+            this.showProgress();
         }
-    }
-    _showProgress() {
-        const progressEmbed = new discord_js_1.MessageEmbed()
-            .setDescription(this.guesses.toProgressString())
-            .setColor('GOLD');
-        this.textChannel.send({ embeds: [progressEmbed] });
     }
     endRound(reason) {
         clearTimeout(this.timer);
@@ -66,6 +61,12 @@ class Round {
         setTimeout(() => {
             this.callback(reason);
         }, 100);
+    }
+    showProgress() {
+        const progressEmbed = new discord_js_1.MessageEmbed()
+            .setDescription(this.guesses.toProgressString())
+            .setColor('GOLD');
+        this.textChannel.send({ embeds: [progressEmbed] });
     }
 }
 exports.default = Round;

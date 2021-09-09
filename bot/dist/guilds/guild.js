@@ -7,51 +7,51 @@ const discord_js_1 = require("discord.js");
 const client_1 = __importDefault(require("../client/client"));
 const spotify_1 = __importDefault(require("../spotify/spotify"));
 const game_1 = __importDefault(require("../game/game"));
+const db_1 = __importDefault(require("../db/db"));
 const leaderboard_1 = __importDefault(require("../leaderboard/leaderboard"));
 const bot_helpers_1 = require("../helpers/bot-helpers");
 const game_helpers_1 = require("../helpers/game-helpers");
 const help_json_1 = __importDefault(require("../assets/help.json"));
 const default_config_json_1 = __importDefault(require("../assets/default-config.json"));
-const db_1 = __importDefault(require("../db/db"));
 // Responsible for maintaining Guild state and parsing messages
 class Guild {
-    constructor(guildId, config = default_config_json_1.default, leaderboard = {}) {
+    constructor(guildId, config = default_config_json_1.default, points = {}) {
         this.guildId = guildId;
         this.config = config;
         this.game = null;
-        this.leaderboard = new leaderboard_1.default(leaderboard);
+        this.leaderboard = new leaderboard_1.default(points);
     }
     readMessage(message) {
         if (message.content.startsWith(this.config.prefix)) {
-            this._readCommand(message);
+            this.readCommand(message);
         }
         // Mentioning the bot shows the help menu
         if (message.mentions.has(client_1.default.user.id)) {
-            this._help(message);
+            this.showHelp(message);
         }
         // Check guess if the game exists
         this.game?.checkGuess(message);
     }
-    async _readCommand(message) {
+    async readCommand(message) {
         try {
             if (message.content.startsWith(`${this.config.prefix}start`)) {
                 // Must await to catch the error thrown
-                await this._startGame(message);
+                await this.startGame(message);
             }
             else if (message.content.startsWith(`${this.config.prefix}stop`)) {
-                this._stopGame(message);
+                this.stopGame(message);
             }
             else if (message.content.startsWith(`${this.config.prefix}skip`)) {
-                this._skipRound(message);
+                this.skipRound(message);
             }
             else if (message.content.startsWith(`${this.config.prefix}leaderboard`)) {
-                this._leaderboard(message);
+                this.showLeaderboard(message);
             }
             else if (message.content.startsWith(`${this.config.prefix}config`)) {
-                this._config(message);
+                this.showConfig(message);
             }
             else if (message.content.startsWith(`${this.config.prefix}help`)) {
-                this._help(message);
+                this.showHelp(message);
             }
             else {
                 throw new Error(`Invalid command. Use \`${this.config.prefix}help\` for a list of commands.`);
@@ -61,10 +61,10 @@ class Guild {
             if (error instanceof Error) {
                 return (0, bot_helpers_1.sendEmbed)(message.channel, `⚠: ${error.message}`);
             }
-            console.error('ERROR reading command', error);
+            console.error('ERROR reading command', message.content, error);
         }
     }
-    async _startGame(message) {
+    async startGame(message) {
         if (this.game)
             throw new Error(`There's already a game running!`);
         const args = (0, bot_helpers_1.parseMessage)(message);
@@ -83,10 +83,12 @@ class Guild {
             .setImage(img ?? '');
         message.channel.send({ embeds: [playlistEmbed] });
         console.log(`${message.guild.name} - #${message.channel.name}: Initializing game of ${newRoundLimit} rounds`);
-        this.game = new game_1.default(message, this.config, newRoundLimit, tracks, (reason) => this._endGameCallback(reason));
+        // Create arrow function to preserve 'this' context
+        const endGameCallback = (reason) => this.endGameCallback(reason);
+        this.game = new game_1.default(message, this.config, newRoundLimit, tracks, endGameCallback);
         this.game.startGame();
     }
-    _stopGame(message) {
+    stopGame(message) {
         if (!this.game)
             throw new Error('Nothing to stop here!');
         if (this.game.host !== message.member.toString()) {
@@ -94,7 +96,7 @@ class Guild {
         }
         this.game.endGame('FORCE_STOP');
     }
-    _skipRound(message) {
+    skipRound(message) {
         if (!this.game)
             throw new Error('Nothing to skip here!');
         if (this.game.host !== message.member.toString()) {
@@ -102,7 +104,7 @@ class Guild {
         }
         this.game.skipRound();
     }
-    _endGameCallback(reason) {
+    endGameCallback(reason) {
         if (this.game) {
             this.leaderboard.mergeAndIncrementWinners(this.game.leaderboard);
         }
@@ -112,13 +114,14 @@ class Guild {
             leaderboard: this.leaderboard.points,
         }, { merge: true });
     }
-    _leaderboard(message) {
+    showLeaderboard(message) {
         (0, bot_helpers_1.sendEmbed)(message.channel, this.leaderboard.toString());
     }
-    _config(message) {
+    showConfig(message) {
+        // TODO allow setting of configs
         (0, bot_helpers_1.sendEmbed)(message.channel, JSON.stringify(this.config));
     }
-    _help(message) {
+    showHelp(message) {
         const helpEmbed = new discord_js_1.MessageEmbed()
             .setTitle('🤖 Hello, I\'m Guess the Song Bot!')
             .setDescription(help_json_1.default.description)

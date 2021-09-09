@@ -2,17 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 class Leaderboard {
     constructor(initialState) {
-        // Storing points in a object rather than map since it's easier to upload to database
         this.points = initialState ?? {};
     }
-    addPlayer(player) {
-        this.addPoints(player, 0);
-    }
-    addPoints(player, points = 1) {
-        this.points[player] = (this.points[player] ?? 0) + points;
+    get players() {
+        return Object.keys(this.points);
     }
     mergeAndIncrementWinners(other) {
-        const players = other.getPlayers();
+        const players = other.players;
         if (!players.length)
             return;
         players.forEach((player) => {
@@ -35,10 +31,13 @@ class Leaderboard {
     toString() {
         const sorted = Object.entries(this.points)
             .sort(([, aPoints], [, bPoints]) => bPoints - aPoints);
-        return sorted.length ? this._rankString(sorted, 0) : 'No points earned yet!';
+        return sorted.length ? this.rankString(sorted, 0) : 'No points earned yet!';
     }
-    getPlayers() {
-        return Object.keys(this.points);
+    addPlayer(player) {
+        this.addPoints(player, 0);
+    }
+    addPoints(player, points = 1) {
+        this.points[player] = (this.points[player] ?? 0) + points;
     }
     getWinners() {
         const highestPoints = Math.max(...Object.values(this.points));
@@ -46,19 +45,19 @@ class Leaderboard {
             .filter(([, points]) => points === highestPoints)
             .map(([player]) => player);
     }
-    _rankString(sorted, index) {
+    rankString(sorted, index) {
         if (sorted.length <= index) {
             return '';
         }
         const [authorTag, points] = sorted[index];
         if (index === 0) {
-            return `**${index + 1}**. (${points}) ${authorTag}` + this._rankString(sorted, index + 1);
+            return `**${index + 1}**. (${points}) ${authorTag}` + this.rankString(sorted, index + 1);
         }
         const [, prevPoints] = sorted[index - 1];
         if (points === prevPoints) {
-            return `, ${authorTag}` + this._rankString(sorted, index + 1);
+            return `, ${authorTag}` + this.rankString(sorted, index + 1);
         }
-        return `\n**${index + 1}**. (${points}) ${authorTag}` + this._rankString(sorted, index + 1);
+        return `\n**${index + 1}**. (${points}) ${authorTag}` + this.rankString(sorted, index + 1);
     }
 }
 exports.default = Leaderboard;

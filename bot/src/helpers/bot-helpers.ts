@@ -1,6 +1,5 @@
 import { Message, MessageEmbed, TextChannel } from 'discord.js';
-import { ValidMessage } from '../../src-old/types';
-import { ValidMessageWithVoice } from '../types/discord';
+import { ValidMessage, ValidMessageWithVoice } from '../types/discord';
 
 export const isValidMessage = (message: Message): message is ValidMessage => {
   if (!(message.channel instanceof TextChannel)) return false;

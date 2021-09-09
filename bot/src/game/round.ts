@@ -2,37 +2,29 @@ import { AudioPlayer } from '@discordjs/voice';
 import { MessageEmbed, TextChannel } from 'discord.js';
 
 import { AudioResourceWithTrack, ValidMessage } from '../types/discord';
-import { EndRoundCallback, EndRoundReason } from '../types/game';
+import { EndRoundCallback, EndRoundReason, GuildConfig } from '../types/game';
 import { Track } from '../types/tracks';
 
 import Guesses from './guesses';
 
 export default class Round {
-  finished: boolean
-  audioPlayer: AudioPlayer;
-  textChannel: TextChannel;
-  track: Track;
-  audioResource: AudioResourceWithTrack;
+  private finished: boolean = false;
+  private timer: NodeJS.Timeout;
+  readonly track: Track;
   guesses: Guesses;
-  timer: NodeJS.Timeout;
-  callback: EndRoundCallback;
 
-  constructor(audioResource: AudioResourceWithTrack, audioPlayer: AudioPlayer, textChannel: TextChannel,
-    timeLimit: number, callback: EndRoundCallback) {
-    this.finished = false;
-
-    this.audioPlayer = audioPlayer;
-    this.textChannel = textChannel;
-
-    this.audioResource = audioResource;
+  constructor(
+    private readonly audioResource: AudioResourceWithTrack,
+    private readonly audioPlayer: AudioPlayer,
+    private readonly textChannel: TextChannel,
+    private readonly config: GuildConfig,
+    private readonly callback: EndRoundCallback,
+  ) {
     this.track = audioResource.metadata;
-
     this.guesses = new Guesses(this.track);
-
-    this.callback = callback;
     this.timer = setTimeout(() => {
       this.endRound('TIMEOUT');
-    }, timeLimit * 1000); // timeLimit is in secs
+    }, this.config.round_duration * 1000); // timeLimit is in secs
   }
 
   startRound() {
@@ -60,19 +52,11 @@ export default class Round {
 
   checkGuess(message: ValidMessage) {
     const guessCorrect = this.guesses.checkGuess(message);
-    if (guessCorrect && this.guesses.guessedAll()) {
+    if (guessCorrect && this.guesses.isFinished()) {
       this.endRound('CORRECT');
     } else if (guessCorrect) {
-      this._showProgress();
+      this.showProgress();
     }
-  }
-
-  _showProgress() {
-    const progressEmbed = new MessageEmbed()
-      .setDescription(this.guesses.toProgressString())
-      .setColor('GOLD');
-
-    this.textChannel.send({ embeds: [progressEmbed] });
   }
 
   endRound(reason: EndRoundReason) {
@@ -88,5 +72,13 @@ export default class Round {
     setTimeout(() => {
       this.callback(reason);
     }, 100);
+  }
+
+  private showProgress() {
+    const progressEmbed = new MessageEmbed()
+      .setDescription(this.guesses.toProgressString())
+      .setColor('GOLD');
+
+    this.textChannel.send({ embeds: [progressEmbed] });
   }
 }

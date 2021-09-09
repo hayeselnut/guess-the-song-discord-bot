@@ -1,15 +1,16 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
+import { Message } from 'discord.js';
+
 import GuildManager from './guilds/guild-manager';
 import client from './client/client';
 
 import { isValidMessage } from './helpers/bot-helpers';
-import { Message } from 'discord.js';
 
 client.once('ready', () => {
   console.log('Ready!');
-  console.log(Object.keys(GuildManager._guilds).length, 'guilds found in Firestore');
+  console.log(GuildManager.size, 'guilds found in Firestore');
   console.log('Current guilds:', client.guilds.cache.size);
 });
 

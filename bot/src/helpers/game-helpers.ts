@@ -1,7 +1,6 @@
-import Help from '../assets/help.json';
-import client from '../client/client';
-
 import { ValidMessageWithVoice } from '../types/discord';
+import client from '../client/client';
+import Help from '../assets/help.json';
 
 export const parseStartGameArgs = (args: string[], prefix: string) => {
   if (args.length < 3) {
@@ -29,10 +28,10 @@ export const throwIfInsufficientVoicePermissions = (message: ValidMessageWithVoi
 
 export const shuffle = (arr: any[]) => arr.sort(() => Math.random() - 0.5);
 
+// Sets the seek time to a random point between the start and 75% of the video
 export const randSeek = (vidSecs: number) => {
   const start = 0;
   const end = vidSecs * 0.75;
 
-  // Sets the seek time to a random point between the start and 75% of the video
   return Math.floor(Math.random() * (end - start) + start);
 };

@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.randSeek = exports.shuffle = exports.throwIfInsufficientVoicePermissions = exports.parseStartGameArgs = void 0;
-const help_json_1 = __importDefault(require("../assets/help.json"));
 const client_1 = __importDefault(require("../client/client"));
+const help_json_1 = __importDefault(require("../assets/help.json"));
 const parseStartGameArgs = (args, prefix) => {
     if (args.length < 3) {
         const startHelp = help_json_1.default.commands.start;
@@ -29,10 +29,10 @@ const throwIfInsufficientVoicePermissions = (message) => {
 exports.throwIfInsufficientVoicePermissions = throwIfInsufficientVoicePermissions;
 const shuffle = (arr) => arr.sort(() => Math.random() - 0.5);
 exports.shuffle = shuffle;
+// Sets the seek time to a random point between the start and 75% of the video
 const randSeek = (vidSecs) => {
     const start = 0;
     const end = vidSecs * 0.75;
-    // Sets the seek time to a random point between the start and 75% of the video
     return Math.floor(Math.random() * (end - start) + start);
 };
 exports.randSeek = randSeek;

@@ -6,30 +6,29 @@ const UNANSWERED = '';
 class Guesses {
     constructor(track) {
         this.track = track;
-        // -1 is song, 0..n-1 is for each of the n artists
         this.answeredBy = new Map([
             [SONG_INDEX, UNANSWERED],
             ...this.track.artists.map((_, i) => [i, UNANSWERED]),
         ]);
     }
-    guessedAll() {
-        return this._remainingPoints() <= 0;
+    get remainingPoints() {
+        return [...this.answeredBy].filter(([_, tag]) => tag === UNANSWERED).length;
+    }
+    isFinished() {
+        return this.remainingPoints <= 0;
     }
     checkGuess(message) {
-        const guessedName = this._checkGuessForName(message);
-        const guessedArtists = this._checkGuessForArtists(message);
+        const guessedName = this.checkGuessForName(message);
+        const guessedArtists = this.checkGuessForArtists(message);
         return guessedName || guessedArtists;
     }
     toProgressString() {
-        return this._toString();
+        return this.toString();
     }
     toResultString() {
-        return this._toString(true);
+        return this.toString(true);
     }
-    _remainingPoints() {
-        return [...this.answeredBy].filter(([_, tag]) => tag === UNANSWERED).length;
-    }
-    _checkGuessForName(message) {
+    checkGuessForName(message) {
         if (this.answeredBy.get(SONG_INDEX))
             return false;
         const guess = (0, normalize_helpers_1.normalize)(message.content, 'name');
@@ -38,7 +37,7 @@ class Guesses {
         this.answeredBy.set(SONG_INDEX, message.author.toString());
         return true;
     }
-    _checkGuessForArtists(message) {
+    checkGuessForArtists(message) {
         return this.track.normalizedArtists.map((artist, index) => {
             if (this.answeredBy.get(index))
                 return false;
@@ -49,8 +48,8 @@ class Guesses {
             return true;
         }).some((b) => b);
     }
-    _toString(final = false) {
-        const displayName = (0, normalize_helpers_1.removeAdditionalInformation)(this.track.name);
+    toString(final = false) {
+        const displayName = final ? this.track.name : (0, normalize_helpers_1.censorArtists)(this.track.name, this.track.artists);
         const nameGuesses = this.answeredBy.get(SONG_INDEX)
             ? `✅ Song: **${displayName}** guessed correctly by ${this.answeredBy.get(SONG_INDEX)} (+1)`
             : final

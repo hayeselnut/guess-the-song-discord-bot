@@ -6,6 +6,7 @@ import { ValidMessage } from '../types/discord';
 import client from '../client/client';
 import spotify from '../spotify/spotify';
 import Game from '../game/game';
+import db from '../db/db';
 import Leaderboard from '../leaderboard/leaderboard';
 
 import { isValidMessageWithVoice, parseMessage, sendEmbed } from '../helpers/bot-helpers';
@@ -13,51 +14,49 @@ import { parseStartGameArgs, throwIfInsufficientVoicePermissions } from '../help
 
 import Help from '../assets/help.json';
 import DefaultConfig from '../assets/default-config.json';
-import db from '../db/db';
 
 // Responsible for maintaining Guild state and parsing messages
 export default class Guild {
-  private config: GuildConfig;
-  private guildId: string;
-  private game: Game | null;
   private leaderboard: Leaderboard;
+  private game: Game | null = null;
 
-  constructor(guildId: string, config = DefaultConfig, leaderboard: LeaderboardPoints = {}) {
-    this.guildId = guildId;
-    this.config = config;
-    this.game = null;
-    this.leaderboard = new Leaderboard(leaderboard);
+  constructor(
+    private readonly guildId: string,
+    private config: GuildConfig = DefaultConfig,
+    points: LeaderboardPoints = {},
+  ) {
+    this.leaderboard = new Leaderboard(points);
   }
 
   readMessage(message: ValidMessage) {
     if (message.content.startsWith(this.config.prefix)) {
-      this._readCommand(message);
+      this.readCommand(message);
     }
 
     // Mentioning the bot shows the help menu
     if (message.mentions.has(client.user!.id)) {
-      this._help(message);
+      this.showHelp(message);
     }
 
     // Check guess if the game exists
     this.game?.checkGuess(message);
   }
 
-  private async _readCommand(message: ValidMessage) {
+  private async readCommand(message: ValidMessage) {
     try {
       if (message.content.startsWith(`${this.config.prefix}start`)) {
         // Must await to catch the error thrown
-        await this._startGame(message);
+        await this.startGame(message);
       } else if (message.content.startsWith(`${this.config.prefix}stop`)) {
-        this._stopGame(message);
+        this.stopGame(message);
       } else if (message.content.startsWith(`${this.config.prefix}skip`)) {
-        this._skipRound(message);
+        this.skipRound(message);
       } else if (message.content.startsWith(`${this.config.prefix}leaderboard`)) {
-        this._leaderboard(message);
+        this.showLeaderboard(message);
       } else if (message.content.startsWith(`${this.config.prefix}config`)) {
-        this._config(message);
+        this.showConfig(message);
       } else if (message.content.startsWith(`${this.config.prefix}help`)) {
-        this._help(message);
+        this.showHelp(message);
       } else {
         throw new Error(`Invalid command. Use \`${this.config.prefix}help\` for a list of commands.`);
       }
@@ -65,11 +64,11 @@ export default class Guild {
       if (error instanceof Error) {
         return sendEmbed(message.channel, `⚠: ${error.message}`);
       }
-      console.error('ERROR reading command', error);
+      console.error('ERROR reading command', message.content, error);
     }
   }
 
-  private async _startGame(message: ValidMessage) {
+  private async startGame(message: ValidMessage) {
     if (this.game) throw new Error(`There's already a game running!`);
 
     const args = parseMessage(message);
@@ -93,17 +92,13 @@ export default class Guild {
 
     console.log(`${message.guild.name} - #${message.channel.name}: Initializing game of ${newRoundLimit} rounds`);
 
-    this.game = new Game(
-      message,
-      this.config,
-      newRoundLimit,
-      tracks,
-      (reason: EndGameReason) => this._endGameCallback(reason),
-    );
+    // Create arrow function to preserve 'this' context
+    const endGameCallback = (reason: EndGameReason) => this.endGameCallback(reason);
+    this.game = new Game(message, this.config, newRoundLimit, tracks, endGameCallback);
     this.game.startGame();
   }
 
-  private _stopGame(message: ValidMessage) {
+  private stopGame(message: ValidMessage) {
     if (!this.game) throw new Error('Nothing to stop here!');
     if (this.game.host !== message.member.toString()) {
       throw new Error(`Only the host ${this.game.host} can stop a game.`);
@@ -112,7 +107,7 @@ export default class Guild {
     this.game.endGame('FORCE_STOP');
   }
 
-  private _skipRound(message: ValidMessage) {
+  private skipRound(message: ValidMessage) {
     if (!this.game) throw new Error('Nothing to skip here!');
     if (this.game.host !== message.member.toString()) {
       throw new Error(`Only the host ${this.game.host} can skip rounds.`);
@@ -121,7 +116,7 @@ export default class Guild {
     this.game.skipRound();
   }
 
-  private _endGameCallback(reason: EndGameReason) {
+  private endGameCallback(reason: EndGameReason) {
     if (this.game) {
       this.leaderboard.mergeAndIncrementWinners(this.game.leaderboard);
     }
@@ -133,16 +128,16 @@ export default class Guild {
     }, { merge: true });
   }
 
-  private _leaderboard(message: ValidMessage) {
+  private showLeaderboard(message: ValidMessage) {
     sendEmbed(message.channel, this.leaderboard.toString());
   }
 
-  private _config(message: ValidMessage) {
+  private showConfig(message: ValidMessage) {
     // TODO allow setting of configs
     sendEmbed(message.channel, JSON.stringify(this.config));
   }
 
-  private _help(message: ValidMessage) {
+  private showHelp(message: ValidMessage) {
     const helpEmbed = new MessageEmbed()
       .setTitle('🤖 Hello, I\'m Guess the Song Bot!')
       .setDescription(Help.description)

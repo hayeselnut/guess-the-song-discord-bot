@@ -1,6 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.normalizeTrack = exports.normalize = exports.removeAdditionalInformation = void 0;
+exports.normalizeTrack = exports.normalize = exports.removeAdditionalInformation = exports.censorArtists = void 0;
+const censorArtists = (name, artists) => {
+    // Assumes the artist's name is printed exactly in title
+    let censoredName = name;
+    artists.forEach((artist) => {
+        censoredName = censoredName
+            .replaceAll(new RegExp(` feat\\. .*${artist}.*`, 'g'), '')
+            .replaceAll(new RegExp(` ft\\. .*${artist}.*`, 'g'), '')
+            .replaceAll(new RegExp(` featuring .*${artist}.*`, 'g'), '')
+            .replaceAll(new RegExp(`\\(.*${artist}.*\\)`, 'g'), '')
+            .replaceAll(new RegExp(`\\[.*${artist}.*\\]`, 'g'), '')
+            .replaceAll(new RegExp(`\\{.*${artist}.*\\}`, 'g'), '')
+            .replaceAll(new RegExp(` - .*${artist}.*`, 'g'), '');
+    });
+    return censoredName.replaceAll('**', '\\*\\*').trim();
+};
+exports.censorArtists = censorArtists;
 const removeAdditionalInformation = (str) => str.replaceAll(/\(.*\)/g, '')
     .replaceAll(/\[.*\]/g, '')
     .replaceAll(/\{.*\}/g, '')

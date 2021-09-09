@@ -7,8 +7,8 @@ const voice_1 = require("@discordjs/voice");
 const yt_search_1 = __importDefault(require("yt-search"));
 const ytdl_core_1 = __importDefault(require("ytdl-core"));
 const prism_media_1 = __importDefault(require("prism-media"));
-const cookie_json_1 = __importDefault(require("../assets/cookie.json"));
 const game_helpers_1 = require("../helpers/game-helpers");
+const cookie_json_1 = __importDefault(require("../assets/cookie.json"));
 // These are arguments used to convert the input to a format suitable for @discordjs/voice
 const FFMPEG_ARGUMENTS = [
     '-analyzeduration', '0',
@@ -19,30 +19,29 @@ const FFMPEG_ARGUMENTS = [
 ];
 class AudioResourceBuffer {
     constructor(tracks, roundLimit) {
+        this.tracks = tracks;
+        this.roundLimit = roundLimit;
         this.buffer = [];
         this.bufferSize = 5;
         this.bufferIndex = 0;
-        this.roundLimit = roundLimit;
-        this.tracks = tracks;
         this.order = (0, game_helpers_1.shuffle)(Object.keys(tracks)).slice(0, this.roundLimit);
     }
     async initializeBuffer() {
         while (this.bufferIndex < Math.min(this.bufferSize, this.roundLimit)) {
-            await this._pushNewAudioResourceToBuffer();
+            await this.pushNewAudioResourceToBuffer();
         }
     }
     getNextAudioResourceAndUpdateBuffer() {
         // Buffer a new track if possible
         if (this.bufferIndex < this.roundLimit) {
-            this._pushNewAudioResourceToBuffer();
+            this.pushNewAudioResourceToBuffer();
         }
         // Return next audio resource
         return this.buffer.shift();
     }
-    async _pushNewAudioResourceToBuffer() {
+    async pushNewAudioResourceToBuffer() {
         const trackId = this.order[this.bufferIndex];
-        // Increment index as soon as possible so that another call to this function
-        // won't push the same song to buffer
+        // Increment index as soon as possible so that another call to this function won't push the same song to buffer
         this.bufferIndex++;
         const track = this.tracks[trackId];
         const youtubeQuery = `${track.name} ${track.artists.join(' ')}`;
@@ -55,8 +54,7 @@ class AudioResourceBuffer {
             },
             // Disabling chunking recommended by node-ytdl-core documentation
             dlChunkSize: 0,
-        })
-            .on('error', (error) => {
+        }).on('error', (error) => {
             console.error(`ERROR when loading '${track.name}' into buffer: ${error.message}`);
         });
         // Seeks a random time
