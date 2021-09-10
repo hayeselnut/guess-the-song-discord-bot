@@ -44,6 +44,6 @@
     "eslint-plugin-import": "^2.24.2",
     "jest": "^27.1.0",
     "rimraf": "^3.0.2",
-    "ts-jest": "^27.0.5",
+    "ts-jest": "^27.0.5"
   }
 }
