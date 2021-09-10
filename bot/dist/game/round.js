@@ -14,7 +14,7 @@ class Round {
         this.callback = callback;
         this.finished = false;
         this.track = audioResource.metadata;
-        this.guesses = new guesses_1.default(this.track);
+        this.guesses = new guesses_1.default(this.track, this.config.emote_nearly_correct_guesses);
         this.timer = setTimeout(() => {
             this.endRound('TIMEOUT');
         }, this.config.round_duration * 1000); // timeLimit is in secs

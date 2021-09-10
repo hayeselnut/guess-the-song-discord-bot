@@ -49,6 +49,12 @@
       "description": "Sets the round duration limit to `seconds` seconds in a guessing competition. The round will automatically skip if all the answers are not answered within this time. The default round duration limit is `30` and the minimum value is `5`.",
       "example": "config round_duration 15"
     },
+    "config emote_nearly_correct_guesses": {
+      "emoji": "⚙",
+      "usage": "config emote_nearly_correct_guesses <true|false>",
+      "description": "If turned on, the bot will automatically react to guesses that are a few characters off. This feature is turned on by default.",
+      "example": "config emote_nearly_correct_guesses false"
+    },
     "help": {
       "emoji": "ℹ️",
       "usage": "help",

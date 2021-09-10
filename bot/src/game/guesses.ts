@@ -1,3 +1,5 @@
+import levenshtein from 'fast-levenshtein';
+
 import { ValidMessage } from '../types/discord';
 import { Track } from '../types/tracks';
 
@@ -10,7 +12,10 @@ export default class Guesses {
     // -1 is song, 0..n-1 is for each of the n artists
     answeredBy: Map<number, string>;
 
-    constructor(private readonly track: Track) {
+    constructor(
+      private readonly track: Track,
+      private readonly reactApproxGuesses: boolean,
+    ) {
       this.answeredBy = new Map([
         [SONG_INDEX, UNANSWERED],
         ...this.track.artists.map((_, i: number) => [i, UNANSWERED]),
@@ -43,7 +48,13 @@ export default class Guesses {
       if (this.answeredBy.get(SONG_INDEX)) return false;
 
       const guess = normalize(message.content, 'name');
-      if (guess != this.track.normalizedName) return false;
+      if (guess != this.track.normalizedName) {
+        // React if approximate
+        if (this.reactApproxGuesses && levenshtein.get(guess, this.track.normalizedName) <= 2) {
+          message.react('🤏');
+        }
+        return false;
+      };
 
       this.answeredBy.set(SONG_INDEX, message.author.toString());
       return true;
@@ -54,7 +65,13 @@ export default class Guesses {
         if (this.answeredBy.get(index)) return false;
 
         const guess = normalize(message.content, 'artist');
-        if (artist != guess) return false;
+        if (artist != guess) {
+          // React if approximate
+          if (this.reactApproxGuesses && levenshtein.get(guess, artist) <= 2) {
+            message.react('🤏');
+          }
+          return false;
+        };
 
         this.answeredBy.set(index, message.author.toString());
         return true;

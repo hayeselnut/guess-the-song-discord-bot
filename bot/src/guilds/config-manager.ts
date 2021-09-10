@@ -19,7 +19,7 @@ export default class ConfigManager {
     return {
       prefix: this.prefix,
       round_duration: this.roundDuration,
-      emote_nearly_correct_guesses: false,
+      emote_nearly_correct_guesses: this.reactApproxGuesses,
     };
   }
 
@@ -29,6 +29,10 @@ export default class ConfigManager {
 
   get roundDuration(): number {
     return this.guildConfig.round_duration;
+  }
+
+  get reactApproxGuesses(): boolean {
+    return this.guildConfig.emote_nearly_correct_guesses;
   }
 
   readConfigCommand(message: ValidMessage) {
@@ -48,6 +52,8 @@ export default class ConfigManager {
       return this.setPrefix(parameter, message);
     case 'round_duration':
       return this.setRoundDuration(parameter, message);
+    case 'emote_nearly_correct_guesses':
+      return this.setReactApproxGuesses(parameter, message);
     default:
       throw new Error(`Unknown config argument ${configCmd}`);
     }
@@ -74,8 +80,8 @@ export default class ConfigManager {
 
   private setPrefix(value: string | undefined, message: ValidMessage) {
     if (typeof value !== 'string') {
-      const configPrefix = Help.commands['config prefix'];
-      throw new Error(`Usage: \`${this.prefix}${configPrefix.usage}\``);
+      const prefixCmd = Help.commands['config prefix'];
+      throw new Error(`Usage: \`${this.prefix}${prefixCmd.usage}\``);
     }
 
     this.guildConfig.prefix = value;
@@ -86,13 +92,32 @@ export default class ConfigManager {
   private setRoundDuration(value: string | undefined, message: ValidMessage) {
     const newRoundDuration = parseInt(String(value), 10);
     if (isNaN(newRoundDuration) || newRoundDuration < 5) {
-      const configRoundDuration = Help.commands['config round_duration'];
-      throw new Error(`Usage: \`${this.prefix}${configRoundDuration.usage}\`\n${configRoundDuration.description}`);
+      const roundDurationCmd = Help.commands['config round_duration'];
+      throw new Error(`Usage: \`${this.prefix}${roundDurationCmd.usage}\`\n${roundDurationCmd.description}`);
     }
 
     this.guildConfig.round_duration = newRoundDuration;
     this.updateDatabase();
     sendEmbed(message.channel, `Round duration has been set to \`${this.roundDuration}\``);
+  }
+
+  private setReactApproxGuesses(value: string | undefined, message: ValidMessage) {
+    if (value === '1' || value === 'true') {
+      this.guildConfig.emote_nearly_correct_guesses = true;
+      this.updateDatabase();
+      sendEmbed(message.channel, `Reacting to nearly correct guesses has been turned on`);
+      return;
+    }
+
+    if (value === '0' || value === 'false') {
+      this.guildConfig.emote_nearly_correct_guesses = false;
+      this.updateDatabase();
+      sendEmbed(message.channel, `Reacting to nearly correct guesses has been turned off`);
+      return;
+    }
+
+    const reactApproxGuessesCmd = Help.commands['config emote_nearly_correct_guesses'];
+    throw new Error(`Usage: \`${this.prefix}${reactApproxGuessesCmd.usage}\`\n${reactApproxGuessesCmd.description}`);
   }
 
   private updateDatabase() {

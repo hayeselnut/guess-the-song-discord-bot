@@ -5,7 +5,6 @@ exports.default = new discord_js_1.Client({
     intents: [
         discord_js_1.Intents.FLAGS.GUILDS,
         discord_js_1.Intents.FLAGS.GUILD_MESSAGES,
-        discord_js_1.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
         discord_js_1.Intents.FLAGS.GUILD_VOICE_STATES,
     ],
     makeCache: discord_js_1.Options.cacheWithLimits({

@@ -1,11 +1,16 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const fast_levenshtein_1 = __importDefault(require("fast-levenshtein"));
 const normalize_helpers_1 = require("../helpers/normalize-helpers");
 const SONG_INDEX = -1;
 const UNANSWERED = '';
 class Guesses {
-    constructor(track) {
+    constructor(track, reactApproxGuesses) {
         this.track = track;
+        this.reactApproxGuesses = reactApproxGuesses;
         this.answeredBy = new Map([
             [SONG_INDEX, UNANSWERED],
             ...this.track.artists.map((_, i) => [i, UNANSWERED]),
@@ -32,8 +37,14 @@ class Guesses {
         if (this.answeredBy.get(SONG_INDEX))
             return false;
         const guess = (0, normalize_helpers_1.normalize)(message.content, 'name');
-        if (guess != this.track.normalizedName)
+        if (guess != this.track.normalizedName) {
+            // React if approximate
+            if (this.reactApproxGuesses && fast_levenshtein_1.default.get(guess, this.track.normalizedName) <= 2) {
+                message.react('🤏');
+            }
             return false;
+        }
+        ;
         this.answeredBy.set(SONG_INDEX, message.author.toString());
         return true;
     }
@@ -42,8 +53,14 @@ class Guesses {
             if (this.answeredBy.get(index))
                 return false;
             const guess = (0, normalize_helpers_1.normalize)(message.content, 'artist');
-            if (artist != guess)
+            if (artist != guess) {
+                // React if approximate
+                if (this.reactApproxGuesses && fast_levenshtein_1.default.get(guess, artist) <= 2) {
+                    message.react('🤏');
+                }
                 return false;
+            }
+            ;
             this.answeredBy.set(index, message.author.toString());
             return true;
         }).some((b) => b);
