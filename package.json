@@ -5,5 +5,8 @@
   "scripts": {
     "heroku-prebuild": "cd bot && npm install",
     "start": "cd bot && node --experimental-json-modules dist/index.js"
+  },
+  "engines": {
+    "node": "^16.6.0"
   }
 }
