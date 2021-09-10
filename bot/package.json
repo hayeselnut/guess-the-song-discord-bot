@@ -9,8 +9,10 @@
     "test": "jest"
   },
   "dependencies": {
+    "@airbnb/node-memwatch": "^2.0.0",
     "@discordjs/voice": "0.6.0",
     "@reduxjs/toolkit": "^1.6.1",
+    "@types/airbnb__node-memwatch": "^2.0.0",
     "@types/spotify-web-api-node": "^5.0.3",
     "@types/yt-search": "^2.3.2",
     "discord.js": "^13.1.0",
