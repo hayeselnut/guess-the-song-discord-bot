@@ -1,0 +1,45 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "extends": [
+        "plugin:react/recommended",
+        "plugin:react-hooks/recommended",
+        "google"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        },
+        "ecmaVersion": 12,
+        "sourceType": "module"
+    },
+    "plugins": [
+        "react",
+        "react-hooks",
+        "@typescript-eslint"
+    ],
+    "rules": {
+        "linebreak-style": "off",
+        "indent": ["error", 2],
+        "no-unused-expressions": "warn",
+        "no-unused-vars": "warn",
+        "object-curly-spacing": ["error", "always"],
+        "max-len": ["error", { "code": 120 }],
+        "operator-linebreak": ["error", "before"],
+        "react/jsx-boolean-value": ["error"],
+        "react/jsx-closing-tag-location": ["error"],
+        "react/jsx-closing-bracket-location": ["error"],
+        "react/jsx-first-prop-new-line": ["error"],
+        "react/jsx-equals-spacing": ["error", "never"],
+        "react/jsx-indent": ["error", 2],
+        "react/jsx-max-props-per-line": ["error", { "when": "multiline" }],
+        "react/jsx-pascal-case": ["error"],
+        "react/jsx-props-no-multi-spaces": ["error"],
+        "react/jsx-props-no-spreading": ["error"],
+        "react/jsx-tag-spacing": ["error", {"beforeClosing": "never"}],
+        "react/jsx-wrap-multilines": ["error"]
+    }
+}
