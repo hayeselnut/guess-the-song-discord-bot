@@ -82,6 +82,12 @@ describe('normalize artists', () => {
 
   it('replacement letters', () => {
     expect(normalize('A$AP Rocky', 'artist')).toBe('asaprocky');
+    expect(normalize('$uicideboy$', 'artist')).toBe('suicideboys');
+    expect(normalize('$MASH', 'artist')).toBe('smash');
+    expect(normalize('$ilkMoney', 'artist')).toBe('silkmoney');
+    expect(normalize('$WEETS', 'artist')).toBe('sweets');
+    expect(normalize('Ty Dolla $ign', 'artist')).toBe('tydollasign');
+
     expect(normalize('P!nk', 'artist')).toBe('pink');
     expect(normalize('MØ', 'artist')).toBe('mo');
   });
@@ -139,6 +145,9 @@ describe('display name', () => {
     expect(censorArtists('Airplanes (feat. Hayley Williams of Paramore)', ['Hayley Williams'])).toBe('Airplanes');
     expect(censorArtists('Letting Go (Dutty Love) featuring Nicki Minaj (feat. Nicki Minaj)', ['Sean Kingston', 'Nicki Minaj'])).toBe('Letting Go (Dutty Love)');
     expect(censorArtists('Luxurious - Remix featuring Slim Thug', ['Gwen Stefani', 'Slim Thug'])).toBe('Luxurious - Remix');
+
+    expect(censorArtists('Work from Home (feat. Ty Dolla $ign)', ['Fifth Harmony', 'Ty Dolla $ign'])).toBe('Work from Home');
+    expect(censorArtists('Guns and Roses (feat. P!nk)', ['T.I.', 'P!nk'])).toBe('Guns and Roses');
 
     expect(censorArtists('(You Drive Me) Crazy', ['Britney Spears'])).toBe('(You Drive Me) Crazy');
     expect(censorArtists('(You Drive Me) Crazy - The Stop Remix!', ['Britney Spears'])).toBe('(You Drive Me) Crazy - The Stop Remix!');

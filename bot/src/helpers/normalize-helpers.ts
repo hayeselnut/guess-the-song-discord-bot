@@ -4,14 +4,15 @@ export const censorArtists = (name: string, artists: string[]) => {
   // Assumes the artist's name is printed exactly in title
   let censoredName = name;
   artists.forEach((artist) => {
+    const regexArtist = artist.replaceAll('$', '\\$');
     censoredName = censoredName
-      .replaceAll(new RegExp(` feat\\. .*${artist}.*`, 'g'), '')
-      .replaceAll(new RegExp(` ft\\. .*${artist}.*`, 'g'), '')
-      .replaceAll(new RegExp(` featuring .*${artist}.*`, 'g'), '')
-      .replaceAll(new RegExp(`\\(.*${artist}.*\\)`, 'g'), '')
-      .replaceAll(new RegExp(`\\[.*${artist}.*\\]`, 'g'), '')
-      .replaceAll(new RegExp(`\\{.*${artist}.*\\}`, 'g'), '')
-      .replaceAll(new RegExp(` - .*${artist}.*`, 'g'), '');
+      .replaceAll(new RegExp(` feat\\. .*${regexArtist}.*`, 'g'), '')
+      .replaceAll(new RegExp(` ft\\. .*${regexArtist}.*`, 'g'), '')
+      .replaceAll(new RegExp(` featuring .*${regexArtist}.*`, 'g'), '')
+      .replaceAll(new RegExp(`\\(.*${regexArtist}.*\\)`, 'g'), '')
+      .replaceAll(new RegExp(`\\[.*${regexArtist}.*\\]`, 'g'), '')
+      .replaceAll(new RegExp(`\\{.*${regexArtist}.*\\}`, 'g'), '')
+      .replaceAll(new RegExp(` - .*${regexArtist}.*`, 'g'), '');
   });
 
   return censoredName.replaceAll('**', '\\*\\*').trim();
@@ -37,7 +38,7 @@ export const normalize = (str: string, type: NormalizeTypes): string => {
       .replaceAll('f\\*\\*k', 'fuck'); // F**king Perfect - P!nk
   } else if (type == 'artist') {
     normalized = normalized
-      .replaceAll('a$ap', 'asap') // A$AP Rocky
+      .replaceAll('$', 's') // A$AP Rocky, Ty Dolla $ign
       .replaceAll('mø', 'mo') // MØ
       .replaceAll('p!nk', 'pink'); // P!nk
   }
