@@ -1,0 +1,10 @@
+{
+  "name": "guess-the-song-discord-bot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "heroku-prebuild": "cd bot && npm install",
+    "build": "rimraf dist && tsc",
+    "start": "cd bot && node --experimental-json-modules dist/index.js"
+  }
+}
