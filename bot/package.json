@@ -3,7 +3,7 @@
   "version": "1.1.2",
   "main": "index.js",
   "scripts": {
-    "build": "rimraf dist && npx tsc",
+    "build": "rimraf dist && tsc",
     "start": "node dist/index.js",
     "startDev": "node --trace-warnings dist/index.js",
     "test": "jest"
