@@ -1,10 +1,11 @@
 {
   "name": "guess-the-song-discord-bot",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "main": "index.js",
   "scripts": {
     "heroku-prebuild": "cd bot && npm install",
-    "start": "cd bot && node --experimental-json-modules dist/index.js"
+    "build": "cd bot && npm run build",
+    "start": "cd bot && npm start"
   },
   "engines": {
     "node": "^16.6.0"

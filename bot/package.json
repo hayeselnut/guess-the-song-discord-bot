@@ -1,6 +1,6 @@
 {
   "name": "guess-the-song-discord-bot",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "main": "index.js",
   "scripts": {
     "build": "rimraf dist && tsc",
