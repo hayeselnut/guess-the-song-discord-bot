@@ -3,7 +3,7 @@
   "version": "1.1.2",
   "main": "index.js",
   "scripts": {
-    "build": "rimraf dist && tsc",
+    "build": "rimraf dist && npx tsc",
     "start": "node --experimental-json-modules dist/index.js",
     "startDev": "node --experimental-json-modules --trace-warnings dist/index.js",
     "test": "jest"
