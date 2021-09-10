@@ -1,1 +1,1 @@
-worker: cd ./bot && npm start
+worker: npm start
