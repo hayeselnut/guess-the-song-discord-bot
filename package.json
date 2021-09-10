@@ -5,7 +5,7 @@
   "scripts": {
     "heroku-prebuild": "cd bot && npm install",
     "build": "cd bot && npm run build",
-    "start": "cd bot && npm start"
+    "start": "cd bot && node dist/index.js"
   },
   "engines": {
     "node": "^16.6.0"
