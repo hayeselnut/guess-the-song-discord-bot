@@ -53,7 +53,7 @@ class AudioResourceBuffer {
                 headers: cookie_json_1.default,
             },
             // Disabling chunking recommended by node-ytdl-core documentation
-            dlChunkSize: 0,
+            // dlChunkSize: 0,
         }).on('error', (error) => {
             console.error(`ERROR when loading '${track.name}' into buffer: ${error.message}`);
         });
