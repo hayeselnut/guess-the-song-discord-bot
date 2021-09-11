@@ -1,0 +1,29 @@
+{
+  "files": {
+    "main.css": "/guess-the-song-discord-bot/static/css/main.d88b73e1.chunk.css",
+    "main.js": "/guess-the-song-discord-bot/static/js/main.3fb68589.chunk.js",
+    "main.js.map": "/guess-the-song-discord-bot/static/js/main.3fb68589.chunk.js.map",
+    "runtime-main.js": "/guess-the-song-discord-bot/static/js/runtime-main.9b1c1471.js",
+    "runtime-main.js.map": "/guess-the-song-discord-bot/static/js/runtime-main.9b1c1471.js.map",
+    "static/css/2.aa41ea7e.chunk.css": "/guess-the-song-discord-bot/static/css/2.aa41ea7e.chunk.css",
+    "static/js/2.3ffb92e0.chunk.js": "/guess-the-song-discord-bot/static/js/2.3ffb92e0.chunk.js",
+    "static/js/2.3ffb92e0.chunk.js.map": "/guess-the-song-discord-bot/static/js/2.3ffb92e0.chunk.js.map",
+    "static/js/3.29dd0a68.chunk.js": "/guess-the-song-discord-bot/static/js/3.29dd0a68.chunk.js",
+    "static/js/3.29dd0a68.chunk.js.map": "/guess-the-song-discord-bot/static/js/3.29dd0a68.chunk.js.map",
+    "index.html": "/guess-the-song-discord-bot/index.html",
+    "static/css/2.aa41ea7e.chunk.css.map": "/guess-the-song-discord-bot/static/css/2.aa41ea7e.chunk.css.map",
+    "static/css/main.d88b73e1.chunk.css.map": "/guess-the-song-discord-bot/static/css/main.d88b73e1.chunk.css.map",
+    "static/js/2.3ffb92e0.chunk.js.LICENSE.txt": "/guess-the-song-discord-bot/static/js/2.3ffb92e0.chunk.js.LICENSE.txt",
+    "static/media/index.css": "/guess-the-song-discord-bot/static/media/Raleway-VariableFont_wght.3fefe681.ttf",
+    "static/media/bird.357abd5f.svg": "/guess-the-song-discord-bot/static/media/bird.357abd5f.svg",
+    "static/media/bootstrap-icons.css": "/guess-the-song-discord-bot/static/media/bootstrap-icons.dfd0ea12.woff2",
+    "static/media/guessing.ef007d2b.png": "/guess-the-song-discord-bot/static/media/guessing.ef007d2b.png"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.9b1c1471.js",
+    "static/css/2.aa41ea7e.chunk.css",
+    "static/js/2.3ffb92e0.chunk.js",
+    "static/css/main.d88b73e1.chunk.css",
+    "static/js/main.3fb68589.chunk.js"
+  ]
+}
