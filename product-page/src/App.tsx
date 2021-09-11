@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Image, Tooltip } from 'react-bootstrap';
+import { Container, Image } from 'react-bootstrap';
 import InviteButton from './components/invite-button';
 import TopGGButton from './components/top-gg-button';
 
