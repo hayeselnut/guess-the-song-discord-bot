@@ -11,7 +11,7 @@ header {
 }
 
 section {
-  min-height: 50vh;
+  min-height: 60vh;
   display: grid;
   align-content: center;
   margin: 2rem;
@@ -35,9 +35,17 @@ h2 {
   font-family: 'raleway', sans-serif;
 }
 
+p {
+  font-size: 1rem;
+}
+
 .feature-title {
-  font-size: 3rem;
+  font-size: 2.5rem;
   margin-bottom: 2rem;
+}
+
+.feature-caption {
+  font-size: 1.25rem;
 }
 
 .debug {
@@ -149,7 +157,7 @@ h2 {
 }
 
 .customisation {
-  width: 10vw;
+  width: 15vw;
   text-align: center;
 }
 
