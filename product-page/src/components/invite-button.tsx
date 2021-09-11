@@ -9,11 +9,14 @@ const InviteButton = () => {
           margin: '1rem',
         }}
         size='lg'
-        href='https://discord.com/oauth2/authorize?client_id=868458391247405067&permissions=103082362880&scope=bot'
+        // CSESoc Version for Personal Projects Competition
+        href='https://discord.com/api/oauth2/authorize?client_id=886149942794653707&permissions=3147776&scope=bot'
+        // Original - but currently awaiting verification
+        // href='https://discord.com/oauth2/authorize?client_id=868458391247405067&permissions=103082362880&scope=bot'
         target='_blank'
         variant='dark'
       >
-        Invite to server
+        Invite to server (CSESoc Version)
       </Button>
     </>
   );

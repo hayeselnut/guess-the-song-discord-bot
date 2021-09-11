@@ -139,6 +139,13 @@ p {
   overflow: auto;
 }
 
+.copy {
+  cursor: pointer;
+  color: var(--discord-light-grey);
+  margin: 1rem;
+  font-size: 1.25rem;
+}
+
 /* GUESSING */
 
 .guessing-example {
@@ -146,6 +153,14 @@ p {
   border-radius: 1rem;
   box-shadow: 1px 1px 10px 2px #888888;
   padding: 1rem;
+  width: 30rem;
+  max-width: 80vw;
+}
+
+.guessing-caption {
+  width: 30rem;
+  max-width: 80vw;
+  margin: 5rem;
 }
 
 /* CUSTOMISATIONS */
@@ -157,7 +172,7 @@ p {
 }
 
 .customisation {
-  width: 15vw;
+  width: 15rem;
   text-align: center;
 }
 

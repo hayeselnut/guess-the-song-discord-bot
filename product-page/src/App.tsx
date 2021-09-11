@@ -1,5 +1,5 @@
-import React from 'react';
-import { Container, Image } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Alert, Container, Image } from 'react-bootstrap';
 import InviteButton from './components/invite-button';
 import TopGGButton from './components/top-gg-button';
 
@@ -9,8 +9,17 @@ import Bird from './assets/bird.svg';
 import GuessingExample from './assets/guessing.png';
 
 const App = () => {
+  const [clipboard, setClipboard] = useState('clipboard');
+
+  const startCmd = '$start 10 https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M';
+
   const scrollToFeatures = () => {
     document.getElementById('spotify-integration')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const copyStartCmd = () => {
+    navigator.clipboard.writeText(startCmd);
+    setClipboard('clipboard-check');
   };
 
   return (
@@ -39,22 +48,42 @@ const App = () => {
 
       </header>
 
+      <Container>
+        <Alert variant='dark'>
+          The original bot linked through the
+          {' '}<a href='https://top.gg/bot/868458391247405067' target='_blank' rel="noreferrer">Top.gg</a>{' '}
+          page can no longer be invited to any more servers since it
+          reached 100 servers, and to be invited to any more servers requires verification from Discord.
+
+          <br />
+          <br />
+
+          I{'\''}ve cloned the bot and hosted it separately so that it can be tested and tried, but once voting ends
+          hopefully verification is complete and I{'\''}ll take down the CSESoc clone.
+
+          <br />
+          <br />
+          Hayes
+        </Alert>
+      </Container>
+
       <section id='spotify-integration'>
         <Container className='center debug'>
           <h2 className='feature-title'>Spotify integration</h2>
           <p className='feature-caption'>Create a game with any Spotify playlist</p>
           <div className='start-command'>
             <code>
-              $start 10 https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M
+              {startCmd}
             </code>
+            <i className={`bi bi-${clipboard} copy`} onClick={copyStartCmd} />
           </div>
         </Container>
       </section>
 
       <section id='guessing' className='debug'>
         <Container className='feature'>
-          <Image src={GuessingExample} className='guessing-example' width='40%' />
-          <div style={{ width: '40%' }}>
+          <Image src={GuessingExample} className='guessing-example' />
+          <div className='guessing-caption'>
             <h2 className='feature-title'>Guess by typing into your channel</h2>
             <p className='feature-caption'>
               You get one point for the song name and every listed artist.
@@ -67,7 +96,9 @@ const App = () => {
 
       <section id='customisations' className='debug'>
         <Container>
-          <h2 className='feature-title'>Customisations</h2>
+          <div style={{ textAlign: 'center' }}>
+            <h2 className='feature-title'>Customisations</h2>
+          </div>
 
           <div className='customisations debug'>
             <div className='customisation debug' id='round_duration'>
@@ -82,7 +113,7 @@ const App = () => {
 
             <div className='customisation debug' id='prefix'>
               <i className="bi bi-code" style={{ fontSize: '5rem' }} />
-              <caption className='feature-caption'>Set command prefix for your server</caption>
+              <caption className='feature-caption'>Set a custom command prefix for your server</caption>
             </div>
           </div>
 
