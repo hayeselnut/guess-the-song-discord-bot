@@ -11,8 +11,8 @@ import { isValidMessage } from './helpers/bot-helpers';
 
 client.once('ready', () => {
   console.log('Ready!');
-  console.log(GuildManager.size, 'guilds found in Firestore');
-  console.log('Current guilds:', [...client.guilds.cache.keys()]);
+  console.log('Guilds found in Firestore:', GuildManager.size);
+  console.log('Guilds currently in:', client.guilds.cache.size);
 });
 
 client.once('reconnecting', () => {
@@ -26,7 +26,7 @@ client.once('disconnect', () => {
 client.on('guildDelete', (guild: Guild) => {
   // If guild is deleted or client is kicked from guild, remove its data from database
   db.collection('guilds').doc(guild.id).delete();
-  console.log(`Left guild ${guild.name}, removed data from database`);
+  console.log(`Left guild ${guild.name} ${guild.id}, removed data from database`);
 });
 
 client.on('guildCreate', (guild: Guild) => {
