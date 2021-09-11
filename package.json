@@ -1,6 +1,6 @@
 {
   "name": "guess-the-song-discord-bot",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "main": "index.js",
   "scripts": {
     "heroku-prebuild": "cd bot && npm install",
