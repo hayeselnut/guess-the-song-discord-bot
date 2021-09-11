@@ -29,5 +29,6 @@ Guess the Song is a Discord bot that hosts a song guessing competition! Give it 
 
 ## Things to note
 - The bot uses the song name and artists to find the best result on YouTube and stream it back to the player. This means you'll be listening to the MV version of the songs.
+- Guesses for the song name and each artist must be sent in separate messages.
 - Heroku free hosting sometimes lags and prevents a song from loading. These rounds will be skipped if the stream does not start playing within 5 seconds.
 - If a server kicks the bot, their data is deleted in compliance with Discord's data policies.
