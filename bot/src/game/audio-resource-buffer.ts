@@ -59,6 +59,7 @@ export default class AudioResourceBuffer {
 
     const stream = ytdl(video.videoId, {
       filter: 'audioonly',
+      highWaterMark: 1<<25,
       requestOptions: {
         headers: Cookie,
       },

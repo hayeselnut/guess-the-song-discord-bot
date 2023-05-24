@@ -109,7 +109,7 @@ export default class Game {
 
       return setTimeout(() => {
         this.startRound();
-      }, 2 * 1000);
+      }, 5 * 1000);
     }
 
     // Create arrow function to preserve 'this' context
