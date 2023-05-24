@@ -1,25 +1,20 @@
-import { createAudioResource, StreamType } from "@discordjs/voice";
-import yts from "yt-search";
-import ytdl from "ytdl-core";
-import prism from "prism-media";
+import { createAudioResource, StreamType } from '@discordjs/voice';
+import yts from 'yt-search';
+import ytdl from 'ytdl-core';
+import prism from 'prism-media';
 
-import { AudioResourceWithTrack } from "../types/discord";
-import { Tracks } from "../types/tracks";
-import { randSeek, shuffle } from "../helpers/game-helpers";
-import Cookie from "../assets/cookie.json";
+import { AudioResourceWithTrack } from '../types/discord';
+import { Tracks } from '../types/tracks';
+import { randSeek, shuffle } from '../helpers/game-helpers';
+import Cookie from '../assets/cookie.json';
 
 // These are arguments used to convert the input to a format suitable for @discordjs/voice
 const FFMPEG_ARGUMENTS = [
-  "-analyzeduration",
-  "0",
-  "-loglevel",
-  "0",
-  "-f",
-  "s16le",
-  "-ar",
-  "48000",
-  "-ac",
-  "2",
+  '-analyzeduration', '0',
+  '-loglevel', '0',
+  '-f', 's16le',
+  '-ar', '48000',
+  '-ac', '2',
 ];
 
 export default class AudioResourceBuffer {
@@ -30,7 +25,7 @@ export default class AudioResourceBuffer {
 
   constructor(
     private readonly tracks: Tracks,
-    private readonly roundLimit: number
+    private readonly roundLimit: number,
   ) {
     this.order = shuffle(Object.keys(tracks)).slice(0, this.roundLimit);
   }
@@ -58,36 +53,31 @@ export default class AudioResourceBuffer {
     this.bufferIndex++;
 
     const track = this.tracks[trackId];
-    const youtubeQuery = `${track.name} ${track.artists.join(" ")}`;
+    const youtubeQuery = `${track.name} ${track.artists.join(' ')}`;
     const youtubeResults = await yts(youtubeQuery);
     const video = youtubeResults.videos[0];
 
     const stream = ytdl(video.videoId, {
-      filter: "audioonly",
+      filter: 'audioonly',
       requestOptions: {
         headers: Cookie,
       },
 
-      // Disabling chunking recommended by node-ytdl-core documentation
+      // // Disabling chunking recommended by node-ytdl-core documentation
       // dlChunkSize: 0,
-    }).on("error", (error: Error) => {
-      console.error(
-        `ERROR when loading '${track.name}' into buffer: ${error.message}`
-      );
+    }).on('error', (error: Error) => {
+      console.error(`ERROR when loading '${track.name}' into buffer: ${error.message}`);
     });
 
     // Seeks a random time
     const transcoder = new prism.FFmpeg({
-      args: ["-ss", `${randSeek(video.seconds)}`, ...FFMPEG_ARGUMENTS],
+      args: ['-ss', `${randSeek(video.seconds)}`, ...FFMPEG_ARGUMENTS],
     });
 
-    const audioResource: AudioResourceWithTrack = createAudioResource(
-      stream.pipe(transcoder),
-      {
-        inputType: StreamType.Raw,
-        metadata: track,
-      }
-    );
+    const audioResource: AudioResourceWithTrack = createAudioResource(stream.pipe(transcoder), {
+      inputType: StreamType.Raw,
+      metadata: track,
+    });
 
     this.buffer.push(audioResource);
   }
