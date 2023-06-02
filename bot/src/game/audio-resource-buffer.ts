@@ -1,6 +1,6 @@
 import { createAudioResource, StreamType } from '@discordjs/voice';
 import yts from 'yt-search';
-import ytdl from 'ytdl-core';
+import ytdl from '@distube/ytdl-core';
 import prism from 'prism-media';
 
 import { AudioResourceWithTrack } from '../types/discord';
